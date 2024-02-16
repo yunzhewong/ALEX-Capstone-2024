@@ -10,7 +10,6 @@ def generate_launch_description():
     params = {'robot_description': robot_desc}
 
     return LaunchDescription([
-        # Conditionally launch joint_state_publisher or joint_state_publisher_gui
         Node(
             package='joint_state_publisher_gui',
             executable='joint_state_publisher_gui',

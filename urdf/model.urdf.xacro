@@ -1,10 +1,106 @@
 <?xml version="1.0"?>
-<robot name="myfirst">
+<robot name="ALEX_Model" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <link name="base_link">
     <visual>
       <geometry>
-        <cylinder length="0.6" radius="0.2"/>
+        <box size="0.5 0.01 0.2" />
       </geometry>
+      <origin xyz="0 0 1"/>
     </visual>
   </link>
+
+  <link name="right_hip">
+    <visual>
+      <geometry>
+        <cylinder length="0.2" radius="0.02" />
+      </geometry>
+      <origin xyz="0.1 0 0" rpy="0 ${pi / 2} 0"/>
+    </visual>
+  </link>
+
+  <joint name="base_to_right_hip" type="fixed">
+    <parent link="base_link"/>
+    <child link="right_hip"/>
+    <origin xyz="0.25 0 1"/>
+  </joint>
+
+  <link name="right_thigh">
+    <visual>
+      <geometry>
+        <cylinder length="0.4" radius="0.1" />
+      </geometry>
+      <origin xyz="0 0 -0.2" />
+    </visual>
+  </link>
+
+  <joint name="right_hip_to_thigh" type="revolute">
+    <parent link="right_hip" />
+    <child link="right_thigh" />
+    <origin xyz="0.1 0 0" />
+    <axis xyz="1 0 0" rpy="0 0 0"/>
+    <limit lower="${-pi / 2}" upper="${pi / 2}" effort="100" velocity="1" />
+  </joint>
+
+  <link name="right_knee">
+    <visual>
+      <geometry>
+        <cylinder length="0.15" radius="0.02" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 ${pi / 2} 0"/>
+    </visual>
+  </link>
+
+  <joint name="right_thigh_to_knee" type="fixed">
+    <parent link="right_thigh" />
+    <child link="right_knee" />
+    <origin xyz="0 0 -0.4" />
+  </joint>
+
+  <link name="right_calf">
+    <visual>
+      <geometry>
+        <cylinder length="0.3" radius="0.075" />
+      </geometry>
+      <origin xyz="0 0 -0.15" rpy="0 0 0" />
+    </visual>
+  </link>
+
+  <joint name="right_knee_to_calf" type="revolute">
+    <parent link="right_knee" />
+    <child link="right_calf" />
+    <origin xyz="0 0 0" />
+    <axis xyz="1 0 0" rpy="0 0 0"/>
+    <limit lower="${-pi / 2}" upper="${pi / 2}" effort="100" velocity="1" />
+  </joint>
+
+  <link name="right_ankle">
+    <visual>
+      <geometry>
+        <cylinder length="0.1" radius="0.02" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 ${pi / 2} 0"/>
+    </visual>
+  </link>
+
+  <joint name="right_calf_to_ankle" type="fixed">
+    <parent link="right_calf" />
+    <child link="right_ankle" />
+    <origin xyz="0 0 -0.3" />
+  </joint>
+  
+  <link name="right_foot">
+    <visual>
+      <geometry>
+        <box size="0.1 0.2 0.01"/>
+      </geometry>
+      <origin xyz="0 -0.05 0"/>
+    </visual>
+  </link>
+
+  <joint name="right_ankle_to_foot" type="fixed">
+    <parent link="right_ankle" />
+    <child link="right_foot" />
+    <origin xyz="0 0 -0.02" />
+  </joint>
+  
 </robot>
