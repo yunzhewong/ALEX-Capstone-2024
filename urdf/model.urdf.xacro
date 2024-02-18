@@ -1,13 +1,33 @@
 <?xml version="1.0"?>
 <robot name="ALEX_Model" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <link name="world"></link>
+
   <link name="base_link">
     <visual>
       <geometry>
         <box size="0.5 0.01 0.2" />
       </geometry>
-      <origin xyz="0 0 1"/>
+      <origin xyz="0 0 0" />
     </visual>
+    <collision>
+      <geometry>
+        <box size="0.5 0.01 0.2" />
+      </geometry>
+      <origin xyz="0 0 0" />
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="12" />
+      <inertia ixx="2.26" ixy="0.0" ixz="0.0" iyy="6.26" iyz="0.0" izz="8.5" />
+    </inertial>
   </link>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>      
+    <origin xyz="0 0 1" rpy="0 0 0"/>
+  </joint>
 
   <link name="right_hip">
     <visual>
@@ -16,12 +36,23 @@
       </geometry>
       <origin xyz="0.1 0 0" rpy="0 ${pi / 2} 0"/>
     </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.2" radius="0.02" />
+      </geometry>
+      <origin xyz="0.1 0 0" rpy="0 ${pi / 2} 0"/>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="12" />
+      <inertia ixx="2.26" ixy="0.0" ixz="0.0" iyy="6.26" iyz="0.0" izz="8.5" />
+    </inertial>
   </link>
 
   <joint name="base_to_right_hip" type="fixed">
     <parent link="base_link"/>
     <child link="right_hip"/>
-    <origin xyz="0.25 0 1"/>
+    <origin xyz="0.25 0 0"/>
   </joint>
 
   <link name="right_thigh">
@@ -31,6 +62,17 @@
       </geometry>
       <origin xyz="0 0 -0.2" />
     </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.4" radius="0.1" />
+      </geometry>
+      <origin xyz="0 0 -0.2" />
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="12" />
+      <inertia ixx="2.26" ixy="0.0" ixz="0.0" iyy="6.26" iyz="0.0" izz="8.5" />
+    </inertial>
   </link>
 
   <joint name="right_hip_to_thigh" type="revolute">
@@ -48,6 +90,17 @@
       </geometry>
       <origin xyz="0 0 0" rpy="0 ${pi / 2} 0"/>
     </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.15" radius="0.02" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 ${pi / 2} 0"/>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="12" />
+      <inertia ixx="2.26" ixy="0.0" ixz="0.0" iyy="6.26" iyz="0.0" izz="8.5" />
+    </inertial>
   </link>
 
   <joint name="right_thigh_to_knee" type="fixed">
@@ -63,6 +116,17 @@
       </geometry>
       <origin xyz="0 0 -0.15" rpy="0 0 0" />
     </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.3" radius="0.075" />
+      </geometry>
+      <origin xyz="0 0 -0.15" rpy="0 0 0" />
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="12" />
+      <inertia ixx="2.26" ixy="0.0" ixz="0.0" iyy="6.26" iyz="0.0" izz="8.5" />
+    </inertial>
   </link>
 
   <joint name="right_knee_to_calf" type="revolute">
@@ -80,6 +144,17 @@
       </geometry>
       <origin xyz="0 0 0" rpy="0 ${pi / 2} 0"/>
     </visual>
+    <collision>
+      <geometry>
+        <cylinder length="0.1" radius="0.02" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 ${pi / 2} 0"/>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="12" />
+      <inertia ixx="2.26" ixy="0.0" ixz="0.0" iyy="6.26" iyz="0.0" izz="8.5" />
+    </inertial>
   </link>
 
   <joint name="right_calf_to_ankle" type="fixed">
@@ -95,6 +170,17 @@
       </geometry>
       <origin xyz="0 -0.05 0"/>
     </visual>
+    <collision>
+      <geometry>
+        <box size="0.1 0.2 0.01"/>
+      </geometry>
+      <origin xyz="0 -0.05 0"/>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="12" />
+      <inertia ixx="2.26" ixy="0.0" ixz="0.0" iyy="6.26" iyz="0.0" izz="8.5" />
+    </inertial>
   </link>
 
   <joint name="right_ankle_to_foot" type="fixed">
