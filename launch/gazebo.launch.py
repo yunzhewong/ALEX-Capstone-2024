@@ -24,6 +24,7 @@ def generate_launch_description():
     
     spawn_entity = Node(package='gazebo_ros', executable="spawn_entity.py", arguments=["-topic", "robot_description", '-entity', 'my_bot'], output="screen")
 
+
     return LaunchDescription([
         robot_state_publisher, gazebo, spawn_entity
     ])

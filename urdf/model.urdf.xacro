@@ -5,8 +5,9 @@
 
   <link name="world"></link>
 
+  <xacro:property name="back_plate_width" value="0.5" />
   <link name="back_plate">
-    <xacro:box_visual_and_collision size="0.5 0.01 0.2" xyz="0 0 0"/> 
+    <xacro:box_visual_and_collision size="${back_plate_width} 0.01 0.2" xyz="0 0 0"/> 
     <xacro:generic_inertia />
   </link>
 
@@ -15,44 +16,48 @@
     <child link="back_plate"/>      
     <origin xyz="0 0 1" rpy="0 0 0"/>
   </joint>
-
+<!-- 
+  <xacro:property name="hip_width" value="0.2" />
   <link name="right_hip">
-    <xacro:cylinder_visual_and_collision length="0.2" radius="0.02" xyz="0.1 0 0" rpy="0 ${pi/2} 0" />
+    <xacro:cylinder_visual_and_collision length="${hip_width}" radius="0.02" xyz="0.1 0 0" rpy="0 ${pi/2} 0" />
     <xacro:generic_inertia />
   </link>
 
   <joint name="base_to_right_hip" type="fixed">
     <parent link="back_plate"/>
     <child link="right_hip"/>
-    <origin xyz="0.25 0 0"/>
+    <origin xyz="${back_plate_width / 2} 0 0"/>
   </joint>
 
+  <xacro:property name="thigh_length" value="0.4" />
   <link name="right_thigh">
-    <xacro:cylinder_visual_and_collision length="0.4" radius="0.1" xyz="0 0 -0.2" rpy="0 0 0" />
+    <xacro:cylinder_visual_and_collision length="${thigh_length}" radius="0.1" xyz="0 0 -0.2" rpy="0 0 0" />
     <xacro:generic_inertia />
   </link>
 
   <joint name="right_hip_to_thigh" type="revolute">
     <parent link="right_hip" />
     <child link="right_thigh" />
-    <origin xyz="0.1 0 0" />
+    <origin xyz="${hip_width / 2} 0 0" />
     <axis xyz="1 0 0" rpy="0 0 0"/>
     <limit lower="${-pi / 2}" upper="${pi / 2}" effort="100" velocity="1" />
   </joint>
 
+  <xacro:property name="knee_width" value="0.15" />
   <link name="right_knee">
-    <xacro:cylinder_visual_and_collision length="0.15" radius="0.02" xyz="0 0 0" rpy="0 ${pi / 2} 0" />
+    <xacro:cylinder_visual_and_collision length="${knee_width}" radius="0.02" xyz="0 0 0" rpy="0 ${pi / 2} 0" />
     <xacro:generic_inertia />
   </link>
 
   <joint name="right_thigh_to_knee" type="fixed">
     <parent link="right_thigh" />
     <child link="right_knee" />
-    <origin xyz="0 0 -0.4" />
+    <origin xyz="0 0 ${-1 * thigh_length}" />
   </joint>
 
+  <xacro:property name="calf_length" value="0.3" />
   <link name="right_calf">
-    <xacro:cylinder_visual_and_collision length="0.3" radius="0.075" xyz="0 0 -0.15" rpy="0 0 0" />
+    <xacro:cylinder_visual_and_collision length="${calf_length}" radius="0.075" xyz="0 0 -0.15" rpy="0 0 0" />
     <xacro:generic_inertia />
   </link>
 
@@ -64,15 +69,16 @@
     <limit lower="${-pi / 2}" upper="${pi / 2}" effort="100" velocity="1" />
   </joint>
 
+  <xacro:property name="ankle_radius" value="0.02" />
   <link name="right_ankle">
-    <xacro:cylinder_visual_and_collision length="0.1" radius="0.02" xyz="0 0 0" rpy="0 ${pi / 2} 0" />
+    <xacro:cylinder_visual_and_collision length="0.1" radius="${ankle_radius}" xyz="0 0 0" rpy="0 ${pi / 2} 0" />
     <xacro:generic_inertia />
   </link>
 
   <joint name="right_calf_to_ankle" type="fixed">
     <parent link="right_calf" />
     <child link="right_ankle" />
-    <origin xyz="0 0 -0.3" />
+    <origin xyz="0 0 ${-1 * calf_length}" />
   </joint>
   
   <link name="right_foot">
@@ -83,7 +89,7 @@
   <joint name="right_ankle_to_foot" type="fixed">
     <parent link="right_ankle" />
     <child link="right_foot" />
-    <origin xyz="0 0 -0.02" />
-  </joint>
-  
+    <origin xyz="0 0 ${-1 * ankle_radius}" />
+  </joint> -->
+
 </robot>
