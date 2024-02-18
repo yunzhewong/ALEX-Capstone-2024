@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="generic_inertia">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="12" />
+      <inertia ixx="2.26" ixy="0.0" ixz="0.0" iyy="6.26" iyz="0.0" izz="8.5" />
+    </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="box_visual_and_collision" params="size xyz">
+     <visual>
+        <geometry>
+          <box size="${size}" />
+        </geometry>
+        <origin xyz="${xyz}" />
+      </visual>
+      <collision>
+        <geometry>
+          <box size="${size}" />
+        </geometry>
+        <origin xyz="${xyz}" />
+      </collision>
+  </xacro:macro>
+
+
+  <xacro:macro name="cylinder_visual_and_collision" params="length radius xyz rpy">
+     <visual>
+      <geometry>
+        <cylinder length="${length}" radius="${radius}" />
+      </geometry>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${length}" radius="${radius}" />
+      </geometry>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </collision>
+  </xacro:macro>
+
+</robot>
+
