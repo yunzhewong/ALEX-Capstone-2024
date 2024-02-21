@@ -16,7 +16,7 @@
     <child link="back_plate"/>      
     <origin xyz="0 0 1" rpy="0 0 0"/>
   </joint>
-<!-- 
+
   <xacro:property name="hip_width" value="0.2" />
   <link name="right_hip">
     <xacro:cylinder_visual_and_collision length="${hip_width}" radius="0.02" xyz="0.1 0 0" rpy="0 ${pi/2} 0" />
@@ -90,6 +90,6 @@
     <parent link="right_ankle" />
     <child link="right_foot" />
     <origin xyz="0 0 ${-1 * ankle_radius}" />
-  </joint> -->
+  </joint>
 
 </robot>
