@@ -17,3 +17,10 @@ Useful Links:
 https://docs.ros.org/en/humble/index.html (ROS2 Humble Documentation)
 
 https://www.youtube.com/watch?v=laWn7_cj434&t=619s&ab_channel=ArticulatedRobotics (Gazebo Simulation Setup)
+
+
+For some reason I can't get the things to spawn in one launch file?
+
+terminal 1: run "ros2 launch model.launch.py"
+terminal 2: run "ros2 launch gazebo_ros gazebo.launch.py"
+terminal 3: run "ros2 run gazebo_ros spawn_entity.py -topic /robot_description -entity my_bot"
