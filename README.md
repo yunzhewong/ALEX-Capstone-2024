@@ -4,12 +4,10 @@ ROS Simulation built with ROS2 Humble and Gazebo
 
 I run it using the Windows Subsystem for Linux (WSL)
 
-As of 18/02/24, launch has two options
-1. Enter the launch folder and run > ros2 launch model.launch.py
+As of 24/02, launch gazebo sim by doing the following:
+Enter the launch folder and run > ros2 launch gazebo.launch.py
 
-This launches the robot model in RViz for visualisation of the model
-
-2. Or: Enter the launch folder and run > ros2 launch gazebo.launch.py
+There is a camera topic as well, add a camera to RVIZ to visualise
 
 This launches the robot model in Gazebo for simulation of the joints
 
@@ -19,8 +17,3 @@ https://docs.ros.org/en/humble/index.html (ROS2 Humble Documentation)
 https://www.youtube.com/watch?v=laWn7_cj434&t=619s&ab_channel=ArticulatedRobotics (Gazebo Simulation Setup)
 
 
-For some reason I can't get the things to spawn in one launch file?
-
-terminal 1: run "ros2 launch model.launch.py" // starts the robot-
-terminal 2: run "ros2 launch gazebo_ros gazebo.launch.py"
-terminal 3: run "ros2 run gazebo_ros spawn_entity.py -topic /robot_description -entity my_bot"

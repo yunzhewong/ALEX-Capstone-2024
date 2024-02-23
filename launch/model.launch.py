@@ -7,7 +7,7 @@ import xacro
 def generate_launch_description():
     doc = xacro.process_file('../urdf/model.urdf.xacro')
     robot_desc = doc.toprettyxml(indent='  ')
-    params = {'robot_description': robot_desc}
+    params = {'robot_description': robot_desc, "use_sim_time": True}
 
     return LaunchDescription([
         Node(

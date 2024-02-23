@@ -17,15 +17,13 @@ def generate_launch_description():
             name='robot_state_publisher',parameters=[params]
         )
     
-   
-    
-    spawn_entity = Node(package='gazebo_ros', executable="spawn_entity.py", arguments=["-topic", "robot_description", '-entity', 'my_bot'], output="screen")
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
         )
     
+    spawn_entity = Node(package='gazebo_ros', executable="spawn_entity.py", arguments=["-topic", "robot_description", '-entity', 'my_bot'], output="screen")
 
     rviz = Node(
             package='rviz2',
