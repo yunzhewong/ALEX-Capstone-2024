@@ -27,6 +27,10 @@
     <xacro:generic_inertia />
   </link>
 
+  <gazebo reference="right_hip">
+    <material>Gazebo/Blue</material>
+  </gazebo>
+
   <joint name="base_to_right_hip" type="fixed">
     <parent link="back_plate"/>
     <child link="right_hip"/>
@@ -38,6 +42,9 @@
     <xacro:cylinder_visual_and_collision length="${thigh_length}" radius="0.1" xyz="0 0 -0.2" rpy="0 0 0" />
     <xacro:generic_inertia />
   </link>
+  <gazebo reference="right_thigh">
+    <material>Gazebo/Blue</material>
+  </gazebo>
 
   <joint name="right_hip_to_thigh" type="revolute">
     <parent link="right_hip" />
@@ -52,6 +59,9 @@
     <xacro:cylinder_visual_and_collision length="${knee_width}" radius="0.02" xyz="0 0 0" rpy="0 ${pi / 2} 0" />
     <xacro:generic_inertia />
   </link>
+  <gazebo reference="right_knee">
+    <material>Gazebo/Blue</material>
+  </gazebo>
 
   <joint name="right_thigh_to_knee" type="fixed">
     <parent link="right_thigh" />
@@ -64,6 +74,9 @@
     <xacro:cylinder_visual_and_collision length="${calf_length}" radius="0.075" xyz="0 0 -0.15" rpy="0 0 0" />
     <xacro:generic_inertia />
   </link>
+  <gazebo reference="right_calf">
+    <material>Gazebo/Blue</material>
+  </gazebo>
 
   <joint name="right_knee_to_calf" type="revolute">
     <parent link="right_knee" />
@@ -78,6 +91,9 @@
     <xacro:cylinder_visual_and_collision length="0.1" radius="${ankle_radius}" xyz="0 0 0" rpy="0 ${pi / 2} 0" />
     <xacro:generic_inertia />
   </link>
+  <gazebo reference="right_ankle">
+    <material>Gazebo/Blue</material>
+  </gazebo>
 
   <joint name="right_calf_to_ankle" type="fixed">
     <parent link="right_calf" />
@@ -89,6 +105,9 @@
     <xacro:box_visual_and_collision size="0.1 0.2 0.01" xyz="0 -0.05 0"/> 
     <xacro:generic_inertia />
   </link>
+  <gazebo reference="right_foot">
+    <material>Gazebo/Blue</material>
+  </gazebo>
 
   <joint name="right_ankle_to_foot" type="fixed">
     <parent link="right_ankle" />
@@ -100,11 +119,8 @@
     <plugin name="gazebo_ros_joint_state_publisher"
         filename="libgazebo_ros_joint_state_publisher.so">
         <update_rate>20</update_rate>
-        <joint_name>base_to_right_hip</joint_name>
         <joint_name>right_hip_to_thigh</joint_name>
-        <joint_name>right_thigh_to_knee</joint_name>
         <joint_name>right_knee_to_calf</joint_name>
-        <joint_name>right_calf_to_ankle</joint_name>
     </plugin>
   </gazebo>
 
@@ -147,4 +163,27 @@
       </plugin>
     </sensor>
   </gazebo>
+
+  <gazebo reference="right_foot">
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <visualize>true</visualize>
+      <topic>__default_topic__</topic>
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <topicName>imu</topicName>
+        <bodyName>right_foot</bodyName>
+        <updateRateHZ>10.0</updateRateHZ>
+        <gaussianNoise>0.0</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>right_foot</frameName>
+        <initialOrientationAsReference>false</initialOrientationAsReference>
+      </plugin>
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>
+
+
 </robot>
