@@ -11,6 +11,8 @@ def generate_launch_description():
     robot_desc = doc.toxml()
     params = {'robot_description': robot_desc, "use_sim_time": True}
 
+    robot_description = {'robot_description': robot_desc}
+
     robot_state_publisher = Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
@@ -33,7 +35,18 @@ def generate_launch_description():
             output='screen'
         )
 
+    control_node = Node(
+        package='controller_manager', 
+        executable='ros2_control_node', 
+        parameters=[robot_description]
+    )
+
+    effort_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["effort_controller", "--controller-manager", "/controller_manager"],
+    )
     return LaunchDescription([
-        robot_state_publisher, gazebo, spawn_entity, rviz
+        robot_state_publisher, gazebo, spawn_entity, rviz, control_node, effort_controller_spawner
     ])
 

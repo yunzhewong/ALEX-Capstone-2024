@@ -16,4 +16,7 @@ https://docs.ros.org/en/humble/index.html (ROS2 Humble Documentation)
 
 https://www.youtube.com/watch?v=laWn7_cj434&t=619s&ab_channel=ArticulatedRobotics (Gazebo Simulation Setup)
 
+24/02: run
+ros2 topic pub /effort_controller/commands std_msgs/msg/Float64MultiArray "data: - 20"
 
+to simulate some motor stuff idk????
