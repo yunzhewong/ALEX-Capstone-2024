@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'torque_publisher'
+package_name = 'alex_nodes'
 
 setup(
     name=package_name,
@@ -13,14 +13,15 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='Yun Zhe Wong',
-    maintainer_email='yunzhe.wong@gmail.com',
-    description='Publisher node to control the actuators on the ALEX Capstone Project',
+    maintainer='root',
+    maintainer_email='root@todo.todo',
+    description='TODO: Package description',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-          'torque_publisher = torque_publisher.torque_publisher:main',
+          'imu_subscriber = alex_nodes.imu_subscriber:main',
+          'torque_publisher = alex_nodes.torque_publisher:main'
         ],
     },
 )
