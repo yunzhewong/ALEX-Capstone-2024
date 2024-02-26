@@ -41,12 +41,18 @@ def generate_launch_description():
         parameters=[robot_description]
     )
 
-    effort_controller_spawner = Node(
+    hip_joint_controller = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["effort_controller", "--controller-manager", "/controller_manager"],
+        arguments=["hip_joint_controller", "--controller-manager", "/controller_manager"],
+    )
+
+    knee_joint_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["knee_joint_controller", "--controller-manager", "/controller_manager"],
     )
     return LaunchDescription([
-        robot_state_publisher, gazebo, spawn_entity, rviz, control_node, effort_controller_spawner
+        robot_state_publisher, gazebo, spawn_entity, rviz, control_node, hip_joint_controller, knee_joint_controller
     ])
 
