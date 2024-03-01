@@ -1,54 +1,27 @@
 <?xml version="1.0"?>
 <robot name="ALEX_Model_v2" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:include filename="fouriermotor.xacro" />
+
+  <xacro:include filename="materials.xacro" />
+  <xacro:include filename="common.xacro" />
+  <xacro:include filename="back.xacro" ns="back" />
+  <xacro:include filename="motor.xacro" ns="motor" />
 
   <!-- x = left, y = robot back, z = up -->
-
   <link name="world"></link>
-
-  <xacro:property name="back_plate_thickness" value="0.08" />
-  <xacro:property name="back_plate_width" value="0.3" />
-  <xacro:property name="back_plate_height" value="0.3"/>
-  <link name="back_plate">
-    <xacro:box_visual_and_collision size="${back_plate_width} ${back_plate_thickness} ${back_plate_height}" xyz="0 0 0"/> 
-    <xacro:generic_inertia />
-  </link>
-
-  <joint name="base_joint" type="fixed">
-    <parent link="world"/>
-    <child link="back_plate"/>      
-    <origin xyz="0 0 1" rpy="0 0 0"/>
-  </joint>
-
-  <xacro:property name="thin_plate_thickness" value="0.005" />
-  <xacro:property name="thin_plate_width" value="0.3" />
-  <xacro:property name="thin_plate_height" value="0.485" />
-  <link name="thin_plate">
-    <xacro:box_visual_and_collision size="${thin_plate_width} ${thin_plate_thickness} ${thin_plate_height}" xyz="0 0 0"/> 
-    <xacro:generic_inertia />
-  </link>
-
-  <joint name="plate_joint" type="fixed">
-    <parent link="back_plate"/>
-    <child link="thin_plate"/>      
-    <origin xyz="0 ${-1 * (back_plate_thickness + thin_plate_thickness) / 2} ${-1 * (thin_plate_height - back_plate_height) / 2}" rpy="0 0 0"/>
-  </joint>
-
-
-  <xacro:motor prefix="left_rear" />
+  <xacro:back.generate_back />
+  <xacro:motor.generate_motor prefix="left_rear" />
   
-  <xacro:property name="rear_spacing" value="0.18" />
   <joint name="left_rear_motor" type="revolute">
-    <parent link="thin_plate" />
+    <parent link="left_connection" />
     <child link="left_rear_primary_cylinder" />
-    <origin xyz="${rear_spacing / 2} ${motor_thickness / 2} ${(-1 * thin_plate_height / 2) + motor_radius}" rpy="0 0 0" />
+    <origin xyz="0 ${motor.thickness / 2} 0" rpy="0 0 0" />
     <limit lower="${-pi / 2}" upper="${pi / 2}" effort="400" velocity="1" />
     <axis xyz="0 1 0" rpy="0 0 0"/>
   </joint>
 
   <xacro:property name="rear_center_to_edge_length" value="0.130" />
   <link name="left_rear_limb">
-    <xacro:box_visual_and_collision size="${rear_center_to_edge_length} ${motor_thickness} ${motor_radius * 2}" xyz="0 0 0"/>
+    <xacro:box_visual_and_collision size="${rear_center_to_edge_length} ${motor.thickness} ${motor.radius * 2}" xyz="0 0 0"/>
     <xacro:generic_inertia />
   </link>
 
@@ -69,6 +42,6 @@
   <joint name="left_side_plate_to_rear_limb" type="fixed">
     <parent link="left_rear_limb" />
     <child link="left_side_plate" />
-    <origin xyz="${rear_center_to_edge_length / 2 - side_plate_thickness / 2} ${motor_height / 2 - side_plate_length / 2} 0" />
+    <origin xyz="${rear_center_to_edge_length / 2 - side_plate_thickness / 2} ${motor.height / 2 - side_plate_length / 2} 0" />
   </joint>
 </robot>

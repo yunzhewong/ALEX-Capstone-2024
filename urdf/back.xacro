@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="common.xacro" />
+
+  <xacro:property name="main_thickness" value="0.08" />
+  <xacro:property name="main_width" value="0.3" />
+  <xacro:property name="main_height" value="0.3"/>
+
+  <xacro:macro name="generate_back">
+    <link name="main">
+      <xacro:box_visual_and_collision size="${main_width} ${main_thickness} ${main_height}" xyz="0 0 0"/> 
+      <xacro:generic_inertia />
+    </link>
+
+    <joint name="base_joint" type="fixed">
+      <parent link="world"/>
+      <child link="main"/>      
+      <origin xyz="0 0 1" rpy="0 0 0"/>
+    </joint>
+
+    <xacro:property name="plate_thickness" value="0.005" />
+    <xacro:property name="plate_width" value="0.3" />
+    <xacro:property name="plate_height" value="0.485" />
+    <link name="plate">
+      <xacro:box_visual_and_collision size="${plate_width} ${plate_thickness} ${plate_height}" xyz="0 0 0"/> 
+      <xacro:generic_inertia />
+    </link>
+
+    <joint name="plate_joint" type="fixed">
+      <parent link="main"/>
+      <child link="plate"/>      
+      <origin xyz="0 ${-1 * (main_thickness + plate_thickness) / 2} ${-1 * (plate_height - main_height) / 2}" rpy="0 0 0"/>
+    </joint>
+
+    <xacro:property name="rear_spacing" value="0.18" />
+    <link name="left_connection" />
+
+    <joint name="left_connection_joint" type="fixed">
+      <parent link="plate" />
+      <child link="left_connection" />
+      <origin xyz="${rear_spacing / 2} ${plate_thickness / 2} ${(-1 * plate_height / 2) + motor.radius}" rpy="0 0 0" />
+    </joint>
+
+  </xacro:macro>
+</robot>
+

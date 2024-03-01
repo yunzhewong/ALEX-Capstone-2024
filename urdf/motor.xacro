@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:include filename="common.xacro" />
-  
+
   <!-- taken from the datasheet -->
-  <xacro:property name="motor_thickness" value="0.075" />
-  <xacro:property name="motor_width" value="0.225" />
-  <xacro:property name="motor_height" value="0.120" />
+  <xacro:property name="thickness" value="0.075" />
+  <xacro:property name="width" value="0.225" />
+  <xacro:property name="height" value="0.120" />
 
   <!-- calculated values for urdf model -->
-  <xacro:property name="motor_radius" value="${0.120 / 2}" />
-  <xacro:property name="inter_center_length" value="${motor_width - 2 * motor_radius}" />
+  <xacro:property name="radius" value="${0.120 / 2}" />
+  <xacro:property name="inter_center_length" value="${width - 2 * radius}" />
   
-  <xacro:macro name="motor_cylinder" params="name">
+  <xacro:macro name="single_cylinder" params="name">
     <link name="${name}"> 
-      <xacro:cylinder_visual_and_collision radius="${motor_radius}" length="${motor_thickness}" xyz="0 0 0" rpy="${pi / 2} 0 0" color="blue"/>
+      <xacro:cylinder_visual_and_collision radius="${radius}" length="${thickness}" xyz="0 0 0" rpy="${pi / 2} 0 0" color="blue"/>
       <xacro:generic_inertia />
     </link>
   </xacro:macro>
@@ -22,13 +22,13 @@
 
   <!-- this macro requires a joint connecting to the ${prefix}_primary_cylinder -->
   <!-- and can connect off the link ${prefix}_secondary_cylinder -->
-  <xacro:macro name="motor" params="prefix">
+  <xacro:macro name="generate_motor" params="prefix">
     <!-- the circle that provides torque -->
-    <xacro:motor_cylinder name="${prefix}_primary_cylinder" />
+    <xacro:single_cylinder name="${prefix}_primary_cylinder" />
 
     <!-- a rectangle that shows the connection space between circles -->
     <link name="${prefix}_motor_length">
-      <xacro:box_visual_and_collision size="${inter_center_length} ${motor_thickness} ${motor_height}" xyz="0 0 0" color="blue"/>
+      <xacro:box_visual_and_collision size="${inter_center_length} ${thickness} ${height}" xyz="0 0 0" color="blue"/>
       <xacro:generic_inertia />
     </link>
 
@@ -39,7 +39,7 @@
     </joint>
 
     <!-- the circle that takes in the Ethernet input -->
-    <xacro:motor_cylinder name="${prefix}_secondary_cylinder" />
+    <xacro:single_cylinder name="${prefix}_secondary_cylinder" />
 
     <joint name="${prefix}_length_to_signal" type="fixed">
       <parent link="${prefix}_motor_length" />
