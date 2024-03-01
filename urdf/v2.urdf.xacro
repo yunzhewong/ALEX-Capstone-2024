@@ -44,4 +44,15 @@
     <child link="left_side_plate" />
     <origin xyz="${rear_center_to_edge_length / 2 - side_plate_thickness / 2} ${motor.height / 2 - side_plate_length / 2} 0" />
   </joint>
+
+  <xacro:motor.generate_motor prefix="left_hip"/>
+
+  <joint name="left_hip_motor" type="revolute">
+    <parent link="left_side_plate" />
+    <child link="left_hip_primary_cylinder" />
+    <origin xyz="${-1 * motor.thickness / 2} ${-1 * side_plate_length / 2} 0" rpy="0 ${pi/2} ${pi / 2}" />
+    <limit lower="${-pi / 2}" upper="${pi / 2}" effort="400" velocity="1" />
+    <axis xyz="0 1 0" rpy="0 0 0"/>
+  </joint>
+
 </robot>

@@ -10,7 +10,6 @@
   <!-- calculated values for urdf model -->
   <xacro:property name="radius" value="${0.120 / 2}" />
   <xacro:property name="inter_center_length" value="${width - 2 * radius}" />
-  
   <xacro:macro name="single_cylinder" params="name">
     <link name="${name}"> 
       <xacro:cylinder_visual_and_collision radius="${radius}" length="${thickness}" xyz="0 0 0" rpy="${pi / 2} 0 0" color="blue"/>
@@ -35,7 +34,7 @@
     <joint name="${prefix}_driving_to_length" type="fixed">
       <parent link="${prefix}_primary_cylinder" />
       <child link="${prefix}_motor_length" />
-      <origin xyz="${inter_center_length / 2} 0 0" rpy="0 0 0" />
+      <origin xyz="${inter_center_length / 2} 0 0" />
     </joint>
 
     <!-- the circle that takes in the Ethernet input -->
