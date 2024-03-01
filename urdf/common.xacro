@@ -1,5 +1,14 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <material name="blue">
+    <color rgba="0 0 0.8 1"/>
+  </material>
+
+  <material name="red">
+    <color rgba="0.8 0 0 1"/>
+  </material>
+
   <xacro:macro name="generic_inertia">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -8,8 +17,9 @@
     </inertial>
   </xacro:macro>
 
-  <xacro:macro name="box_visual_and_collision" params="size xyz">
+  <xacro:macro name="box_visual_and_collision" params="size xyz color:=red">
      <visual>
+        <material name="${color}" />
         <geometry>
           <box size="${size}" />
         </geometry>
@@ -24,8 +34,9 @@
   </xacro:macro>
 
 
-  <xacro:macro name="cylinder_visual_and_collision" params="length radius xyz rpy">
+  <xacro:macro name="cylinder_visual_and_collision" params="length radius xyz rpy color:=red">
      <visual>
+      <material name="${color}" />
       <geometry>
         <cylinder length="${length}" radius="${radius}" />
       </geometry>

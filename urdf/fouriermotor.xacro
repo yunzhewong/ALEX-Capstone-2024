@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="common.xacro" />
+  
+  <!-- taken from the datasheet -->
+  <xacro:property name="motor_thickness" value="0.075" />
+  <xacro:property name="motor_width" value="0.225" />
+  <xacro:property name="motor_height" value="0.120" />
+
+  <!-- calculated values for urdf model -->
+  <xacro:property name="motor_radius" value="${0.120 / 2}" />
+  <xacro:property name="inter_center_length" value="${motor_width - 2 * motor_radius}" />
+  
+  <xacro:macro name="motor_cylinder" params="name">
+    <link name="${name}"> 
+      <xacro:cylinder_visual_and_collision radius="${motor_radius}" length="${motor_thickness}" xyz="0 0 0" rpy="${pi / 2} 0 0" color="blue"/>
+      <xacro:generic_inertia />
+    </link>
+  </xacro:macro>
+
+
+
+  <!-- this macro requires a joint connecting to the ${prefix}_primary_cylinder -->
+  <!-- and can connect off the link ${prefix}_secondary_cylinder -->
+  <xacro:macro name="motor" params="prefix">
+    <!-- the circle that provides torque -->
+    <xacro:motor_cylinder name="${prefix}_primary_cylinder" />
+
+    <!-- a rectangle that shows the connection space between circles -->
+    <link name="${prefix}_motor_length">
+      <xacro:box_visual_and_collision size="${inter_center_length} ${motor_thickness} ${motor_height}" xyz="0 0 0" color="blue"/>
+      <xacro:generic_inertia />
+    </link>
+
+    <joint name="${prefix}_driving_to_length" type="fixed">
+      <parent link="${prefix}_primary_cylinder" />
+      <child link="${prefix}_motor_length" />
+      <origin xyz="${inter_center_length / 2} 0 0" rpy="0 0 0" />
+    </joint>
+
+    <!-- the circle that takes in the Ethernet input -->
+    <xacro:motor_cylinder name="${prefix}_secondary_cylinder" />
+
+    <joint name="${prefix}_length_to_signal" type="fixed">
+      <parent link="${prefix}_motor_length" />
+      <child link="${prefix}_secondary_cylinder" />
+      <origin xyz="${inter_center_length / 2} 0 0" rpy="0 0 0" />
+    </joint>
+  </xacro:macro>
+
+</robot>
+
