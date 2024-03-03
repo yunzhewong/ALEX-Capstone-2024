@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="common.xacro" />
+  <xacro:include filename="calf.xacro" ns="calf"/>
+  <xacro:include filename="ankle.xacro" ns="ankle" />
+
+  <xacro:macro name="generate_calf_to_ankle" params="prefix">
+    <xacro:calf.generate_calf prefix="left" />
+
+    <xacro:ankle.generate_ankle prefix="left" />
+
+    <joint name="${prefix}_calf_to_ankle_extension" type="fixed">
+      <parent link="${prefix}_calf" />
+      <child link="${prefix}_ankle_extension" />
+      <origin xyz="${(calf.length + ankle.extension_length) / 2} 0 0" rpy="0 0 0" />
+    </joint>
+  </xacro:macro>
+
+  
+</robot>
+

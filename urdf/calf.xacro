@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="common.xacro" />
+  
+  <xacro:property name="plate_length" value="0.100" />
+  <xacro:property name="plate_thickness" value="0.087" />
+  <xacro:property name="plate_width" value="0.0111" />
+  
+  <xacro:property name="length" value="0.220" />
+  <xacro:property name="thickness" value="0.0841" />
+  <xacro:property name="width" value="0.059" />
+
+  <xacro:macro name="generate_calf" params="prefix">
+    <link name="${prefix}_calf_plate">
+      <xacro:box_visual_and_collision size="${plate_length} ${plate_width} ${plate_thickness}" xyz="0 0 0"/>
+      <xacro:generic_inertia />
+    </link>
+
+    <link name="${prefix}_calf">
+      <xacro:box_visual_and_collision size="${length} ${width} ${thickness}" xyz="0 0 0" />
+      <xacro:generic_inertia />
+    </link>
+
+    <joint name="${prefix}_plate_to_calf" type="fixed">
+      <parent link="${prefix}_calf_plate" />
+      <child link="${prefix}_calf" />
+      <origin xyz="${(plate_length + length) / 2} ${-1 * (plate_width + width) / 2} 0" rpy="0 0 0" />
+    </joint>
+  </xacro:macro>
+</robot>
+
