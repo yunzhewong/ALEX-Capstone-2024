@@ -136,4 +136,32 @@
     <origin xyz="${ankle_extension_length / 2} 0 0" rpy="0 0 0" />
   </joint>
 
+  <xacro:property name="ankle_side_length" value="0.110" />
+  <xacro:property name="ankle_side_thickness" value="0.044" />
+  <xacro:property name="ankle_side_width" value="0.0175" />
+  <link name="left_ankle_side">
+    <xacro:box_visual_and_collision size="${ankle_side_length} ${ankle_side_width} ${ankle_side_thickness}" xyz="0 0 0" />
+    <xacro:generic_inertia />
+  </link>
+
+  <joint name="left_ankle_to_ankle_side" type="fixed">
+    <parent link="left_ankle" />
+    <child link="left_ankle_side" />
+    <origin xyz="${ankle_side_length / 2} ${(ankle_length + ankle_side_width) / 2} 0" rpy="0 0 0" />
+  </joint>
+
+  <xacro:property name="ankle_base_length" value="0.3155" />
+  <xacro:property name="ankle_base_width" value="0.120" />
+  <xacro:property name="ankle_base_thickness" value="0.013" />
+  <link name="left_ankle_base">
+    <xacro:box_visual_and_collision size="${ankle_base_thickness} ${ankle_base_width} ${ankle_base_length}" xyz="0 0 0"/>
+    <xacro:generic_inertia />
+  </link>
+
+  <joint name="left_ankle_side_to_base" type="fixed">
+    <parent link="left_ankle_side" />
+    <child link="left_ankle_base" />
+    <origin xyz="${ankle_side_length / 2} ${ankle_base_width / 2} ${-1 * ankle_base_length / 4}" rpy="0 0 0" />
+  </joint>
+
 </robot>
