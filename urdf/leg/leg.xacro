@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="../common.xacro" />
+  <xacro:include filename="calf.xacro" ns="calf" />
+  <xacro:include filename="calf_to_ankle.xacro" ns="calf_to_ankle" />
+  <xacro:include filename="thigh.xacro" ns="thigh" />
+  <xacro:include filename="rear_limb.xacro" ns="rear_limb" />
+
+  <xacro:macro name="generate_leg" params="prefix">
+    <xacro:rear_limb.generate_rear_limb prefix="${prefix}" />
+
+    <xacro:thigh.generate_thigh prefix="${prefix}" />  
+
+    <joint name="${prefix}_hip_motor" type="revolute">
+      <parent link="${prefix}_side_plate" />
+      <child link="${prefix}_hip_primary_cylinder" />
+      <origin xyz="${-1 * motor.thickness / 2} ${-1 * rear_limb.side_plate_length / 2} 0" rpy="0 ${pi/2} ${pi / 2}" />
+      <limit lower="${-pi / 2}" upper="${pi / 2}" effort="400" velocity="1" />
+      <axis xyz="0 1 0" rpy="0 0 0"/>
+    </joint>
+
+    <xacro:calf_to_ankle.generate_calf_to_ankle prefix="${prefix}" />
+
+    <joint name="${prefix}_knee_to_calf" type="revolute">
+      <parent link="${prefix}_knee_secondary_cylinder" />
+      <child link="${prefix}_calf_plate" />
+      <origin xyz="${calf.plate_length / 2} ${(motor.thickness + calf.plate_width) / 2} 0" rpy="0 0 0" />
+      <limit lower="${-pi / 2}" upper="${pi / 2}" effort="400" velocity="1" />
+      <axis xyz="0 1 0" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+</robot>
+

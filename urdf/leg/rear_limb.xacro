@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="../common.xacro" />
+  <xacro:include filename="../motor.xacro" ns="motor" />
+
+  <xacro:property name="side_plate_length" value="0.260" />
+  <xacro:property name="side_plate_height" value="0.06" />
+  <xacro:property name="side_plate_thickness" value="0.028" />
+
+  <xacro:property name="rear_center_to_edge_length" value="0.130" />
+
+  <xacro:macro name="generate_rear_limb" params="prefix">
+    <xacro:motor.generate_motor prefix="${prefix}_rear" />
+
+    <link name="${prefix}_rear_limb">
+      <xacro:box_visual_and_collision size="${rear_center_to_edge_length} ${motor.thickness} ${motor.radius * 2}" xyz="0 0 0"/>
+      <xacro:generic_inertia />
+    </link>
+
+    <joint name="${prefix}_rear_limb_to_motor_joint" type="fixed">
+      <parent link="${prefix}_rear_secondary_cylinder"/>
+      <child link="${prefix}_rear_limb"/>
+      <origin xyz="${rear_center_to_edge_length / 2} 0 0" rpy="0 0 0" />
+    </joint>
+
+    
+    <link name="${prefix}_side_plate">
+      <xacro:box_visual_and_collision size="${side_plate_thickness} ${side_plate_length} ${side_plate_height}" xyz="0 0 0" />
+      <xacro:generic_inertia />
+    </link>
+
+    <joint name="${prefix}_side_plate_to_rear_limb" type="fixed">
+      <parent link="${prefix}_rear_limb" />
+      <child link="${prefix}_side_plate" />
+      <origin xyz="${rear_center_to_edge_length / 2 - side_plate_thickness / 2} ${motor.height / 2 - side_plate_length / 2} 0" />
+    </joint>
+  </xacro:macro >
+</robot>

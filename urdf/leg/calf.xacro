@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:include filename="common.xacro" />
+  <xacro:include filename="../common.xacro" />
   
   <xacro:property name="plate_length" value="0.100" />
   <xacro:property name="plate_thickness" value="0.087" />

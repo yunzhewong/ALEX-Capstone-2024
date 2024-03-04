@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:include filename="common.xacro" />
+  <xacro:include filename="../common.xacro" />
 
   <xacro:property name="extension_length" value="0.140" />
   <xacro:property name="extension_radius" value="0.013" />

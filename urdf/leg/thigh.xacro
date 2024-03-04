@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:include filename="common.xacro" />
-  <xacro:include filename="motor.xacro" ns="motor" />
+  <xacro:include filename="../common.xacro" />
+  <xacro:include filename="../motor.xacro" ns="motor" />
 
   <xacro:property name="length" value="0.230" />
   <xacro:property name="thickness" value="0.0853" />
@@ -30,4 +30,6 @@
     </joint>
   </xacro:macro>  
 </robot>
+
+
 
