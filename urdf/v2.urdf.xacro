@@ -7,6 +7,7 @@
   <xacro:include filename="motor.xacro" ns="motor" />
   <xacro:include filename="calf.xacro" ns="calf" />
   <xacro:include filename="calf_to_ankle.xacro" ns="calf_to_ankle" />
+  <xacro:include filename="thigh.xacro" ns="thigh" />
 
   <!-- x = left, y = robot back, z = up -->
   <link name="world"></link>
@@ -14,9 +15,9 @@
   <xacro:motor.generate_motor prefix="left_rear" />
   
   <joint name="left_rear_motor" type="revolute">
-    <parent link="left_connection" />
+    <parent link="back_plate" />
     <child link="left_rear_primary_cylinder" />
-    <origin xyz="0 ${motor.thickness / 2} 0" rpy="0 0 0" />
+    <origin xyz="${back.rear_spacing / 2} ${(back.plate_thickness + motor.thickness) / 2} ${(-1 * back.plate_height / 2) + motor.radius}" rpy="0 0 0" />
     <limit lower="${-pi / 2}" upper="${pi / 2}" effort="400" velocity="1" />
     <axis xyz="0 1 0" rpy="0 0 0"/>
   </joint>
@@ -47,7 +48,9 @@
     <origin xyz="${rear_center_to_edge_length / 2 - side_plate_thickness / 2} ${motor.height / 2 - side_plate_length / 2} 0" />
   </joint>
 
-  <xacro:motor.generate_motor prefix="left_hip"/>
+
+  <xacro:property name="prefix" value="left" />
+  <xacro:thigh.generate_thigh prefix="${prefix}" />  
 
   <joint name="left_hip_motor" type="revolute">
     <parent link="left_side_plate" />
@@ -57,30 +60,8 @@
     <axis xyz="0 1 0" rpy="0 0 0"/>
   </joint>
 
-  <xacro:property name="thigh_length" value="0.230" />
-  <xacro:property name="thigh_thickness" value="0.0853" />
-  <xacro:property name="thigh_width" value="0.1016" />
 
-  <link name="left_thigh">
-    <xacro:box_visual_and_collision size="${thigh_length} ${thigh_width} ${thigh_thickness}" xyz="0 0 0" />
-    <xacro:generic_inertia />
-  </link>  
-
-  <joint name="left_motor_to_thigh" type="fixed">
-    <parent link="left_hip_secondary_cylinder" />
-    <child link="left_thigh" />
-    <origin xyz="${thigh_length / 2} 0 0" rpy="0 0 0"/>
-  </joint>
-
-  <xacro:motor.generate_motor prefix="left_knee" />
-
-  <joint name="left_thigh_to_knee" type="fixed">
-    <parent link="left_thigh" />
-    <child link="left_knee_primary_cylinder" />
-    <origin xyz="${thigh_length / 2} 0 0" rpy="0 0 0" />
-  </joint>
-
- <xacro:calf_to_ankle.generate_calf_to_ankle prefix="left" />
+  <xacro:calf_to_ankle.generate_calf_to_ankle prefix="${prefix}" />
 
   <joint name="left_knee_to_calf" type="revolute">
     <parent link="left_knee_secondary_cylinder" />
@@ -90,4 +71,13 @@
     <axis xyz="0 1 0" rpy="0 0 0"/>
   </joint>
 
+   <gazebo>
+      <plugin name="gazebo_ros_joint_state_publisher"
+          filename="libgazebo_ros_joint_state_publisher.so">
+          <update_rate>20</update_rate>
+          <joint_name>left_rear_motor</joint_name>
+          <joint_name>left_hip_motor</joint_name>
+          <joint_name>left_knee_to_calf</joint_name>
+      </plugin>
+    </gazebo>
 </robot>

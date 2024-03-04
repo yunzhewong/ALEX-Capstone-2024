@@ -5,9 +5,9 @@
   <xacro:include filename="ankle.xacro" ns="ankle" />
 
   <xacro:macro name="generate_calf_to_ankle" params="prefix">
-    <xacro:calf.generate_calf prefix="left" />
+    <xacro:calf.generate_calf prefix="${prefix}" />
 
-    <xacro:ankle.generate_ankle prefix="left" />
+    <xacro:ankle.generate_ankle prefix="${prefix}" />
 
     <joint name="${prefix}_calf_to_ankle_extension" type="fixed">
       <parent link="${prefix}_calf" />
