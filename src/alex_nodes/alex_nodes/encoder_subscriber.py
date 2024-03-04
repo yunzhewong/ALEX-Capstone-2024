@@ -5,6 +5,7 @@ from sensor_msgs.msg import JointState
 import matplotlib.pyplot as plt
 import numpy as np
 
+NUMBER_OF_JOINTS = 3
 
 class EncoderSubscriber(Node):
     def __init__(self):
@@ -17,24 +18,24 @@ class EncoderSubscriber(Node):
         self.subscription  # prevent unused variable warning
 
         self.times = []
-        self.data = [[], [], []]
+        self.data = [[] for i in range(NUMBER_OF_JOINTS)]
         self.colors = ["blue", "red", "green"]
-        self.count = 0
 
     def listener_callback(self, msg: JointState):
-        self.times.append(self.count)
-        for i in range(3):
+        timestamp = msg.header.stamp
+        time = timestamp.sec + timestamp.nanosec * 1e-9
+        self.times.append(time)
+        for i in range(NUMBER_OF_JOINTS):
             self.data[i].append(msg.position[i])
         
-        self.count += 1
 
         if (len(self.times) > 50):
             self.times.pop(0)
-            for i in range(3):
+            for i in range(NUMBER_OF_JOINTS):
                 self.data[i].pop(0)
           
         plt.clf()
-        for i in range(3):
+        for i in range(NUMBER_OF_JOINTS):
             plt.plot(self.times, self.data[i], linewidth=2.0, color=self.colors[i], label=msg.name[i])
         plt.legend(loc='upper right')
         plt.pause(0.1)

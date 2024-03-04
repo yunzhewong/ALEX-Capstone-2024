@@ -15,11 +15,12 @@
 
   <xacro:leg.generate_leg prefix="${prefix}" />
 
-  <joint name="left_rear_motor" type="revolute">
+  <joint name="left_rear_motor" type="fixed">
     <parent link="back_plate" />
     <child link="left_rear_primary_cylinder" />
     <origin xyz="${back.rear_spacing / 2} ${(back.plate_thickness + motor.thickness) / 2} ${(-1 * back.plate_height / 2) + motor.radius}" rpy="0 0 0" />
-    <limit lower="${-pi / 2}" upper="${pi / 2}" effort="400" velocity="1" />
+    <limit lower="${-pi / 2}" upper="${pi / 2}" effort="400" velocity="100" />
+    <dynamics damping="0.3" />
     <axis xyz="0 1 0" rpy="0 0 0"/>
   </joint>
 
