@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-          'imu_subscriber = alex_nodes.imu_subscriber:main',
+          'encoder_subscriber = alex_nodes.encoder_subscriber:main',
           'torque_publisher = alex_nodes.torque_publisher:main'
         ],
     },

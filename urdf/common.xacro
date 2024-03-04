@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:proprety name="zero_transform" value="0 0 0" />
+
   <xacro:macro name="generic_inertia">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -8,11 +10,12 @@
     </inertial>
   </xacro:macro>
 
-  <xacro:macro name="box_visual_and_collision" params="size xyz color:=red">
+  <xacro:macro name="box" params="depth width height xyz:=${zero_transform} color:=red">
+
      <visual>
         <material name="${color}" />
         <geometry>
-          <box size="${size}" />
+          <box size="${depth} ${width} ${height}" />
         </geometry>
         <origin xyz="${xyz}" />
       </visual>
