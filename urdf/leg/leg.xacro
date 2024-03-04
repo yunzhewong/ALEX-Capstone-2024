@@ -17,7 +17,7 @@
       <origin xyz="${-1 * motor.thickness / 2} ${-1 * rear_limb.side_plate_length / 2} 0" rpy="0 ${pi/2} ${pi / 2}" />
       <limit lower="${-pi / 2}" upper="${pi / 2}" effort="400" velocity="100" />
       <axis xyz="0 1 0" rpy="0 0 0"/>
-      <dynamics damping="0.3" />
+      <dynamics damping="0.1" friction="0.1" />
     </joint>
 
     <xacro:calf_to_ankle.generate_calf_to_ankle prefix="${prefix}" />
@@ -28,7 +28,7 @@
       <origin xyz="${calf.plate_length / 2} ${(motor.thickness + calf.plate_width) / 2} 0" rpy="0 0 0" />
       <limit lower="${-pi / 2}" upper="${pi / 2}" effort="400" velocity="100" />
       <axis xyz="0 1 0" rpy="0 0 0"/>
-      <dynamics damping="0.3" />
+      <dynamics damping="0.1" friction="0.1"/>
     </joint>
   </xacro:macro>
 </robot>
