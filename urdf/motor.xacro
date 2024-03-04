@@ -10,10 +10,11 @@
   <!-- calculated values for urdf model -->
   <xacro:property name="radius" value="${0.120 / 2}" />
   <xacro:property name="inter_center_length" value="${width - 2 * radius}" />
+
+  <xacro:property name="density" value="1000" />
   <xacro:macro name="single_cylinder" params="name">
     <link name="${name}"> 
-      <xacro:cylinder_visual_and_collision radius="${radius}" length="${thickness}" xyz="0 0 0" rpy="${pi / 2} 0 0" color="blue"/>
-      <xacro:generic_inertia />
+      <xacro:cylinder radius="${radius}" length="${thickness}" rpy="${pi / 2} 0 0" density="${density}" color="blue" />
     </link>
   </xacro:macro>
 
@@ -27,8 +28,7 @@
 
     <!-- a rectangle that shows the connection space between circles -->
     <link name="${prefix}_motor_length">
-      <xacro:box_visual_and_collision size="${inter_center_length} ${thickness} ${height}" xyz="0 0 0" color="blue"/>
-      <xacro:generic_inertia />
+      <xacro:box width="${inter_center_length}" depth="${thickness}" height="${height}" color="blue" density="${density}" />
     </link>
 
     <joint name="${prefix}_driving_to_length" type="fixed">

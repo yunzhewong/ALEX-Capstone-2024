@@ -12,13 +12,11 @@
 
   <xacro:macro name="generate_calf" params="prefix">
     <link name="${prefix}_calf_plate">
-      <xacro:box_visual_and_collision size="${plate_length} ${plate_width} ${plate_thickness}" xyz="0 0 0"/>
-      <xacro:generic_inertia />
+      <xacro:box width="${plate_length}" depth="${plate_width}" height="${plate_thickness}" />
     </link>
 
     <link name="${prefix}_calf">
-      <xacro:box_visual_and_collision size="${length} ${width} ${thickness}" xyz="0 0 0" />
-      <xacro:generic_inertia />
+      <xacro:box width="${length}" depth="${width}" height="${thickness}" />
     </link>
 
     <joint name="${prefix}_plate_to_calf" type="fixed">

@@ -13,8 +13,7 @@
     <xacro:motor.generate_motor prefix="${prefix}_rear" />
 
     <link name="${prefix}_rear_limb">
-      <xacro:box_visual_and_collision size="${rear_center_to_edge_length} ${motor.thickness} ${motor.radius * 2}" xyz="0 0 0"/>
-      <xacro:generic_inertia />
+      <xacro:box width="${rear_center_to_edge_length}" depth="${motor.thickness}" height="${motor.radius * 2}" />
     </link>
 
     <joint name="${prefix}_rear_limb_to_motor_joint" type="fixed">
@@ -25,8 +24,7 @@
 
     
     <link name="${prefix}_side_plate">
-      <xacro:box_visual_and_collision size="${side_plate_thickness} ${side_plate_length} ${side_plate_height}" xyz="0 0 0" />
-      <xacro:generic_inertia />
+      <xacro:box width="${side_plate_thickness}" depth="${side_plate_length}" height="${side_plate_height}" />
     </link>
 
     <joint name="${prefix}_side_plate_to_rear_limb" type="fixed">

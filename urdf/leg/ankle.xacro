@@ -19,13 +19,11 @@
 
   <xacro:macro name="generate_ankle" params="prefix">
     <link name="${prefix}_ankle_extension">
-      <xacro:cylinder_visual_and_collision radius="${extension_radius}" length="${extension_length}" xyz="0 0 0" rpy="0 ${pi / 2} 0"/>
-      <xacro:generic_inertia />
+      <xacro:cylinder radius="${extension_radius}" length="${extension_length}" rpy="0 ${pi / 2} 0" />
     </link>
 
     <link name="${prefix}_ankle">
-      <xacro:cylinder_visual_and_collision radius="${radius}" length="${length}" xyz="0 0 0" rpy="${pi / 2} 0 0" />
-      <xacro:generic_inertia />
+      <xacro:cylinder radius="${radius}" length="${length}" rpy="${pi / 2} 0 0" />
     </link>
 
     <joint name="${prefix}_ankle_extension_to_ankle" type="fixed">
@@ -35,8 +33,7 @@
     </joint>
 
     <link name="${prefix}_ankle_side">
-      <xacro:box_visual_and_collision size="${side_length} ${side_width} ${side_thickness}" xyz="0 0 0" />
-      <xacro:generic_inertia />
+      <xacro:box width="${side_length}" depth="${side_width}" height="${side_thickness}" />
     </link>
 
     <joint name="${prefix}_ankle_to_ankle_side" type="fixed">
@@ -46,8 +43,7 @@
     </joint>
 
     <link name="${prefix}_ankle_base">
-      <xacro:box_visual_and_collision size="${base_thickness} ${base_width} ${base_length}" xyz="0 0 0"/>
-      <xacro:generic_inertia />
+      <xacro:box width="${base_thickness}" depth="${base_width}" height="${base_length}" />
     </link>
 
     <joint name="${prefix}_ankle_side_to_base" type="fixed">

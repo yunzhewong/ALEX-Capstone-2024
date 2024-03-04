@@ -1,35 +1,49 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:proprety name="zero_transform" value="0 0 0" />
+  <xacro:property name="zero_transform" value="0 0 0" />
+  <xacro:property name="default_density" value="100" />
 
-  <xacro:macro name="generic_inertia">
+  <xacro:macro name="box" params="width depth height density:=${default_density} xyz:=${zero_transform} color:=red">
+    <xacro:property name="size" value="${width} ${depth} ${height}" />
+    <xacro:property name="volume" value="${width * depth * height}" />
+    <xacro:property name="mass" value="${volume * density}" />
+
+    <xacro:property name="mass_multiplier" value="${mass / 12}" />
+    <xacro:property name="ixx" value="${mass_multiplier * (depth * depth + height * height)}" />
+    <xacro:property name="iyy" value="${mass_multiplier * (width * width + height * height)}" />
+    <xacro:property name="izz" value="${mass_multiplier * (width * width + depth * depth)}" />
+
+    <visual>
+      <material name="${color}" />
+      <geometry>
+        <box size="${size}"/>
+      </geometry>
+      <origin xyz="${xyz}" />
+    </visual>
+    <collision>
+      <geometry>
+        <box size="${size}" />
+      </geometry>
+      <origin xyz="${xyz}" />
+    </collision>
     <inertial>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <mass value="12" />
-      <inertia ixx="2.26" ixy="0.0" ixz="0.0" iyy="6.26" iyz="0.0" izz="8.5" />
+      <origin xyz="${xyz}"/>
+      <mass value="${mass}" />
+      <inertia ixx="${ixx}" ixy="0.0" ixz="0.0" iyy="${iyy}" iyz="0.0" izz="${izz}" />
     </inertial>
   </xacro:macro>
 
-  <xacro:macro name="box" params="depth width height xyz:=${zero_transform} color:=red">
 
-     <visual>
-        <material name="${color}" />
-        <geometry>
-          <box size="${depth} ${width} ${height}" />
-        </geometry>
-        <origin xyz="${xyz}" />
-      </visual>
-      <collision>
-        <geometry>
-          <box size="${size}" />
-        </geometry>
-        <origin xyz="${xyz}" />
-      </collision>
-  </xacro:macro>
+  <xacro:macro name="cylinder" params="length radius density:=${default_density} xyz:=${zero_transform} rpy:=${zero_transform} color:=red">
+    <xacro:property name="volume" value="${pi * radius * radius * length}" />
+    <xacro:property name="mass" value="${volume * density}" />
 
-
-  <xacro:macro name="cylinder_visual_and_collision" params="length radius xyz rpy color:=red">
-     <visual>
+    <xacro:property name="main_inertias" value="${mass / 12 * (3 * radius * radius + length * length)}" />
+    <xacro:property name="ixx" value="${main_inertias}" />
+    <xacro:property name="iyy" value="${main_inertias}" />
+    <xacro:property name="izz" value="${mass / 2 * radius * radius}" />
+    
+    <visual>
       <material name="${color}" />
       <geometry>
         <cylinder length="${length}" radius="${radius}" />
@@ -42,6 +56,11 @@
       </geometry>
       <origin xyz="${xyz}" rpy="${rpy}"/>
     </collision>
+    <inertial>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <mass value="${mass}" />
+      <inertia ixx="${ixx}" ixy="0.0" ixz="0.0" iyy="${iyy}" iyz="0.0" izz="${izz}" />
+    </inertial>
   </xacro:macro>
 
 </robot>

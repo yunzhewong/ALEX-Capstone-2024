@@ -11,8 +11,7 @@
     <xacro:motor.generate_motor prefix="${prefix}_hip"/>
 
     <link name="${prefix}_thigh">
-      <xacro:box_visual_and_collision size="${length} ${width} ${thickness}" xyz="0 0 0" />
-      <xacro:generic_inertia />
+      <xacro:box width="${length}" depth="${width}" height="${thickness}" />
     </link>  
 
     <joint name="${prefix}_motor_to_thigh" type="fixed">

@@ -15,8 +15,7 @@
 
   <xacro:macro name="generate_back">
     <link name="back_main">
-      <xacro:box_visual_and_collision size="${main_width} ${main_thickness} ${main_height}" xyz="0 0 0"/> 
-      <xacro:generic_inertia />
+      <xacro:box width="${main_width}" depth="${main_thickness}" height="${main_height}" />
     </link>
 
     <joint name="base_joint" type="fixed">
@@ -27,8 +26,7 @@
 
     
     <link name="back_plate">
-      <xacro:box_visual_and_collision size="${plate_width} ${plate_thickness} ${plate_height}" xyz="0 0 0"/> 
-      <xacro:generic_inertia />
+      <xacro:box width="${plate_width}" depth="${plate_thickness}" height="${plate_height}" />
     </link>
 
     <joint name="back_plate_joint" type="fixed">
