@@ -44,7 +44,7 @@
       <parent link="${prefix}_motor_length" />
       <child link="${prefix}_secondary_cylinder" />
       <origin xyz="${inter_center_length / 2} 0 0" rpy="0 0 0" />
-    </joint>
+    </joint>    
   </xacro:macro>
 
 </robot>

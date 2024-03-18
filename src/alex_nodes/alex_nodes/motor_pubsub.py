@@ -1,33 +1,40 @@
 import rclpy
 from rclpy.node import Node
-
 from std_msgs.msg import Float64MultiArray
+from sensor_msgs.msg import JointState
 
-KNEE_CONTROLLER_NAME = "knee_joint_controller"
-HIP_CONTROLLER_NAME = "hip_joint_controller"
+PROPELLOR_CONTROLLER = "propellor_controller"
+ENCODER_READER = "propellor_joint"
 
 
 class TorquePublisher(Node):
     def __init__(self):
         super().__init__("minimal_publisher")
-        self.hip_publisher = self.create_publisher(
-            Float64MultiArray, f"/{HIP_CONTROLLER_NAME}/commands", 10
+        self.controller = self.create_publisher(
+            Float64MultiArray, f"/{PROPELLOR_CONTROLLER}/commands", 10
         )
-        self.knee_publisher = self.create_publisher(
-            Float64MultiArray, f"/{KNEE_CONTROLLER_NAME}/commands", 10
+        self.reader = self.create_subscription(
+            JointState, "/joint_states", self.callback, 10
         )
         timer_period = 1  # seconds
         self.timer = self.create_timer(timer_period, self.publish_message)
-        self.i = -200
+        self.i = -10
+        self.counter = 0
 
     def publish_message(self):
         msg = Float64MultiArray()
         msg.data = [float(self.i)]
         msg.layout.data_offset = 0
-        self.hip_publisher.publish(msg)
-        self.knee_publisher.publish(msg)
+        self.controller.publish(msg)
         self.get_logger().info('Publishing: "%s"' % msg.data)
-        self.i += 40
+
+    def callback(self, msg: JointState):
+        self.counter += 1
+
+        if self.counter % 100 == 0:
+            print(msg)
+            self.get_logger().info("Received: %s" % msg)
+            self.counter = 0
 
 
 def main(args=None):

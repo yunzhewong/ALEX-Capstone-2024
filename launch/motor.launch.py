@@ -8,7 +8,7 @@ import os
 
 
 def generate_launch_description():
-    doc = xacro.process_file("../urdf/v2.urdf.xacro")
+    doc = xacro.process_file("../urdf/justMotor.urdf.xacro")
     robot_desc = doc.toxml()
     params = {"robot_description": robot_desc, "use_sim_time": True}
 
@@ -45,4 +45,29 @@ def generate_launch_description():
         output="screen",
     )
 
-    return LaunchDescription([robot_state_publisher, gazebo, spawn_entity, rviz])
+    control_node = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        parameters=[robot_description],
+    )
+
+    propellor_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            "propellor_controller",
+            "--controller-manager",
+            "/controller_manager",
+        ],
+    )
+
+    return LaunchDescription(
+        [
+            robot_state_publisher,
+            gazebo,
+            spawn_entity,
+            rviz,
+            control_node,
+            propellor_controller,
+        ]
+    )
