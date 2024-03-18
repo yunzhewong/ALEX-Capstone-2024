@@ -20,6 +20,7 @@ class TorquePublisher(Node):
         self.timer = self.create_timer(timer_period, self.publish_message)
         self.i = -10
         self.counter = 0
+        self.oldPos = None
 
     def publish_message(self):
         msg = Float64MultiArray()
@@ -27,14 +28,23 @@ class TorquePublisher(Node):
         msg.layout.data_offset = 0
         self.controller.publish(msg)
         self.get_logger().info('Publishing: "%s"' % msg.data)
+        self.i += 1
 
     def callback(self, msg: JointState):
+        newPos = msg.position[0]
+
+        if not self.oldPos:
+            self.oldPos = newPos
+            return
+
+        changeInPos = newPos - self.oldPos
+
         self.counter += 1
 
-        if self.counter % 100 == 0:
-            print(msg)
-            self.get_logger().info("Received: %s" % msg)
-            self.counter = 0
+        if self.counter % 10 == 0:
+            print(changeInPos / 0.01)
+
+        self.oldPos = newPos
 
 
 def main(args=None):

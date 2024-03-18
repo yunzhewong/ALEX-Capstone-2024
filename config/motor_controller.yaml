@@ -9,3 +9,9 @@ propellor_controller:
   ros__parameters:
     joints:
       - propellor_joint
+    command_interfaces:
+      - effort
+    state_interfaces:
+      - position
+      - velocity
+      - effort
