@@ -4,53 +4,45 @@ from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import JointState
 
 PROPELLOR_CONTROLLER = "propellor_controller"
-ENCODER_READER = "propellor_joint"
+FREQUENCY = 100
 
-
-class TorquePublisher(Node):
+class MotorController(Node):
     def __init__(self):
-        super().__init__("minimal_publisher")
-        self.controller = self.create_publisher(
+        super().__init__("motor_controller")
+        self.publisher = self.create_publisher(
             Float64MultiArray, f"/{PROPELLOR_CONTROLLER}/commands", 10
         )
-        self.reader = self.create_subscription(
-            JointState, "/joint_states", self.callback, 10
-        )
-        timer_period = 1  # seconds
+        
+        timer_period = 1 / FREQUENCY  # seconds
         self.timer = self.create_timer(timer_period, self.publish_message)
-        self.i = -10
+
+        self.reader = self.create_subscription(
+            JointState, "/joint_states", self.read_encoder, 10
+        )
+        self.position = None
         self.counter = 0
-        self.oldPos = None
+
+    def calculate_torque(self):
+        if (self.position is None):
+            return 0
+        return -3 * self.position
 
     def publish_message(self):
+        torque = self.calculate_torque()
+
         msg = Float64MultiArray()
-        msg.data = [float(self.i)]
+        msg.data = [float(torque)]
         msg.layout.data_offset = 0
         self.controller.publish(msg)
-        self.get_logger().info('Publishing: "%s"' % msg.data)
-        self.i += 1
 
-    def callback(self, msg: JointState):
-        newPos = msg.position[0]
-
-        if not self.oldPos:
-            self.oldPos = newPos
-            return
-
-        changeInPos = newPos - self.oldPos
-
-        self.counter += 1
-
-        if self.counter % 10 == 0:
-            print(changeInPos / 0.01)
-
-        self.oldPos = newPos
+    def read_encoder(self, msg: JointState):
+        self.position = msg.position[0]
 
 
 def main(args=None):
     rclpy.init(args=args)
 
-    torque_publisher = TorquePublisher()
+    torque_publisher = MotorController()
 
     rclpy.spin(torque_publisher)
 

@@ -1,0 +1,13 @@
+{
+  "ros.distro": "humble",
+  "python.autoComplete.extraPaths": [
+    "/home/yunzhewong/ALEX-Capstone-2024/install/alex_nodes/lib/python3.10/site-packages",
+    "/opt/ros/humble/lib/python3.10/site-packages",
+    "/opt/ros/humble/local/lib/python3.10/dist-packages"
+  ],
+  "python.analysis.extraPaths": [
+    "/home/yunzhewong/ALEX-Capstone-2024/install/alex_nodes/lib/python3.10/site-packages",
+    "/opt/ros/humble/lib/python3.10/site-packages",
+    "/opt/ros/humble/local/lib/python3.10/dist-packages"
+  ]
+}

@@ -1,6 +1,7 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import IncludeLaunchDescription
+from launch.actions import ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler
+from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 import xacro
@@ -10,17 +11,7 @@ import os
 def generate_launch_description():
     doc = xacro.process_file("../urdf/justMotor.urdf.xacro")
     robot_desc = doc.toxml()
-    params = {"robot_description": robot_desc, "use_sim_time": True}
-
     robot_description = {"robot_description": robot_desc}
-
-    robot_state_publisher = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        name="robot_state_publisher",
-        parameters=[params],
-    )
-
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
@@ -30,6 +21,15 @@ def generate_launch_description():
         ),
     )
 
+    robot_state_publisher = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        name="robot_state_publisher",
+        parameters=[robot_description],
+    )
+
+    
+
     spawn_entity = Node(
         package="gazebo_ros",
         executable="spawn_entity.py",
@@ -37,37 +37,34 @@ def generate_launch_description():
         output="screen",
     )
 
-    rviz = Node(
-        package="rviz2",
-        executable="rviz2",
-        name="rviz",
-        arguments=["-d", "../config/rviz.rviz"],
-        output="screen",
+    load_joint_state_broadcaster = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'joint_state_broadcaster'],
+        output='screen'
     )
 
-    control_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        parameters=[robot_description],
+    load_joint_trajectory_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'propellor_controller'],
+        output='screen'
     )
 
-    propellor_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "propellor_controller",
-            "--controller-manager",
-            "/controller_manager",
-        ],
-    )
 
     return LaunchDescription(
         [
+            RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=spawn_entity,
+                on_exit=[load_joint_state_broadcaster],
+            )
+            ),
+            RegisterEventHandler(
+                event_handler=OnProcessExit(
+                    target_action=load_joint_state_broadcaster,
+                    on_exit=[load_joint_trajectory_controller],
+                )
+            ),
             robot_state_publisher,
             gazebo,
-            spawn_entity,
-            rviz,
-            control_node,
-            propellor_controller,
+            spawn_entity
         ]
     )
