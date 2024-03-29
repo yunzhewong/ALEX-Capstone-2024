@@ -19,9 +19,8 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "encoder_subscriber = alex_nodes.encoder_subscriber:main",
-            "torque_publisher = alex_nodes.torque_publisher:main",
             "motor_pubsub = alex_nodes.motor_pubsub:main",
+            'motor_user_interface = alex_nodes.motor_user_interface:main',
         ],
     },
 )

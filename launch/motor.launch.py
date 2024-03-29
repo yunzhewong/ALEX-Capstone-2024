@@ -28,8 +28,6 @@ def generate_launch_description():
         parameters=[robot_description],
     )
 
-    
-
     spawn_entity = Node(
         package="gazebo_ros",
         executable="spawn_entity.py",
@@ -48,6 +46,11 @@ def generate_launch_description():
         output='screen'
     )
 
+    motor_controller = Node(
+        package='alex_nodes',
+        executable='motor_pubsub',
+        name="motor_pubsub"
+    )
 
     return LaunchDescription(
         [
@@ -65,6 +68,7 @@ def generate_launch_description():
             ),
             robot_state_publisher,
             gazebo,
-            spawn_entity
+            spawn_entity, 
+            motor_controller
         ]
     )
