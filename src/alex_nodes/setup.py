@@ -21,6 +21,7 @@ setup(
         "console_scripts": [
             "motor_pubsub = alex_nodes.motor_pubsub:main",
             'motor_user_interface = alex_nodes.motor_user_interface:main',
+            'state_reader = alex_nodes.state_reader:main',
         ],
     },
 )
