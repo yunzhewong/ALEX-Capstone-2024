@@ -52,6 +52,12 @@ def generate_launch_description():
         name="motor_pubsub"
     )
 
+    user_interface = Node(
+        package="alex_nodes",
+        executable='motor_user_interface',
+        name="motor_user_interface"
+    )
+
     return LaunchDescription(
         [
             RegisterEventHandler(
@@ -69,6 +75,6 @@ def generate_launch_description():
             robot_state_publisher,
             gazebo,
             spawn_entity, 
-            motor_controller
+            motor_controller, user_interface
         ]
     )

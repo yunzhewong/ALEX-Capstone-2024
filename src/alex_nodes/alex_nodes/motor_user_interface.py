@@ -12,26 +12,23 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-class CommandObject():
-    def __init__(self, command: int, value: float):
-        self.command = command
-        self.value = value
+from classes.CommandObject import CommandObject
 
-lock = threading.Lock()
 class ThreadStates():
     def __init__(self):
+        self.lock = threading.Lock()
         self.commands = []
         self.closed = False
 
     def read_command(self) -> None | CommandObject:
-        with lock:
+        with self.lock:
             if len(self.commands) == 0:
                 return None
             value = self.commands.pop(0)
             return value
     
     def add_command(self, command: CommandObject):
-        with lock:
+        with self.lock:
             self.commands.append(command)
 
     def close(self):

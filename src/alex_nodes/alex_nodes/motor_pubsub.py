@@ -10,18 +10,15 @@ package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
 import commandTypes as CommandType
-
+from classes.CommandObject import CommandObject
 
 PROPELLOR_CONTROLLER = "propellor_controller"
 FREQUENCY = 100
+TIMER_PERIOD = 1 / FREQUENCY
 
 MOTOR_CONSTANT = 0.1
 GAIN_CONSTANT = 3
 
-class CommandInfo():
-    def __init__(self, command, value):
-        self.command = command
-        self.value = value
 
 class MotorController(Node):
     def __init__(self):
@@ -30,32 +27,36 @@ class MotorController(Node):
         self.publisher = self.create_publisher(
             Float64MultiArray, f"/{PROPELLOR_CONTROLLER}/commands", 10
         )
-        timer_period = 1 / FREQUENCY  # seconds
-        self.timer = self.create_timer(timer_period, self.publish_message)
+        self.timer = self.create_timer(TIMER_PERIOD, self.publish_message)
         self.get_logger().info("Publisher Initialised")
 
         self.reader = self.create_subscription(
             JointState, "/joint_states", self.read_encoder, 10
         )
         self.position = None
+        self.velocity = None
         self.get_logger().info("Reader Initialised")
 
         self.command_receiver = self.create_service(Command, 'command_receiver', self.respond_to_command)
         self.command_info = None
         self.get_logger().info("Command Receiver Initialised")
 
-    def calculate_torque(self, command_info: CommandInfo | None, position: int | None):
-        if command_info is None or position is None:
+    def calculate_torque(self, command_info: CommandObject | None, position: int | None, velocity: int | None):
+        if command_info is None:
             return 0
         
         if command_info.command == CommandType.CURRENT:
             return MOTOR_CONSTANT * command_info.value
+        if command_info.command == CommandType.VELOCITY:
+            return -1 * (velocity - command_info.value)
         if command_info.command == CommandType.POSITION:
+            if position is None:
+                return 0
             return -3 * (position - command_info.value)
         return 0
 
     def publish_message(self):
-        torque = self.calculate_torque(self.command_info, self.position)
+        torque = self.calculate_torque(self.command_info, self.position, self.velocity)
 
         msg = Float64MultiArray()
         msg.data = [float(torque)]
@@ -63,18 +64,16 @@ class MotorController(Node):
         self.publisher.publish(msg)
 
     def read_encoder(self, msg: JointState):
-        self.position = msg.position[0]
+        new_position = msg.position[0]
+
+        if self.position is not None:
+            self.velocity = (new_position - self.position) / TIMER_PERIOD
+        self.position = new_position
 
     def respond_to_command(self, request: Command.Request, response: Command.Response):
         response.received = True
-
-        if request.command == CommandType.POSITION:
-            self.get_logger().info(f"Position Control: {request.value}")
-        elif request.command == CommandType.VELOCITY:
-            self.get_logger().info(f"Velocity Control: {request.value}")
-        elif request.command == CommandType.CURRENT:
-            self.get_logger().info(f"Current Control: {request.value}")    
-        self.command_info = CommandInfo(request.command, request.value)   
+        self.command_info = CommandObject(request.command, request.value)   
+        self.get_logger().info(self.command_info.toString())
         return response
 
 def main(args=None):
@@ -84,9 +83,6 @@ def main(args=None):
 
     rclpy.spin(torque_publisher)
 
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
     torque_publisher.destroy_node()
     rclpy.shutdown()
 
