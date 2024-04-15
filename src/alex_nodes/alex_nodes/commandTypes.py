@@ -1,12 +1,15 @@
-POSITION = 0
-VELOCITY = 1
-CURRENT = 2
+from enum import Enum
 
-def convertToString(value):
-  if value == POSITION:
-    return "Position"
-  if value == VELOCITY:
-    return "Velocity"
-  if value == CURRENT:
-    return "Current"
-  raise Exception("Not defined")
+class CommandType(Enum):
+  Position = 0
+  Velocity = 1
+  Current = 2
+
+  def convertToString(self):
+    if self == CommandType.Position:
+      return "Position"
+    if self == CommandType.Velocity:
+      return "Velocity"
+    if self == CommandType.Current:
+      return "Current"
+    raise Exception("Not Defined")

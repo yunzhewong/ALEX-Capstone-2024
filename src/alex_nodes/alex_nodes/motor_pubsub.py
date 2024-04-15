@@ -9,7 +9,7 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-import commandTypes as CommandType
+from commandTypes import CommandType
 from classes.CommandObject import CommandObject
 
 PROPELLOR_CONTROLLER = "propellor_controller"
@@ -25,8 +25,85 @@ MOTOR_INDUCTANCE = 5
 GAIN_CONSTANT = 3
 
 
+class PIDController():
+    def __init__(self, K_p, K_i, K_d):
+        self.K_p = K_p
+        self.K_i = K_i
+        self.K_d = K_d
 
+        self.target = None
+
+        self.previousTime = 0
+        self.previousValue = 0
+
+        self.e = 0
+        self.e_int = 0
+        self.e_dot = 0
+
+    def clear(self):
+        self.target = None
+        self.e = 0
+        self.e_int = 0
+        self.e_dot = 0
+
+         
+    def setTarget(self, target):
+        self.target = target
+        self.e = 0
+        self.e_int = 0
+        self.e_dot = 0
+
+    def updateLatest(self, time, value):
+        if self.target is None:
+            return
+        self.e = value - self.target 
+        self.e_dot = (value - self.previousValue) / (FREQUENCY * (time - self.previousTime))
+        self.e_int += self.e * (1 / FREQUENCY)
+
+        self.previousTime = time
+        self.previousValue = value
+
+    def getControlValue(self):
+        return self.K_p * self.e + self.K_d * self.e_dot + self.K_i * self.e_int
+        
 class MotorController(Node):
+    def __init__(self):
+        self.positionPID = PIDController(5, 0, 0)
+        self.velocityPID = PIDController(1, 0, 0)
+        self.commandObject = None
+
+    def updateCommand(self, commandObject: CommandObject):
+        self.positionPID.clear()
+        self.velocityPID.clear()
+        self.commandObject = commandObject
+        if (commandObject.command == CommandType.Current):
+            return
+        
+        if (commandObject.command == CommandType.Position):
+            self.positionPID.setTarget(commandObject.value)
+        else:
+            self.velocityPID.setTarget(commandObject.value)
+
+    def updateState(self, time, position):
+        self.positionPID.updateLatest(time, position)
+        self.velocityPID.updateLatest(time, self.positionPID.e_dot)
+
+    def calculateTorque(self):
+        if not self.commandObject:
+            return 0
+        
+
+        if (self.commandObject.command == CommandType.Current):
+            return MOTOR_TORQUE_CONSTANT * self.commandObject.value
+        if (self.commandObject.command == CommandType.Position):
+            return self.positionPID.getControlValue()
+        if (self.commandObject.command == CommandType.Velocity):
+            return self.velocityPID.getControlValue()
+        raise Exception("No Command")
+
+
+
+class MotorControllerNode(Node):
     def __init__(self):
         super().__init__("motor_controller")
         
@@ -39,34 +116,16 @@ class MotorController(Node):
         self.reader = self.create_subscription(
             JointState, "/joint_states", self.read_encoder, 10
         )
-        self.position = None
-        self.velocity = None
         self.get_logger().info("Reader Initialised")
 
         self.command_receiver = self.create_service(Command, 'command_receiver', self.respond_to_command)
-        self.command_info = None
         self.get_logger().info("Command Receiver Initialised")
 
-    def calculate_torque(self, command_info: CommandObject | None, position: int | None, velocity: int | None):
-        if command_info is None:
-            return 0
-        
-        if command_info.command == CommandType.CURRENT:
-            return MOTOR_TORQUE_CONSTANT * command_info.value
-        if command_info.command == CommandType.VELOCITY:
-            if not velocity:
-                return 0
-            equilibrium_torque = MOTOR_TORQUE_CONSTANT / MOTOR_RESISTANCE * (MOTOR_VOLTAGE - MOTOR_VOLTAGE_CONSTANT * self.velocity)
-            velocity_diff_torque = (MOTOR_TORQUE_CONSTANT / (MOTOR_INDUCTANCE * MOTOR_VOLTAGE_CONSTANT)) * (velocity - command_info.value)
-            return -1 *  (velocity_diff_torque + equilibrium_torque)
-        if command_info.command == CommandType.POSITION:
-            if position is None:
-                return 0
-            return -5 * (position - command_info.value)
-        return 0
+        self.motorController = MotorController()
+        self.index = 0
 
     def publish_message(self):
-        torque = self.calculate_torque(self.command_info, self.position, self.velocity)
+        torque = -1 * self.motorController.calculateTorque()
 
         msg = Float64MultiArray()
         msg.data = [float(torque)]
@@ -75,23 +134,20 @@ class MotorController(Node):
 
     def read_encoder(self, msg: JointState):
         new_position = msg.position[0]
-        
-
-        if self.position is not None:
-            self.velocity = (new_position - self.position) / TIMER_PERIOD
-        print(new_position, self.velocity)
-        self.position = new_position
+        self.motorController.updateState(self.index, new_position)
+        self.index += 1
 
     def respond_to_command(self, request: Command.Request, response: Command.Response):
+        self.motorController.updateCommand(CommandObject(request.command, request.value))
+
+        self.get_logger().info(self.motorController.commandObject.toString())
         response.received = True
-        self.command_info = CommandObject(request.command, request.value)   
-        self.get_logger().info(self.command_info.toString())
         return response
 
 def main(args=None):
     rclpy.init(args=args)
 
-    torque_publisher = MotorController()
+    torque_publisher = MotorControllerNode()
 
     rclpy.spin(torque_publisher)
 

@@ -45,7 +45,7 @@ class MinimalClientAsync(Node):
         self.req = Command.Request()
 
     def send_request(self, commandObject: CommandObject):
-        self.req.command = commandObject.command
+        self.req.command = commandObject.getCommandValue()
         self.req.value = float(commandObject.value)
         self.future = self.cli.call_async(self.req)
         rclpy.spin_until_future_complete(self, self.future)
@@ -56,7 +56,6 @@ def run_ros(threadStates: ThreadStates):
 
     while not threadStates.closed:
         command = threadStates.read_command()
-        print(f"Command: {command}")
         if command is not None:
             minimal_client.send_request(command)
         time.sleep(1)

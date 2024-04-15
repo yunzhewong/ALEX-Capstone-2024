@@ -3,7 +3,6 @@ import os
 from matplotlib import pyplot as plt
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import JointState
 from alex_interfaces.srv import Command
 import numpy as np
