@@ -16,8 +16,14 @@ PROPELLOR_CONTROLLER = "propellor_controller"
 FREQUENCY = 100
 TIMER_PERIOD = 1 / FREQUENCY
 
-MOTOR_CONSTANT = 0.1
+MOTOR_TORQUE_CONSTANT = 0.1 # K_t
+MOTOR_VOLTAGE_CONSTANT = 2 # K_c
+MOTOR_RESISTANCE = 5 
+MOTOR_VOLTAGE = 48
+MOTOR_INDUCTANCE = 5 
+
 GAIN_CONSTANT = 3
+
 
 
 class MotorController(Node):
@@ -46,13 +52,17 @@ class MotorController(Node):
             return 0
         
         if command_info.command == CommandType.CURRENT:
-            return MOTOR_CONSTANT * command_info.value
+            return MOTOR_TORQUE_CONSTANT * command_info.value
         if command_info.command == CommandType.VELOCITY:
-            return -1 * (velocity - command_info.value)
+            if not velocity:
+                return 0
+            equilibrium_torque = MOTOR_TORQUE_CONSTANT / MOTOR_RESISTANCE * (MOTOR_VOLTAGE - MOTOR_VOLTAGE_CONSTANT * self.velocity)
+            velocity_diff_torque = (MOTOR_TORQUE_CONSTANT / (MOTOR_INDUCTANCE * MOTOR_VOLTAGE_CONSTANT)) * (velocity - command_info.value)
+            return -1 *  (velocity_diff_torque + equilibrium_torque)
         if command_info.command == CommandType.POSITION:
             if position is None:
                 return 0
-            return -3 * (position - command_info.value)
+            return -5 * (position - command_info.value)
         return 0
 
     def publish_message(self):
@@ -65,9 +75,11 @@ class MotorController(Node):
 
     def read_encoder(self, msg: JointState):
         new_position = msg.position[0]
+        
 
         if self.position is not None:
             self.velocity = (new_position - self.position) / TIMER_PERIOD
+        print(new_position, self.velocity)
         self.position = new_position
 
     def respond_to_command(self, request: Command.Request, response: Command.Response):
