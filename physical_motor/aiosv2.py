@@ -1,3 +1,5 @@
+import json
+import math
 import socket
 import aios
 
@@ -13,6 +15,54 @@ PORT_pt = 10000  # Passthrough port
 NETWORK = "10.10.10.255"
 
 
+class CVP:
+    def __init__(self, current: float, velocity: float, position: float):
+        self.current = current
+        self.velocity = velocity
+        self.position = position
+
+    def __str__(self):
+        return f"Current: {self.current}, Velocity: {self.velocity}, Position: {self.position}"
+
+
+class ConnectedMotor:
+    POSITION_RATIO = 100000 / math.pi
+
+    def __init__(self, ip):
+        self.ip = ip
+
+    def getCVP(self) -> CVP:
+        data = {
+            "method": "GET",
+            "reqTarget": "/m1/CVP",
+        }
+        json_str = json.dumps(data)
+        s.sendto(str.encode(json_str), (self.ip, PORT_rt))
+        data, _ = s.recvfrom(1024)
+        json_obj = json.loads(data.decode("utf-8"))
+        if json_obj.get("status") != "OK":
+            raise Exception("Invalid CVP")
+
+        position = json_obj.get("position")
+        velocity = json_obj.get("velocity")
+        current = json_obj.get("current")
+        return CVP(current, velocity, position)
+
+    def setPosition(self, position: float, velocity_ff=0, current_ff=0):
+        inputPosition = position * self.POSITION_RATIO
+        data = {
+            "method": "SET",
+            "reqTarget": "/m1/setPosition",
+            "reply_enable": False,
+            "position": inputPosition,
+            "velocity_ff": velocity_ff,
+            "current_ff": current_ff,
+        }
+        json_str = json.dumps(data)
+        print("Send JSON Obj:", json_str)
+        s.sendto(str.encode(json_str), (self.ip, PORT_rt))
+
+
 class ConnectedAddresses:
     def __init__(self, ips):
         self.ips = ips
@@ -25,15 +75,15 @@ class ConnectedAddresses:
         for ip in self.ips:
             aios.disable(ip, 1)
 
-    def get_motor_ips(self):
-        motor_ips = []
+    def getConnectedMotors(self) -> list[ConnectedMotor]:
+        connectedMotors = []
         for ip in self.ips:
             root = aios.getRoot(ip)
             is_control_box = root.get("deviceType", None) == "ctrlbox"
             if not is_control_box:
-                motor_ips.append(ip)
+                connectedMotors.append(ConnectedMotor(ip))
 
-        return motor_ips
+        return connectedMotors
 
 
 def get_addresses():
@@ -48,8 +98,3 @@ def get_addresses():
             if found_server:
                 return ConnectedAddresses(all_ips)
             raise Exception("No Addresses Found")
-
-
-def separate_ips(ips):
-
-    print()
