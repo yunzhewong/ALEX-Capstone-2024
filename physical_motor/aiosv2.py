@@ -1,3 +1,4 @@
+from enum import Enum
 import json
 import math
 import socket
@@ -13,6 +14,15 @@ PORT_srv = 2334  # Low priority service data port. ie, parameter setting and rea
 PORT_pt = 10000  # Passthrough port
 
 NETWORK = "10.10.10.255"
+
+
+# Actuator control mode
+class ControlMode(Enum):
+    Voltage = 0
+    Current = 1
+    Velocity = 2
+    Position = 3
+    Trajectory = 4
 
 
 class CVP:
@@ -43,20 +53,55 @@ class ConnectedMotor:
         if json_obj.get("status") != "OK":
             raise Exception("Invalid CVP")
 
-        position = json_obj.get("position")
+        position = json_obj.get("position") / self.POSITION_RATIO
         velocity = json_obj.get("velocity")
         current = json_obj.get("current")
         return CVP(current, velocity, position)
 
+    def setControlMode(self, mode: ControlMode):
+        data = {
+            "method": "SET",
+            "reqTarget": "/m1/controller/config",
+            "control_mode": mode.value,
+        }
+        json_str = json.dumps(data)
+        s.sendto(str.encode(json_str), (self.ip, PORT_srv))
+        s.recvfrom(1024)
+
     def setPosition(self, position: float, velocity_ff=0, current_ff=0):
-        inputPosition = position * self.POSITION_RATIO
+        self.setControlMode(ControlMode.Position)
+        positionCommand = position * self.POSITION_RATIO
         data = {
             "method": "SET",
             "reqTarget": "/m1/setPosition",
             "reply_enable": False,
-            "position": inputPosition,
+            "position": positionCommand,
             "velocity_ff": velocity_ff,
             "current_ff": current_ff,
+        }
+        json_str = json.dumps(data)
+        print("Send JSON Obj:", json_str)
+        s.sendto(str.encode(json_str), (self.ip, PORT_rt))
+
+    def setVelocity(self, velocity: float, current_ff=0):
+        self.setControlMode(ControlMode.Velocity)
+        data = {
+            "method": "SET",
+            "reqTarget": "/m1/setVelocity",
+            "reply_enable": False,
+            "velocity": velocity,
+            "current_ff": current_ff,
+        }
+        json_str = json.dumps(data)
+        print("Send JSON Obj:", json_str)
+        s.sendto(str.encode(json_str), (self.ip, PORT_rt))
+
+    def setCurrent(self, current: float):
+        data = {
+            "method": "SET",
+            "reqTarget": "/m1/setCurrent",
+            "reply_enable": False,
+            "current": current,
         }
         json_str = json.dumps(data)
         print("Send JSON Obj:", json_str)

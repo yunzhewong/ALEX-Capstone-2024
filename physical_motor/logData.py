@@ -41,7 +41,7 @@ class DataLog:
         ax2.set_ylabel("Velocity")
         ax2.legend()
 
-        ax3.plot(x, np.array(self.positions), label="Position", color="green")
+        ax3.plot(x, np.array(self.positions), label="Position (rad)", color="green")
         ax3.set_xlabel("Time (s)")
         ax3.set_ylabel("Position")
         ax3.legend()
@@ -74,6 +74,8 @@ class DataLog:
         )
 
 
+# in this code, the motor actuates to pi / 8, 0, -pi/8, and back to 0
+# prints the logged data across current, velocity, and position
 if __name__ == "__main__":
     connected_addresses = aiosv2.get_addresses()
     connected_addresses.enable()
