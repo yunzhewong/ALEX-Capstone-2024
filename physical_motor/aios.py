@@ -987,15 +987,15 @@ def setInputPosition_pt(server_ip, position, velocity, torque):
     velocity = int(velocity * 1000)
     torque = int(torque * 1000)
     tx_messages = struct.pack("<Bfhh", 0x0C, position, velocity, torque)
-    # print ("Send Data:", tx_messages)
+    print("Send Data:", tx_messages)
     s.sendto(tx_messages, (server_ip, PORT_pt))
-    # try:
-    #     data, address = s.recvfrom(1024)
-    #     print('Server received from {}:{}'.format(address, data))
-    #     feedback = struct.unpack('<fffi', data[1:17])
-    #     return feedback
-    # except socket.timeout: # fail after 1 second of no activity
-    #     print("Didn't receive anymore data! [Timeout]")
+    try:
+        data, address = s.recvfrom(1024)
+        print("Server received from {}:{}".format(address, data))
+        # feedback = struct.unpack("<fffi", data[1:17])
+        # return feedback
+    except socket.timeout:  # fail after 1 second of no activity
+        print("Didn't receive anymore data! [Timeout]")
 
 
 # AIOS set input velocity through pt port
@@ -1044,6 +1044,16 @@ def getCVP_pt(server_ip):
         return feedback
     except socket.timeout:  # fail after 1 second of no activity
         print("Didn't receive anymore data! [Timeout]")
+
+
+def read():
+    try:
+        while True:
+            data, address = s.recvfrom(1024)
+            print(data)
+
+    except socket.timeout:
+        print("Nothing received")
 
 
 #######################################################################################
