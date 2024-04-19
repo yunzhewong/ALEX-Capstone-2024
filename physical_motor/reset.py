@@ -8,10 +8,15 @@ connected_addresses.enable()
 
 connectedMotors = connected_addresses.getConnectedMotors()
 
-motor = connectedMotors[1]
+for motor in connectedMotors:
+    aios.reboot(motor.ip)
+    print(f"Rebooting {motor.ip}")
 
-aios.reboot(motor.ip)
 time.sleep(10)
-print(motor.getCVP())
+
+for motor in connectedMotors:
+    aios.reboot(motor.ip)
+    print(f"Motor {motor.ip} Rebooted")
+    print(motor.getCVP())
 
 connected_addresses.disable()

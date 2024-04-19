@@ -100,8 +100,7 @@ if __name__ == "__main__":
     connection.setPosition(0)
     dataLog.readConnection(connection, WAITING_TIME_S)
 
+    connected_addresses.disable()
 
-connected_addresses.disable()
-
-dataLog.plot()
-dataLog.download()
+    dataLog.plot()
+    dataLog.download()
