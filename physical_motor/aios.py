@@ -475,6 +475,7 @@ def getMotionCtrlConfig(server_ip, motor_number):
         data, address = s.recvfrom(1024)
         print("Server received from {}:{}".format(address, data.decode("utf-8")))
         json_obj = json.loads(data.decode("utf-8"))
+        print(json_obj)
         return json_obj
         # if json_obj.get("status") == "OK":
         #     return (

@@ -103,4 +103,4 @@ if __name__ == "__main__":
     connected_addresses.disable()
 
     dataLog.plot()
-    dataLog.download()
+    dataLog.download(SAVE_NAME)
