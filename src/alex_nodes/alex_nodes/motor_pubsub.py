@@ -68,8 +68,8 @@ class PIDController():
         
 class MotorController(Node):
     def __init__(self):
-        self.positionPID = PIDController(5, 0, 0)
-        self.velocityPID = PIDController(1, 0, 0)
+        self.positionPID = PIDController(5, 1, 3000)
+        self.velocityPID = PIDController(1, 0, 10000)
         self.commandObject = None
 
     def updateCommand(self, commandObject: CommandObject):

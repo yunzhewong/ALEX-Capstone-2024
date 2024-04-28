@@ -13,25 +13,42 @@ sys.path.append(package_dir)
 class StateReader(Node):
     def __init__(self):
         super().__init__("encoder_reader")
+        _, axs = plt.subplots(2, 1)
+        self.axs = axs
         
         self.position_sub = self.create_subscription(
             JointState, "/joint_states", self.read_position, 10
         )
         self.times = []
         self.positions = []
+        self.velocities = []
         self.update()
 
     def read_position(self, msg: JointState):
         timestamp = msg.header.stamp
-        val = timestamp.sec + timestamp.nanosec / 1e9
-        self.times.append(val)
-        self.positions.append(msg.position[0])
+        time = timestamp.sec + timestamp.nanosec / 1e9
+
+        newPosition = msg.position[0]
+        if (len(self.times) > 0):
+            posDiff = newPosition - self.positions[-1]
+            timeDiff = time - self.times[-1]
+            vel = posDiff / timeDiff
+            self.velocities.append(vel)
+        else:
+            self.velocities.append(0)
+
+        self.times.append(time)
+        self.positions.append(newPosition)
         self.update()
 
     def update(self):
-        plt.cla()
-        plt.plot(self.times, self.positions)
-        plt.title("Positions (rad)")
+        self.axs[0].cla()
+        self.axs[0].plot(self.times, self.positions)
+        self.axs[0].set_ylabel('Positions (rad)')
+        
+        self.axs[1].cla()
+        self.axs[1].plot(self.times, self.velocities)
+        self.axs[1].set_ylabel('Velocities (rad/s)')
         plt.pause(0.01)
 
     def export_data(self):
