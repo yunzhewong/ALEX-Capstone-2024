@@ -17,12 +17,12 @@ FREQUENCY = 100
 TIMER_PERIOD = 1 / FREQUENCY
 
 MOTOR_TORQUE_CONSTANT = 0.1 # K_t
-MOTOR_VOLTAGE_CONSTANT = 2 # K_c
-MOTOR_RESISTANCE = 5 
-MOTOR_VOLTAGE = 48
-MOTOR_INDUCTANCE = 5 
 
-GAIN_CONSTANT = 3
+# obtained from the motor
+POSITION_GAIN = 15
+VEL_GAIN = 0.0002
+VEL_INTEGRATOR_GAIN = 0.001
+
 
 
 class PIDController():
@@ -68,8 +68,8 @@ class PIDController():
         
 class MotorController(Node):
     def __init__(self):
-        self.positionPID = PIDController(5, 1, 3000)
-        self.velocityPID = PIDController(1, 0, 10000)
+        self.positionPID = PIDController(POSITION_GAIN, 0, 0)
+        self.velocityPID = PIDController(VEL_GAIN, VEL_INTEGRATOR_GAIN, 0)
         self.commandObject = None
 
     def updateCommand(self, commandObject: CommandObject):

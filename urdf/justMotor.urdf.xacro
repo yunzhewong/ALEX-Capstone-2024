@@ -28,7 +28,7 @@
     <origin xyz="0 -0.15 0" />
     <limit lower="${-100 * pi}" upper="${100 * pi}" effort="100000" velocity="1000000" />
     <axis xyz="0 1 0" />
-    <dynamics damping="0.1" friction="0.1" />
+    <dynamics damping="1" friction="0.1" />
   </joint>
 
   <link name="pendulum_mass">

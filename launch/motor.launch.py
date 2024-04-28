@@ -46,11 +46,11 @@ def generate_launch_description():
         output='screen'
     )
 
-    # motor_controller = Node(
-    #     package='alex_nodes',
-    #     executable='motor_pubsub',
-    #     name="motor_pubsub"
-    # )
+    motor_controller = Node(
+        package='alex_nodes',
+        executable='motor_pubsub',
+        name="motor_pubsub"
+    )
 
     encoder_reader = Node(
         package='alex_nodes',
@@ -81,7 +81,7 @@ def generate_launch_description():
             robot_state_publisher,
             gazebo,
             spawn_entity, 
-            # motor_controller, 
+            motor_controller, 
             encoder_reader, 
             user_interface
         ]
