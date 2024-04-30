@@ -21,11 +21,11 @@ def velocityControl(motor: aiosv2.ConnectedMotor):
     WAITING_TIME_S = 1
     motor.setVelocity(0)
     time.sleep(WAITING_TIME_S)
-    motor.setVelocity(50000)
+    motor.setVelocity(math.pi / 8)
     time.sleep(WAITING_TIME_S)
     motor.setVelocity(0)
     time.sleep(WAITING_TIME_S)
-    motor.setVelocity(-50000)
+    motor.setVelocity(-math.pi / 8)
     time.sleep(WAITING_TIME_S)
     motor.setVelocity(0)
     time.sleep(WAITING_TIME_S)

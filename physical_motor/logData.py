@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 FREQUENCY = 0.01
-SAVE_NAME = "outputtest.csv"
+SAVE_NAME = "lower_motor_pi_8.csv"
 
 
 class DataLog:
@@ -82,11 +82,10 @@ if __name__ == "__main__":
 
     connectedMotors = connected_addresses.getConnectedMotors()
     time.sleep(1)
-    print("MOVEMENT")
 
     connection = connectedMotors[1]
 
-    WAITING_TIME_S = 0.4
+    WAITING_TIME_S = 0.5
     dataLog = DataLog()
     aios.controlMode(aios.ControlMode.POSITION_CONTROL.value, connection.ip, 1)
     connection.setPosition(0)

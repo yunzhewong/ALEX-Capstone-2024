@@ -36,7 +36,7 @@ class CVP:
 
 
 class ConnectedMotor:
-    POSITION_RATIO = 100000 / math.pi
+    CONVERSION_RATIO = 100000 / math.pi
 
     def __init__(self, ip):
         self.ip = ip
@@ -53,8 +53,8 @@ class ConnectedMotor:
         if json_obj.get("status") != "OK":
             raise Exception("Invalid CVP")
 
-        position = json_obj.get("position") / self.POSITION_RATIO
-        velocity = json_obj.get("velocity")
+        position = json_obj.get("position") / self.CONVERSION_RATIO
+        velocity = json_obj.get("velocity") / self.CONVERSION_RATIO
         current = json_obj.get("current")
         return CVP(current, velocity, position)
 
@@ -70,7 +70,7 @@ class ConnectedMotor:
 
     def setPosition(self, position: float, velocity_ff=0, current_ff=0):
         self.setControlMode(ControlMode.Position)
-        positionCommand = position * self.POSITION_RATIO
+        positionCommand = position * self.CONVERSION_RATIO
         data = {
             "method": "SET",
             "reqTarget": "/m1/setPosition",
@@ -85,11 +85,12 @@ class ConnectedMotor:
 
     def setVelocity(self, velocity: float, current_ff=0):
         self.setControlMode(ControlMode.Velocity)
+        velocityCommand = velocity * self.CONVERSION_RATIO
         data = {
             "method": "SET",
             "reqTarget": "/m1/setVelocity",
             "reply_enable": False,
-            "velocity": velocity,
+            "velocity": velocityCommand,
             "current_ff": current_ff,
         }
         json_str = json.dumps(data)
