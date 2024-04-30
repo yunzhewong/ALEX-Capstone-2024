@@ -108,6 +108,35 @@ class ConnectedMotor:
         print("Send JSON Obj:", json_str)
         s.sendto(str.encode(json_str), (self.ip, PORT_rt))
 
+    def getPIDConfig(self):
+        data = {
+            "method": "GET",
+            "reqTarget": "/m1/controller/pid",
+        }
+        json_str = json.dumps(data)
+        print("Send JSON Obj to get PID:", json_str)
+        s.sendto(str.encode(json_str), (self.ip, PORT_srv))
+        try:
+            response, _ = s.recvfrom(1024)
+            json_obj = json.loads(response.decode("utf-8"))
+            if json_obj.get("status") == "OK":
+                return {
+                    "kp": json_obj.get("kp"),
+                    "ki": json_obj.get("ki"),
+                    "kd": json_obj.get("kd")
+                }
+            else:
+                print("Failed to get PID config:", json_obj.get("error"))
+                return None
+        except socket.timeout:
+            print("Network Timeout, no response received.")
+            return None
+        except Exception as e:
+            print(f"Error fetching PID config: {str(e)}")
+            return None
+
+        
+
 
 class ConnectedAddresses:
     def __init__(self, ips):

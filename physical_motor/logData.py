@@ -14,6 +14,7 @@ class DataLog:
         self.currents = []
         self.velocities = []
         self.positions = []
+        self.pids = []
         self.count = 0
 
     def addCVP(self, cvp: aiosv2.CVP):
@@ -22,8 +23,14 @@ class DataLog:
         self.positions.append(cvp.position)
         self.count += 1
 
+    def addPID(self, pid):
+        self.pids.append(pid)
+
     def readConnection(self, connection: aiosv2.ConnectedMotor, timeS):
         iterations = int(timeS / FREQUENCY)
+        pid = connection.getPIDConfig()
+        if pid:
+            self.addPID(pid)
 
         for _ in range(iterations):
             self.addCVP(connection.getCVP())
@@ -61,17 +68,28 @@ class DataLog:
         velocities = np.array(self.velocities)
         positions = np.array(self.positions)
 
-        # Stack arrays horizontally
-        data = np.column_stack((time, currents, velocities, positions))
+        if self.pids:
+            kp, ki, kd = self.pids[-1]['kp'], self.pids[-1]['ki'], self.pids[-1]['kd']
+            data = np.column_stack((time, currents, velocities, positions, [kp]*len(time), [ki]*len(time), [kd]*len(time)))
+            header = "Time, Currents, Velocities, Positions, Kp, Ki, Kd"
+        else:
+            data = np.column_stack((time, currents, velocities, positions))
+            header = "Time, Currents, Velocities, Positions"
+            print("No PID data available for download.")
+
+        np.savetxt(name, data, delimiter=",", header=header, comments="")
+
 
         # Save data to CSV file
         np.savetxt(
             name,
             data,
             delimiter=",",
-            header="Time, Currents,Velocities,Positions",
+            header=header,
             comments="",
         )
+
+
 
 
 # in this code, the motor actuates to pi / 8, 0, -pi/8, and back to 0
