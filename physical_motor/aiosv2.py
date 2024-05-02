@@ -2,6 +2,7 @@ from enum import Enum
 import json
 import math
 import socket
+import struct
 import aios
 
 
@@ -123,7 +124,7 @@ class ConnectedMotor:
                 return {
                     "kp": json_obj.get("kp"),
                     "ki": json_obj.get("ki"),
-                    "kd": json_obj.get("kd")
+                    "kd": json_obj.get("kd"),
                 }
             else:
                 print("Failed to get PID config:", json_obj.get("error"))
@@ -135,7 +136,20 @@ class ConnectedMotor:
             print(f"Error fetching PID config: {str(e)}")
             return None
 
-        
+    def getCVP_pt(self):
+        tx_messages = struct.pack("<B", 0x1A)
+        s.sendto(tx_messages, (self.ip, PORT_pt))
+        try:
+            data, address = s.recvfrom(1024)
+            feedback = struct.unpack("<fffi", data[1:17])
+            return feedback
+        except socket.timeout:  # fail after 1 second of no activity
+            print("Didn't receive anymore data! [Timeout]")
+
+    def read(self):
+        while True:
+            data, address = s.recvfrom(1024)
+            print(data)
 
 
 class ConnectedAddresses:
