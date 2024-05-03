@@ -7,17 +7,6 @@ import aios
 import threading
 
 
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.settimeout(2)
-s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-
-PORT_rt = 2333  # Real-time control data port, ie. speed, position, current and other real-time data
-PORT_srv = 2334  # Low priority service data port. ie, parameter setting and reading
-PORT_pt = 10000  # Passthrough port
-
-NETWORK = "10.10.10.255"
-
-
 # Actuator control mode
 class ControlMode(Enum):
     Voltage = 0
@@ -25,6 +14,53 @@ class ControlMode(Enum):
     Velocity = 2
     Position = 3
     Trajectory = 4
+
+
+PORT_rt = 2333  # Real-time control data port, ie. speed, position, current and other real-time data
+PORT_srv = 2334  # Low priority service data port. ie, parameter setting and reading
+PORT_pt = 10000  # Passthrough port
+
+
+class AiosSocket:
+    NETWORK = "10.10.10.255"
+
+    s: socket.socket
+
+    def __init__(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(2)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.s = s
+
+    def get_addresses(self):
+        self.s.sendto(
+            "Is any AIOS server here?".encode("utf-8"), (self.NETWORK, PORT_srv)
+        )
+        all_ips = []
+        while True:
+            try:
+                _, address = self.s.recvfrom(1024)
+                all_ips.append(address[0])
+                found_server = True
+            except socket.timeout:  # fail after 1 second of no activity
+                if found_server:
+                    return ConnectedAddresses(all_ips, self)
+                raise Exception("No Addresses Found")
+
+    def sendJSON(self, ip: str, port: int, data: dict):
+        json_str = json.dumps(data)
+        self.s.sendto(str.encode(json_str), (ip, port))
+
+    def readJSON(self) -> dict:
+        data, _ = self.s.recvfrom(1024)
+        return json.loads(data.decode("utf-8"))
+
+    def sendBytes(self, ip: str, port: int, bytes: bytes):
+        self.s.sendto(bytes, (ip, port))
+
+    def readBytes(self) -> bytes:
+        data, address = self.s.recvfrom(1024)
+        return data
 
 
 class CVP:
@@ -37,50 +73,21 @@ class CVP:
         return f"Current: {self.current}, Velocity: {self.velocity}, Position: {self.position}"
 
 
-class SharedInfo:
-    def __init__(self, ips):
-        self.data = {}
-        self.lock = threading.Lock()
-        for ip in ips:
-            self.data[ip] = {}
-        thread = threading.Thread(target=self.readSocket)
-        thread.start()
-
-    def readSocket(self):
-        while True:
-            try:
-                data, addr = s.recvfrom(1024)
-                ip = addr(0)
-                jsonObj = json.loads(data.decode("utf-8"))
-                print(jsonObj)
-                with self.lock:
-                    data[ip][jsonObj["reqTarget"]] = jsonObj
-            except Exception as e:
-                print(e)
-
-
 class ConnectedMotor:
     CONVERSION_RATIO = 100000 / math.pi
 
-    def __init__(self, ip: str):
+    def __init__(self, ip: str, socket: AiosSocket):
         self.ip = ip
-
-    def sendJSON(self, data: dict, port: int):
-        json_str = json.dumps(data)
-        s.sendto(str.encode(json_str), (self.ip, port))
-
-    def readJSON(self) -> dict:
-        data, _ = s.recvfrom(1024)
-        return json.loads(data.decode("utf-8"))
+        self.socket = socket
 
     def getCVP(self) -> CVP:
         data = {
             "method": "GET",
             "reqTarget": "/m1/CVP",
         }
-        self.sendJSON(data, PORT_rt)
+        self.socket.sendJSON(self.ip, PORT_rt, data)
 
-        json_obj = self.readJSON()
+        json_obj = self.socket.readJSON()
         if json_obj.get("status") != "OK":
             raise Exception("Invalid CVP")
 
@@ -90,19 +97,22 @@ class ConnectedMotor:
         return CVP(current, velocity, position)
 
     def setControlMode(self, mode: ControlMode):
-        self.sendJSON(
+        self.socket.sendJSON(
+            self.ip,
+            PORT_rt,
             {
                 "method": "SET",
                 "reqTarget": "/m1/controller/config",
                 "control_mode": mode.value,
             },
-            PORT_rt,
         )
 
     def setPosition(self, position: float, velocity_ff=0, current_ff=0):
         self.setControlMode(ControlMode.Position)
         positionCommand = position * self.CONVERSION_RATIO
-        self.sendJSON(
+        self.socket.sendJSON(
+            self.ip,
+            PORT_rt,
             {
                 "method": "SET",
                 "reqTarget": "/m1/setPosition",
@@ -111,13 +121,14 @@ class ConnectedMotor:
                 "velocity_ff": velocity_ff,
                 "current_ff": current_ff,
             },
-            PORT_rt,
         )
 
     def setVelocity(self, velocity: float, current_ff=0):
         self.setControlMode(ControlMode.Velocity)
         velocityCommand = velocity * self.CONVERSION_RATIO
-        self.sendJSON(
+        self.socket.sendJSON(
+            self.ip,
+            PORT_rt,
             {
                 "method": "SET",
                 "reqTarget": "/m1/setVelocity",
@@ -125,32 +136,32 @@ class ConnectedMotor:
                 "velocity": velocityCommand,
                 "current_ff": current_ff,
             },
-            PORT_rt,
         )
 
     def setCurrent(self, current: float):
         self.setControlMode(ControlMode.Current)
-        self.sendJSON(
+        self.socket.sendJSON(
+            self.ip,
+            PORT_rt,
             {
                 "method": "SET",
                 "reqTarget": "/m1/setCurrent",
                 "reply_enable": False,
                 "current": current,
             },
-            PORT_rt,
         )
 
     def getPIDConfig(self):
-        data = {
-            "method": "GET",
-            "reqTarget": "/m1/controller/pid",
-        }
-        json_str = json.dumps(data)
-        print("Send JSON Obj to get PID:", json_str)
-        s.sendto(str.encode(json_str), (self.ip, PORT_srv))
+        self.socket.sendJSON(
+            self.ip,
+            PORT_srv,
+            {
+                "method": "GET",
+                "reqTarget": "/m1/controller/pid",
+            },
+        )
         try:
-            response, _ = s.recvfrom(1024)
-            json_obj = json.loads(response.decode("utf-8"))
+            json_obj = self.socket.readJSON()
             if json_obj.get("status") == "OK":
                 return {
                     "kp": json_obj.get("kp"),
@@ -169,9 +180,9 @@ class ConnectedMotor:
 
     def getCVP_pt(self):
         tx_messages = struct.pack("<B", 0x1A)
-        s.sendto(tx_messages, (self.ip, PORT_pt))
+        self.socket.sendBytes(tx_messages)
         try:
-            data, address = s.recvfrom(1024)
+            data = self.socket.readBytes()
             feedback = struct.unpack("<fffi", data[1:17])
             return feedback
         except socket.timeout:  # fail after 1 second of no activity
@@ -179,9 +190,9 @@ class ConnectedMotor:
 
 
 class ConnectedAddresses:
-    def __init__(self, ips):
+    def __init__(self, ips, socket: AiosSocket):
         self.ips = ips
-        # self.sharedInfo = SharedInfo(ips)
+        self.socket = socket
 
     def enable(self):
         for ip in self.ips:
@@ -197,20 +208,6 @@ class ConnectedAddresses:
             root = aios.getRoot(ip)
             is_control_box = root.get("deviceType", None) == "ctrlbox"
             if not is_control_box:
-                connectedMotors.append(ConnectedMotor(ip))
+                connectedMotors.append(ConnectedMotor(ip, self.socket))
 
         return connectedMotors
-
-
-def get_addresses():
-    s.sendto("Is any AIOS server here?".encode("utf-8"), (NETWORK, PORT_srv))
-    all_ips = []
-    while True:
-        try:
-            _, address = s.recvfrom(1024)
-            all_ips.append(address[0])
-            found_server = True
-        except socket.timeout:  # fail after 1 second of no activity
-            if found_server:
-                return ConnectedAddresses(all_ips)
-            raise Exception("No Addresses Found")
