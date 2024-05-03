@@ -4,6 +4,7 @@ import math
 import socket
 import struct
 import aios
+import threading
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -36,21 +37,50 @@ class CVP:
         return f"Current: {self.current}, Velocity: {self.velocity}, Position: {self.position}"
 
 
+class SharedInfo:
+    def __init__(self, ips):
+        self.data = {}
+        self.lock = threading.Lock()
+        for ip in ips:
+            self.data[ip] = {}
+        thread = threading.Thread(target=self.readSocket)
+        thread.start()
+
+    def readSocket(self):
+        while True:
+            try:
+                data, addr = s.recvfrom(1024)
+                ip = addr(0)
+                jsonObj = json.loads(data.decode("utf-8"))
+                print(jsonObj)
+                with self.lock:
+                    data[ip][jsonObj["reqTarget"]] = jsonObj
+            except Exception as e:
+                print(e)
+
+
 class ConnectedMotor:
     CONVERSION_RATIO = 100000 / math.pi
 
-    def __init__(self, ip):
+    def __init__(self, ip: str):
         self.ip = ip
+
+    def sendJSON(self, data: dict, port: int):
+        json_str = json.dumps(data)
+        s.sendto(str.encode(json_str), (self.ip, port))
+
+    def readJSON(self) -> dict:
+        data, _ = s.recvfrom(1024)
+        return json.loads(data.decode("utf-8"))
 
     def getCVP(self) -> CVP:
         data = {
             "method": "GET",
             "reqTarget": "/m1/CVP",
         }
-        json_str = json.dumps(data)
-        s.sendto(str.encode(json_str), (self.ip, PORT_rt))
-        data, _ = s.recvfrom(1024)
-        json_obj = json.loads(data.decode("utf-8"))
+        self.sendJSON(data, PORT_rt)
+
+        json_obj = self.readJSON()
         if json_obj.get("status") != "OK":
             raise Exception("Invalid CVP")
 
@@ -60,54 +90,55 @@ class ConnectedMotor:
         return CVP(current, velocity, position)
 
     def setControlMode(self, mode: ControlMode):
-        data = {
-            "method": "SET",
-            "reqTarget": "/m1/controller/config",
-            "control_mode": mode.value,
-        }
-        json_str = json.dumps(data)
-        s.sendto(str.encode(json_str), (self.ip, PORT_srv))
-        s.recvfrom(1024)
+        self.sendJSON(
+            {
+                "method": "SET",
+                "reqTarget": "/m1/controller/config",
+                "control_mode": mode.value,
+            },
+            PORT_rt,
+        )
 
     def setPosition(self, position: float, velocity_ff=0, current_ff=0):
         self.setControlMode(ControlMode.Position)
         positionCommand = position * self.CONVERSION_RATIO
-        data = {
-            "method": "SET",
-            "reqTarget": "/m1/setPosition",
-            "reply_enable": False,
-            "position": positionCommand,
-            "velocity_ff": velocity_ff,
-            "current_ff": current_ff,
-        }
-        json_str = json.dumps(data)
-        print("Send JSON Obj:", json_str)
-        s.sendto(str.encode(json_str), (self.ip, PORT_rt))
+        self.sendJSON(
+            {
+                "method": "SET",
+                "reqTarget": "/m1/setPosition",
+                "reply_enable": False,
+                "position": positionCommand,
+                "velocity_ff": velocity_ff,
+                "current_ff": current_ff,
+            },
+            PORT_rt,
+        )
 
     def setVelocity(self, velocity: float, current_ff=0):
         self.setControlMode(ControlMode.Velocity)
         velocityCommand = velocity * self.CONVERSION_RATIO
-        data = {
-            "method": "SET",
-            "reqTarget": "/m1/setVelocity",
-            "reply_enable": False,
-            "velocity": velocityCommand,
-            "current_ff": current_ff,
-        }
-        json_str = json.dumps(data)
-        print("Send JSON Obj:", json_str)
-        s.sendto(str.encode(json_str), (self.ip, PORT_rt))
+        self.sendJSON(
+            {
+                "method": "SET",
+                "reqTarget": "/m1/setVelocity",
+                "reply_enable": False,
+                "velocity": velocityCommand,
+                "current_ff": current_ff,
+            },
+            PORT_rt,
+        )
 
     def setCurrent(self, current: float):
-        data = {
-            "method": "SET",
-            "reqTarget": "/m1/setCurrent",
-            "reply_enable": False,
-            "current": current,
-        }
-        json_str = json.dumps(data)
-        print("Send JSON Obj:", json_str)
-        s.sendto(str.encode(json_str), (self.ip, PORT_rt))
+        self.setControlMode(ControlMode.Current)
+        self.sendJSON(
+            {
+                "method": "SET",
+                "reqTarget": "/m1/setCurrent",
+                "reply_enable": False,
+                "current": current,
+            },
+            PORT_rt,
+        )
 
     def getPIDConfig(self):
         data = {
@@ -146,15 +177,11 @@ class ConnectedMotor:
         except socket.timeout:  # fail after 1 second of no activity
             print("Didn't receive anymore data! [Timeout]")
 
-    def read(self):
-        while True:
-            data, address = s.recvfrom(1024)
-            print(data)
-
 
 class ConnectedAddresses:
     def __init__(self, ips):
         self.ips = ips
+        # self.sharedInfo = SharedInfo(ips)
 
     def enable(self):
         for ip in self.ips:
