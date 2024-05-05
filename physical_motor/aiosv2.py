@@ -37,6 +37,7 @@ class AiosSocket:
             "Is any AIOS server here?".encode("utf-8"), (self.NETWORK, PORT_srv)
         )
         all_ips = []
+        found_server = False
         while True:
             try:
                 _, address = self.s.recvfrom(1024)
@@ -52,8 +53,11 @@ class AiosSocket:
         self.s.sendto(str.encode(json_str), (ip, port))
 
     def readJSON(self) -> dict:
-        data, _ = self.s.recvfrom(1024)
-        return json.loads(data.decode("utf-8"))
+        data, addr = self.s.recvfrom(1024)
+
+        json = json.loads(data.decode("utf-8"))
+        ip = addr[0]
+        return (json, ip)
 
     def sendBytes(self, ip: str, port: int, bytes: bytes):
         self.s.sendto(bytes, (ip, port))
