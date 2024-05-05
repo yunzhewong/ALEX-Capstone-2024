@@ -7,41 +7,27 @@ import aios
 import threading
 
 
-def calculate_hertz(start, end):
-    return 1 / (end - start)
+def getCVP(motor: aiosv2.ConnectedMotor):
+    return motor.getCVP()
 
 
-def callCVP(motor: aiosv2.ConnectedMotor):
-    print(motor.getCVP())
+def readSocket(socket: aiosv2.AiosSocket):
+    count = 0
+    while True:
+        try:
+            json = socket.readJSON()
+            count += 1
+        except Exception as e:
+            print(e)
+            print(count)
 
 
-def bulkCVP(motor1: aiosv2.ConnectedMotor):
-    BULK_COUNT = 100
-    for _ in range(BULK_COUNT):
-        callCVP(motor1)
-
-
-def threaded(motors: List[aiosv2.ConnectedMotor]):
-    threads = []
-
-    start = time.perf_counter()
-
-    for motor in motors:
-        thread = threading.Thread(target=bulkCVP, args=(motor,))
-        threads.append(thread)
-
-    for thread in threads:
-        thread.start()
-
-    for thread in threads:
-        thread.join()
-
-    end = time.perf_counter()
-    return calculate_hertz(start, end) * 100
+def requestCVP(motor: aiosv2.ConnectedMotor):
+    for _ in range(100):
+        motor.requestCVP()
 
 
 if __name__ == "__main__":
-
     socket = aiosv2.AiosSocket()
 
     connected_addresses = socket.get_addresses()
@@ -50,6 +36,10 @@ if __name__ == "__main__":
     connectedMotors = connected_addresses.getConnectedMotors()
     time.sleep(1)
 
-    threaded(connectedMotors)
+    readThread = threading.Thread(target=readSocket, args=(socket,))
+    readThread.start()
+
+    requestThread = threading.Thread(target=requestCVP, args=(connectedMotors[0],))
+    requestThread.start()
 
     connected_addresses.disable()

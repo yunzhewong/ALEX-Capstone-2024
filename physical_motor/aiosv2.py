@@ -80,6 +80,16 @@ class ConnectedMotor:
         self.ip = ip
         self.socket = socket
 
+    def requestCVP(self):
+        self.socket.sendJSON(
+            self.ip,
+            PORT_rt,
+            {
+                "method": "GET",
+                "reqTarget": "/m1/CVP",
+            },
+        )
+
     def getCVP(self) -> CVP:
         data = {
             "method": "GET",
