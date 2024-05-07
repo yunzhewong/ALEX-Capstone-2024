@@ -1,5 +1,5 @@
 import socket
-from serverConstants import HOST, PORT
+from serverConstants import HOST, PORT, RECEIVED
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -18,7 +18,7 @@ try:
 
         print(f"Received: {data.decode()}")
 
-        returnBytes = "Received".encode()
+        returnBytes = RECEIVED.encode()
         client_socket.sendall(returnBytes)
 
         client_socket.close()
