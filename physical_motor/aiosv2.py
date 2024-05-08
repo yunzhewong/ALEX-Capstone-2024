@@ -5,6 +5,7 @@ import socket
 import struct
 import aios
 import threading
+from serverConstants import ROS_HOST, ROS_PORT
 
 
 # Actuator control mode
@@ -23,24 +24,32 @@ PORT_pt = 10000  # Passthrough port
 
 class AiosSocket:
     NETWORK = "10.10.10.255"
+    PHYSICAL_ACTIVE = False
+    ROS_ACTIVE = True
 
-    s: socket.socket
+    physicalSocket: socket.socket
+
+    clientSocket: socket.socket
 
     def __init__(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.settimeout(2)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.s = s
+        physicalSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        physicalSocket.settimeout(2)
+        physicalSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.physicalSocket = physicalSocket
+
+        clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        clientSocket.connect((ROS_HOST, ROS_PORT))
+        self.clientSocket = clientSocket
 
     def get_addresses(self):
-        self.s.sendto(
+        self.physicalSocket.sendto(
             "Is any AIOS server here?".encode("utf-8"), (self.NETWORK, PORT_srv)
         )
         all_ips = []
         found_server = False
         while True:
             try:
-                _, address = self.s.recvfrom(1024)
+                _, address = self.physicalSocket.recvfrom(1024)
                 all_ips.append(address[0])
                 found_server = True
             except socket.timeout:  # fail after 1 second of no activity
@@ -50,20 +59,21 @@ class AiosSocket:
 
     def sendJSON(self, ip: str, port: int, data: dict):
         json_str = json.dumps(data)
-        self.s.sendto(str.encode(json_str), (ip, port))
+        self.physicalSocket.sendto(json_str.encode(), (ip, port))
+        self.clientSocket.sendall(json_str.encode())
 
     def readJSON(self) -> dict:
-        data, addr = self.s.recvfrom(1024)
+        data, addr = self.physicalSocket.recvfrom(1024)
 
-        json = json.loads(data.decode("utf-8"))
+        json_obj = json.loads(data.decode("utf-8"))
         ip = addr[0]
-        return (json, ip)
+        return (json_obj, ip)
 
     def sendBytes(self, ip: str, port: int, bytes: bytes):
-        self.s.sendto(bytes, (ip, port))
+        self.physicalSocket.sendto(bytes, (ip, port))
 
     def readBytes(self) -> bytes:
-        data, address = self.s.recvfrom(1024)
+        data, address = self.physicalSocket.recvfrom(1024)
         return data
 
 
