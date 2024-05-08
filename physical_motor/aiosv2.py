@@ -27,42 +27,62 @@ class AiosSocket:
     PHYSICAL_ACTIVE = False
     ROS_ACTIVE = True
 
-    physicalSocket: socket.socket
+    EXPECTED_IPS = ["10.10.10.12", "10.10.10.16", "10.10.10.17"]
 
-    clientSocket: socket.socket
+    physicalSocket: socket.socket | None
+
+    rosSocket: socket.socket | None
 
     def __init__(self):
+        if self.PHYSICAL_ACTIVE:
+            self.createPhysicalSocket()
+
+        if self.ROS_ACTIVE:
+            self.createROSSocket()
+
+    def createPhysicalSocket(self):
         physicalSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         physicalSocket.settimeout(2)
         physicalSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.physicalSocket = physicalSocket
 
-        clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        clientSocket.connect((ROS_HOST, ROS_PORT))
-        self.clientSocket = clientSocket
+    def createROSSocket(self):
+        rosSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        rosSocket.connect((ROS_HOST, ROS_PORT))
+        self.rosSocket = rosSocket
 
     def get_addresses(self):
+        if self.physicalSocket is None:
+            return self.EXPECTED_IPS
+
         self.physicalSocket.sendto(
             "Is any AIOS server here?".encode("utf-8"), (self.NETWORK, PORT_srv)
         )
-        all_ips = []
-        found_server = False
+        found_ips = []
         while True:
             try:
                 _, address = self.physicalSocket.recvfrom(1024)
-                all_ips.append(address[0])
-                found_server = True
+                found_ips.append(address[0])
             except socket.timeout:  # fail after 1 second of no activity
-                if found_server:
-                    return ConnectedAddresses(all_ips, self)
-                raise Exception("No Addresses Found")
+                for ip in self.EXPECTED_IPS:
+                    if ip not in found_ips:
+                        raise Exception(f"Missing {ip}")
+
+                return ConnectedAddresses(self.EXPECTED_IPS, self)
 
     def sendJSON(self, ip: str, port: int, data: dict):
         json_str = json.dumps(data)
-        self.physicalSocket.sendto(json_str.encode(), (ip, port))
-        self.clientSocket.sendall(json_str.encode())
 
-    def readJSON(self) -> dict:
+        if self.physicalSocket is not None:
+            self.physicalSocket.sendto(json_str.encode(), (ip, port))
+
+        if self.rosSocket is not None:
+            self.rosSocket.sendall(json_str.encode())
+
+    def readJSON(self):
+        if self.physicalSocket is None:
+            raise Exception("Not physically connected")
+
         data, addr = self.physicalSocket.recvfrom(1024)
 
         json_obj = json.loads(data.decode("utf-8"))
@@ -70,9 +90,14 @@ class AiosSocket:
         return (json_obj, ip)
 
     def sendBytes(self, ip: str, port: int, bytes: bytes):
+        if self.physicalSocket is None:
+            raise Exception("Not physically connected")
+
         self.physicalSocket.sendto(bytes, (ip, port))
 
     def readBytes(self) -> bytes:
+        if self.physicalSocket is None:
+            raise Exception("Not physically connected")
         data, address = self.physicalSocket.recvfrom(1024)
         return data
 
