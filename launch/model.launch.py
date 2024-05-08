@@ -6,7 +6,7 @@ import xacro
 
 
 def generate_launch_description():
-    doc = xacro.process_file("../urdf/justMotor.urdf.xacro")
+    doc = xacro.process_file("../urdf/twinMotor.urdf.xacro")
     robot_desc = doc.toprettyxml(indent="  ")
     params = {"robot_description": robot_desc, "use_sim_time": True}
 

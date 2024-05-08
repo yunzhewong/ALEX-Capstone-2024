@@ -1,0 +1,23 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+
+    motor1_controller:
+      type: effort_controllers/JointGroupEffortController
+
+    motor2_controller:
+      type: effort_controllers/JointGroupEffortController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+motor1_controller:
+  ros__parameters:
+    joints:
+      - motor1
+
+motor2_controller:
+  ros__parameters:
+    joints:
+      - motor2
+
