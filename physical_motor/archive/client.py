@@ -1,14 +1,12 @@
 import socket
-from serverConstants import HOST, PORT, RECEIVED
+from serverConstants import ROS_HOST, ROS_PORT
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect((HOST, PORT))
+client_socket.connect((ROS_HOST, ROS_PORT))
 
 message = "Hello, server!"
 client_socket.sendall(message.encode())
 data = client_socket.recv(1024)
-if data.decode() != RECEIVED:
-    raise Exception("Failed")
+print(data)
 
-# Close the connection with the server
 client_socket.close()

@@ -67,10 +67,10 @@ def generate_launch_description():
     return LaunchDescription(
         [
             RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=spawn_entity,
-                on_exit=[load_joint_state_broadcaster],
-            )
+                event_handler=OnProcessExit(
+                    target_action=spawn_entity,
+                    on_exit=[load_joint_state_broadcaster],
+                )
             ),
             RegisterEventHandler(
                 event_handler=OnProcessExit(

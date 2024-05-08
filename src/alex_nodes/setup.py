@@ -20,7 +20,7 @@ setup(
     entry_points={
         "console_scripts": [
             "motor_pubsub = alex_nodes.motor_pubsub:main",
-            'motor_user_interface = alex_nodes.motor_user_interface:main',
+            'command_redirector = alex_nodes.command_redirector:main',
             'encoder_reader = alex_nodes.encoder_reader:main',
         ],
     },
