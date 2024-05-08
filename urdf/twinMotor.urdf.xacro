@@ -90,7 +90,7 @@
 
   <gazebo>
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <parameters>../config/motor_controller.yaml</parameters>
+      <parameters>../config/twin_controller.yaml</parameters>
     </plugin>
   </gazebo>
 
