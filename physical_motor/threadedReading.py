@@ -5,6 +5,9 @@ from typing import List
 import aiosv2
 import aios
 import threading
+import matplotlib.pyplot as plt
+
+SAMPLING_FREQUENCY = 500
 
 
 class CVPReader:
@@ -26,17 +29,25 @@ class CVPReader:
         for _ in range(100):
             for motor in self.motors:
                 motor.requestCVP()
-            time.sleep(0.01)
+            start = time.perf_counter()
+            end = start + (1 / SAMPLING_FREQUENCY)
+            while start < end:
+                start = time.perf_counter()
 
     def read(self):
         while not self.closed:
             try:
                 json, ip = self.socket.readJSON()
+                current = json.get("current")
+                velocity = json.get("velocity")
+                position = json.get("position")
+                newCVP = aiosv2.CVP(current, velocity, position)
                 with self.lock:
                     if self.data.get(ip) is None:
                         self.data[ip] = []
+
                     readTime = time.perf_counter()
-                    self.data[ip].append(readTime)
+                    self.data[ip].append((readTime, newCVP))
             except Exception as e:
                 print(e)
 
@@ -56,27 +67,46 @@ if __name__ == "__main__":
     connected_addresses.enable()
     connectedMotors = connected_addresses.getConnectedMotors()
 
-    cvpReader = CVPReader()
+    cvpReader = CVPReader(socket, connectedMotors)
     cvpReader.start()
 
+    time.sleep(5)
     cvpReader.stop()
 
+    firstTime = None
+
     for ip in cvpReader.data.keys():
-        times = cvpReader.data[ip]
+        ipData = cvpReader.data[ip]
+        firstTime = ipData[0][0]
 
         runningSum = 0
         minDiff = float("inf")
         maxDiff = 0
-        for i in range(len(times) - 1):
-            diff = times[i + 1] - times[i]
+
+        for i in range(len(ipData) - 1):
+            diff = ipData[i + 1][0] - ipData[i][0]
             runningSum += diff
             minDiff = min(diff, minDiff)
             maxDiff = max(diff, maxDiff)
-        avgDiff = runningSum / len(times)
+        avgDiff = runningSum / len(ipData)
 
-        avg = convertTimesToHz(avgDiff)
-        min = convertTimesToHz(minDiff)
-        max = convertTimesToHz(maxDiff)
-        print(f"IP: {ip}, Average: {avg}, Minimum: {min}, Maximum: {max}")
+        avgVal = convertTimesToHz(avgDiff)
+        minVal = convertTimesToHz(minDiff)
+        maxVal = convertTimesToHz(maxDiff)
+        print(f"IP: {ip}, Average: {avgVal}, Minimum: {minVal}, Maximum: {maxVal}")
+
+        times = [ipData[i][0] for i in range(len(ipData))]
+
+        plt.plot(times, label=f"Times for {ip}")
+        print(times)
+
+    typicalSampling = [
+        firstTime + i * (1 / SAMPLING_FREQUENCY) for i in range(len(ipData))
+    ]
+    plt.plot(typicalSampling, label=f"Expected Sampling Times")
+    plt.xlabel("Index")
+    plt.ylabel("Times")
+    plt.legend()
+    plt.show()
 
     connected_addresses.disable()

@@ -12,7 +12,7 @@ def calculate_hertz(start, end):
 
 
 def callCVP(motor: aiosv2.ConnectedMotor):
-    motor.getCVP_pt()
+    motor.getCVP()
 
 
 def time_single(motor: aiosv2.ConnectedMotor):
@@ -96,7 +96,8 @@ def threaded(motors: List[aiosv2.ConnectedMotor]):
 
 
 if __name__ == "__main__":
-    connected_addresses = aiosv2.get_addresses()
+    socket = aiosv2.AiosSocket()
+    connected_addresses = socket.get_addresses()
     connected_addresses.enable()
 
     connectedMotors = connected_addresses.getConnectedMotors()

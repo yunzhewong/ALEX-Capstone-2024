@@ -4,7 +4,7 @@ import math
 import socket
 import struct
 import aios
-import threading
+from typing import Optional
 from serverConstants import ROS_HOST, ROS_PORT
 
 
@@ -24,16 +24,18 @@ PORT_pt = 10000  # Passthrough port
 
 class AiosSocket:
     NETWORK = "10.10.10.255"
-    PHYSICAL_ACTIVE = False
-    ROS_ACTIVE = True
+    PHYSICAL_ACTIVE = True
+    ROS_ACTIVE = False
 
     EXPECTED_IPS = ["10.10.10.12", "10.10.10.16", "10.10.10.17"]
 
-    physicalSocket: socket.socket | None
+    physicalSocket: Optional[socket.socket]
 
-    rosSocket: socket.socket | None
+    rosSocket: Optional[socket.socket]
 
     def __init__(self):
+        self.physicalSocket = None
+        self.rosSocket = None
         if self.PHYSICAL_ACTIVE:
             self.createPhysicalSocket()
 
@@ -62,11 +64,13 @@ class AiosSocket:
         while True:
             try:
                 _, address = self.physicalSocket.recvfrom(1024)
+                print(address[0])
                 found_ips.append(address[0])
             except socket.timeout:  # fail after 1 second of no activity
                 for ip in self.EXPECTED_IPS:
                     if ip not in found_ips:
-                        raise Exception(f"Missing {ip}")
+                        print(f"Missing {ip}")
+                        exit()
 
                 return ConnectedAddresses(self.EXPECTED_IPS, self)
 
@@ -136,7 +140,7 @@ class ConnectedMotor:
         }
         self.socket.sendJSON(self.ip, PORT_rt, data)
 
-        json_obj = self.socket.readJSON()
+        json_obj, _ = self.socket.readJSON()
         if json_obj.get("status") != "OK":
             raise Exception("Invalid CVP")
 
