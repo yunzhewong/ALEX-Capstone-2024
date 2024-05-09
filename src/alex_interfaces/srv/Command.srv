@@ -1,3 +1,4 @@
+string ip
 int64 command
 float64 value
 ---
