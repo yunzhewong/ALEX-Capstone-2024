@@ -54,7 +54,8 @@ class MotorControllerNode(Node):
     def read_encoder(self, msg: JointState):
         for i, controller in enumerate(self.motorControllers):
             new_position = msg.position[i]
-            controller.updateState(self.index, new_position)
+            new_velocity = msg.velocity[i]
+            controller.updateState(self.index, new_position, new_velocity)
         self.index += 1
 
     def respond_to_command(self, request: Command.Request, response: Command.Response):

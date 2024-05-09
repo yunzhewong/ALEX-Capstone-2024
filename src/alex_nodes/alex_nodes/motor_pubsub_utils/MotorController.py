@@ -10,7 +10,7 @@ class MotorController():
         self.ip = ip
         self.publisher = publisher
         self.positionPID = PIDController(POSITION_GAIN, 0, 0)
-        self.velocityPID = PIDController(VEL_GAIN, VEL_INTEGRATOR_GAIN, 0)
+        self.velocityPID = PIDController(VEL_GAIN / VEL_GAIN, VEL_INTEGRATOR_GAIN, 0)
         self.commandObject = None
 
     def updateCommand(self, commandObject: CommandObject):
@@ -25,9 +25,9 @@ class MotorController():
         else:
             self.velocityPID.setTarget(commandObject.value)
 
-    def updateState(self, time, position):
+    def updateState(self, time, position, velocity):
         self.positionPID.updateLatest(time, position)
-        self.velocityPID.updateLatest(time, self.positionPID.e_dot)
+        self.velocityPID.updateLatest(time, velocity)
 
     def calculateTorque(self):
         if not self.commandObject:
