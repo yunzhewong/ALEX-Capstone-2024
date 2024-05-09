@@ -9,8 +9,9 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-from classes.CommandObject import CommandObject
-from serverConstants import ROS_HOST, ROS_PORT
+from alex_nodes.commandTypes import CommandType
+from alex_nodes.classes.Commands import CommandObject, DirectedCommand
+from alex_nodes.serverConstants import ROS_HOST, ROS_PORT
 
 class CommandRedirector(Node):
     def __init__(self):
@@ -32,6 +33,13 @@ class CommandRedirector(Node):
             if not data:
                 break
 
+            receivedMessage = data.decode()
+            splitData = receivedMessage.split("|")
+            ip = splitData[0]
+            commandType = int(splitData[1])
+            value = float(splitData[2])
+
+            self.send_request(DirectedCommand(ip, commandType, value))
             self.get_logger().info(f"Received: {data.decode()}")
 
             returnBytes = "Received".encode()
@@ -39,9 +47,10 @@ class CommandRedirector(Node):
 
             client_socket.close()
 
-    def send_request(self, commandObject: CommandObject):
-        self.req.command = commandObject.getCommandValue()
-        self.req.value = float(commandObject.value)
+    def send_request(self, directedCommand: DirectedCommand):
+        self.req.ip = directedCommand.ip
+        self.req.command = directedCommand.commandObject.getCommandValue()
+        self.req.value = float(directedCommand.commandObject.value)
         self.future = self.cli.call_async(self.req)
         rclpy.spin_until_future_complete(self, self.future)
         return self.future.result()
