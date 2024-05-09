@@ -33,7 +33,7 @@ class MotorControllerNode(Node):
             publisher = self.create_publisher(
                 Float64MultiArray, f"/{IP_MAP[ip]}/commands", 10
             )
-            motorController = MotorController(publisher)
+            motorController = MotorController(ip, publisher)
             self.motorControllers.append(motorController)
         self.timer = self.create_timer(TIMER_PERIOD, self.sendCommands)
         self.get_logger().info("Publisher Initialised")
@@ -59,11 +59,14 @@ class MotorControllerNode(Node):
         self.index += 1
 
     def respond_to_command(self, request: Command.Request, response: Command.Response):
-        self.motorController.updateCommand(CommandObject(request.command, request.value))
-
-        self.get_logger().info(self.motorController.commandObject.toString())
-        response.received = True
-        return response
+        for controller in self.motorControllers:
+            if controller.ip != request.ip:
+                return
+            
+            controller.updateCommand(CommandObject(request.command, request.value))
+            self.get_logger().info(f"{controller.ip} -> {controller.commandObject.toString()}")
+            response.received = True
+            return response
 
 def main(args=None):
     rclpy.init(args=args)

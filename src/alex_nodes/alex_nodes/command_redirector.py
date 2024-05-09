@@ -9,7 +9,7 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-from classes.CommandObject import CommandObject
+from alex_nodes.classes.CommandObject import CommandObject
 from serverConstants import ROS_HOST, ROS_PORT
 
 class CommandRedirector(Node):

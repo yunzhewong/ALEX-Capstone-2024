@@ -6,7 +6,8 @@ from std_msgs.msg import Float64MultiArray
 
 
 class MotorController():
-    def __init__(self, publisher):
+    def __init__(self, ip, publisher):
+        self.ip = ip
         self.publisher = publisher
         self.positionPID = PIDController(POSITION_GAIN, 0, 0)
         self.velocityPID = PIDController(VEL_GAIN, VEL_INTEGRATOR_GAIN, 0)
