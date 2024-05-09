@@ -1,5 +1,5 @@
 from alex_nodes.motor_pubsub_utils.PID import PIDController
-from alex_nodes.classes import CommandObject
+from alex_nodes.classes.Commands import CommandObject
 from alex_nodes.commandTypes import CommandType
 from alex_nodes.motor_pubsub_utils.constants import MOTOR_TORQUE_CONSTANT, POSITION_GAIN, VEL_GAIN, VEL_INTEGRATOR_GAIN
 from std_msgs.msg import Float64MultiArray
@@ -33,7 +33,6 @@ class MotorController():
         if not self.commandObject:
             return 0
         
-
         if (self.commandObject.command == CommandType.Current):
             return MOTOR_TORQUE_CONSTANT * self.commandObject.value
         if (self.commandObject.command == CommandType.Position):
@@ -44,7 +43,6 @@ class MotorController():
     
     def sendActuationCommand(self):
         torque = -1 * self.calculateTorque()
-
         msg = Float64MultiArray()
         msg.data = [float(torque)]
         msg.layout.data_offset = 0

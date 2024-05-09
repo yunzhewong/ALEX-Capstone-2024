@@ -1,4 +1,9 @@
-from commandTypes import CommandType
+from alex_nodes.commandTypes import CommandType
+
+class DirectedCommand():
+    def __init__(self, ip: str, commandNumber: int, value: float):
+        self.ip = ip
+        self.commandObject = CommandObject(commandNumber, value)
 
 class CommandObject():
     def __init__(self, commandNumber: int, value: float):

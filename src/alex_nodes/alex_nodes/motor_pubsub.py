@@ -10,8 +10,7 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-from commandTypes import CommandType
-from classes.CommandObject import CommandObject
+from alex_nodes.classes.Commands import CommandObject
 from motor_pubsub_utils.constants import TIMER_PERIOD
 from motor_pubsub_utils.MotorController import MotorController
 
@@ -31,7 +30,7 @@ class MotorControllerNode(Node):
 
         for ip in EXPECTED_IPS:
             publisher = self.create_publisher(
-                Float64MultiArray, f"/{IP_MAP[ip]}/commands", 10
+                Float64MultiArray, f"/{IP_MAP[ip]}_controller/commands", 10
             )
             motorController = MotorController(ip, publisher)
             self.motorControllers.append(motorController)
@@ -60,13 +59,11 @@ class MotorControllerNode(Node):
 
     def respond_to_command(self, request: Command.Request, response: Command.Response):
         for controller in self.motorControllers:
-            if controller.ip != request.ip:
-                return
-            
-            controller.updateCommand(CommandObject(request.command, request.value))
-            self.get_logger().info(f"{controller.ip} -> {controller.commandObject.toString()}")
-            response.received = True
-            return response
+            if controller.ip == request.ip:
+                controller.updateCommand(CommandObject(request.command, request.value))
+                self.get_logger().info(f"{controller.ip} -> {controller.commandObject.toString()}")
+                response.received = True
+                return response
 
 def main(args=None):
     rclpy.init(args=args)
