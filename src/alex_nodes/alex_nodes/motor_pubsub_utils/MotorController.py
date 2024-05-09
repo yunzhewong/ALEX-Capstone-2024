@@ -1,7 +1,7 @@
-from PIDController import PIDController
+from alex_nodes.motor_pubsub_utils.PID import PIDController
 from alex_nodes.classes import CommandObject
 from alex_nodes.commandTypes import CommandType
-from constants import MOTOR_TORQUE_CONSTANT, POSITION_GAIN, VEL_GAIN, VEL_INTEGRATOR_GAIN
+from alex_nodes.motor_pubsub_utils.constants import MOTOR_TORQUE_CONSTANT, POSITION_GAIN, VEL_GAIN, VEL_INTEGRATOR_GAIN
 from std_msgs.msg import Float64MultiArray
 
 

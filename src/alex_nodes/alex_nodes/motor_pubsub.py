@@ -17,7 +17,11 @@ from motor_pubsub_utils.MotorController import MotorController
 
 PROPELLOR_CONTROLLER = "propellor_controller"
 
-EXPECTED_IPS = ["10.10.10.12", "10.10.10.16", "10.10.10.17"]
+EXPECTED_IPS = ["10.10.10.16", "10.10.10.17"]
+IP_MAP = {
+    "10.10.10.16": "motor1",
+    "10.10.10.17": "motor2"
+}
 
 class MotorControllerNode(Node):
     def __init__(self):
@@ -27,12 +31,10 @@ class MotorControllerNode(Node):
 
         for ip in EXPECTED_IPS:
             publisher = self.create_publisher(
-                Float64MultiArray, f"/{ip}/commands", 10
+                Float64MultiArray, f"/{IP_MAP[ip]}/commands", 10
             )
             motorController = MotorController(publisher)
             self.motorControllers.append(motorController)
-            
-        
         self.timer = self.create_timer(TIMER_PERIOD, self.sendCommands)
         self.get_logger().info("Publisher Initialised")
 
@@ -44,7 +46,6 @@ class MotorControllerNode(Node):
         self.command_receiver = self.create_service(Command, 'command_receiver', self.respond_to_command)
         self.get_logger().info("Command Receiver Initialised")
 
-        self.motorController = MotorController()
         self.index = 0
 
     def sendCommands(self):
@@ -52,8 +53,9 @@ class MotorControllerNode(Node):
             controller.sendActuationCommand()
 
     def read_encoder(self, msg: JointState):
-        new_position = msg.position[0]
-        self.motorController.updateState(self.index, new_position)
+        for i, controller in enumerate(self.motorControllers):
+            new_position = msg.position[i]
+            controller.updateState(self.index, new_position)
         self.index += 1
 
     def respond_to_command(self, request: Command.Request, response: Command.Response):

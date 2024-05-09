@@ -1,5 +1,5 @@
 
-from alex_nodes.alex_nodes.motor_pubsub_utils.constants import FREQUENCY
+from alex_nodes.motor_pubsub_utils.constants import FREQUENCY
 
 
 class PIDController():
