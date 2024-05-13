@@ -8,7 +8,13 @@ import matplotlib.pyplot as plt
 FREQUENCY = 0.01
 SAVE_NAME = "lower_motor_pi_8.csv"
 
+## For sinusoial waveform
+AMPLITUDE = 2 # Amplitude of the sinusoidal waveform (in amps)
+OFFSET = 0
+FREQUENCY_SIGNAL = 0.5 # Frequency of the sinusoidal waveform (in Hz)
 
+
+# Store currents, velocities, positions and a count of logged data points
 class DataLog:
     def __init__(self):
         self.currents = []
@@ -94,19 +100,51 @@ if __name__ == "__main__":
 
     connection = connectedMotors[1]
 
-    WAITING_TIME_S = 0.5
+    WAITING_TIME_S = 5
     dataLog = DataLog()
-    aios.controlMode(aios.ControlMode.POSITION_CONTROL.value, connection.ip, 1)
-    connection.setPosition(0)
-    dataLog.readConnection(connection, WAITING_TIME_S)
-    connection.setPosition(math.pi / 8)
-    dataLog.readConnection(connection, WAITING_TIME_S)
-    connection.setPosition(0)
-    dataLog.readConnection(connection, WAITING_TIME_S)
-    connection.setPosition(-math.pi / 8)
-    dataLog.readConnection(connection, WAITING_TIME_S)
-    connection.setPosition(0)
-    dataLog.readConnection(connection, WAITING_TIME_S)
+
+
+    ## Generate sinusoidal current input
+    t = np.arange(0, WAITING_TIME_S, FREQUENCY)
+    sinusoidal_currents = AMPLITUDE * np.sin(2 * np.pi * FREQUENCY_SIGNAL * t) + OFFSET
+
+    # Loop to set sinusoidal current input
+    for current in sinusoidal_currents:
+        # Set current
+        connection.setCurrent(current)
+
+        # Log data
+        dataLog.readConnection(connection, FREQUENCY)
+
+
+    # ## Loop for free response input ##
+    # while True:
+    #     # Read current input from user or sensor
+    #     current_input = float(input("Enter desired current input (amps): "))
+
+    #     # Set current
+    #     connection.setCurrent(current_input)
+
+    #     # Log data
+    #     dataLog.readConnection(connection, WAITING_TIME_S)
+
+    #     # Ask if user wants to continue
+    #     continue_response = input("Continue logging data? (y/n): ")
+    #     if continue_response.lower() != 'y':
+    #         break
+
+
+    # aios.controlMode(aios.ControlMode.POSITION_CONTROL.value, connection.ip, 1)
+    # connection.setPosition(0)
+    # dataLog.readConnection(connection, WAITING_TIME_S)
+    # connection.setPosition(math.pi / 8)
+    # dataLog.readConnection(connection, WAITING_TIME_S)
+    # connection.setPosition(0)
+    # dataLog.readConnection(connection, WAITING_TIME_S)
+    # connection.setPosition(-math.pi / 8)
+    # dataLog.readConnection(connection, WAITING_TIME_S)
+    # connection.setPosition(0)
+    # dataLog.readConnection(connection, WAITING_TIME_S)
 
     connected_addresses.disable()
 

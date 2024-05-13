@@ -21,7 +21,8 @@ PORT_rt = 2333  # Real-time control data port, ie. speed, position, current and 
 PORT_srv = 2334  # Low priority service data port. ie, parameter setting and reading
 PORT_pt = 10000  # Passthrough port
 
-
+# Create physical and ROS sockets, get addresses of connected devices, send and receive JSON data,
+# send and receive bytes
 class AiosSocket:
     NETWORK = "10.10.10.255"
     PHYSICAL_ACTIVE = True
@@ -105,17 +106,19 @@ class AiosSocket:
         data, address = self.physicalSocket.recvfrom(1024)
         return data
 
-
+# Represents the Current, Velocity and Position of the motor
+# Has attributes for current, velocity and position.
 class CVP:
     def __init__(self, current: float, velocity: float, position: float):
         self.current = current
         self.velocity = velocity
         self.position = position
 
-    def __str__(self):
+    def __str__(self): # provide a string representation of the object
         return f"Current: {self.current}, Velocity: {self.velocity}, Position: {self.position}"
 
-
+# Represents a motor connected to the system
+# Has methods to request and get the Current, Velocity and Position of the motor
 class ConnectedMotor:
     CONVERSION_RATIO = 100000 / math.pi
 
@@ -241,7 +244,7 @@ class ConnectedMotor:
         except socket.timeout:  # fail after 1 second of no activity
             print("Didn't receive anymore data! [Timeout]")
 
-
+# Represents a collection of connected IP addresses
 class ConnectedAddresses:
     def __init__(self, ips, socket: AiosSocket):
         self.ips = ips
