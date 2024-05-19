@@ -51,17 +51,17 @@ def generate_launch_description():
         output='screen'
     )
 
-    # motor_controller = Node(
-    #     package='alex_nodes',
-    #     executable='motor_pubsub',
-    #     name="motor_pubsub"
-    # )
+    motor_controller = Node(
+        package='alex_nodes',
+        executable='motor_pubsub',
+        name="motor_pubsub"
+    )
 
-    # encoder_reader = Node(
-    #     package='alex_nodes',
-    #     executable='encoder_reader',
-    #     name="encoder_reader"
-    # )
+    encoder_reader = Node(
+        package='alex_nodes',
+        executable='encoder_reader',
+        name="encoder_reader"
+    )
 
     user_interface = Node(
         package="alex_nodes",
@@ -74,26 +74,14 @@ def generate_launch_description():
             RegisterEventHandler(
                 event_handler=OnProcessExit(
                     target_action=spawn_entity,
-                    on_exit=[load_joint_state_broadcaster],
-                )
-            ),
-            RegisterEventHandler(
-                event_handler=OnProcessExit(
-                    target_action=load_joint_state_broadcaster,
-                    on_exit=[load_motor1],
-                )
-            ),
-            RegisterEventHandler(
-                event_handler=OnProcessExit(
-                    target_action=load_motor1,
-                    on_exit=[load_motor2],
+                    on_exit=[load_joint_state_broadcaster, load_motor1, load_motor2],
                 )
             ),
             robot_state_publisher,
             gazebo,
             spawn_entity, 
-            # motor_controller, 
-            # encoder_reader, 
+            motor_controller, 
+            encoder_reader, 
             user_interface
         ]
     )

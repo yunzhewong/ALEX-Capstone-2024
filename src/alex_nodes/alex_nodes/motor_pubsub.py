@@ -34,6 +34,7 @@ class MotorControllerNode(Node):
             )
             motorController = MotorController(ip, publisher)
             self.motorControllers.append(motorController)
+            
         self.timer = self.create_timer(TIMER_PERIOD, self.sendCommands)
         self.get_logger().info("Publisher Initialised")
 
