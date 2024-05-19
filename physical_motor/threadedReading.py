@@ -63,9 +63,9 @@ def convertTimesToHz(diff):
 
 if __name__ == "__main__":
     socket = aiosv2.AiosSocket()
-    connected_addresses = socket.get_addresses()
-    connected_addresses.enable()
-    connectedMotors = connected_addresses.getConnectedMotors()
+    twinMotor = aiosv2.TwinMotor(socket)
+    twinMotor.enable()
+    connectedMotors = [twinMotor.bottomMotor, twinMotor.topMotor]
 
     cvpReader = CVPReader(socket, connectedMotors)
     cvpReader.start()
@@ -109,4 +109,4 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
 
-    connected_addresses.disable()
+    twinMotor.disable()

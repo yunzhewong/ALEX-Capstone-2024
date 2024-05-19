@@ -5,11 +5,10 @@ import aiosv2
 
 
 socket = aiosv2.AiosSocket()
-connected_addresses = socket.get_addresses()
-connected_addresses.enable()
+twinMotor = aiosv2.TwinMotor()
+twinMotor.enable()
 
-connectedMotors = connected_addresses.getConnectedMotors()
-
+connectedMotors = [twinMotor.bottomMotor, twinMotor.topMotor]
 for motor in connectedMotors:
     aios.reboot(motor.ip)
     print(f"Rebooting {motor.ip}")
@@ -21,4 +20,4 @@ for motor in connectedMotors:
     print(f"Motor {motor.ip} Rebooted")
     print(motor.getCVP())
 
-connected_addresses.disable()
+twinMotor.disable()

@@ -5,13 +5,12 @@ import math
 
 
 if __name__ == "__main__":
-    connected_addresses = aiosv2.get_addresses()
-    connected_addresses.enable()
+    socket = aiosv2.AiosSocket()
+    twinMotor = aiosv2.TwinMotor(socket)
+    twinMotor.enable()
 
-    connectedMotors = connected_addresses.getConnectedMotors()
     time.sleep(1)
 
-    bottomMotor = connectedMotors[1]
-    bottomMotor.setPosition(0)
-    aios.getMotionCtrlConfig(bottomMotor.ip, 1)
-    connected_addresses.disable()
+    twinMotor.bottomMotor.setPosition(0)
+    aios.getMotionCtrlConfig(twinMotor.bottomMotor.ip, 1)
+    twinMotor.disable()

@@ -92,13 +92,12 @@ class DataLog:
 # prints the logged data across current, velocity, and position
 if __name__ == "__main__":
     socket = aiosv2.AiosSocket()
-    connected_addresses = socket.get_addresses()
-    connected_addresses.enable()
+    twinMotor = aiosv2.TwinMotor(socket)
+    twinMotor.enable()
 
-    connectedMotors = connected_addresses.getConnectedMotors()
     time.sleep(1)
 
-    connection = connectedMotors[1]
+    connection = twinMotor.bottomMotor
 
     WAITING_TIME_S = 5
     dataLog = DataLog()
@@ -143,7 +142,7 @@ if __name__ == "__main__":
     # connection.setPosition(0)
     # dataLog.readConnection(connection, WAITING_TIME_S)
 
-    connected_addresses.disable()
+    twinMotor.disable()
 
     dataLog.plot()
     dataLog.download(SAVE_NAME)

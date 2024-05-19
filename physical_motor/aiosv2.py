@@ -29,8 +29,6 @@ class AiosSocket:
     PHYSICAL_ACTIVE = False
     ROS_ACTIVE = True
 
-    EXPECTED_IPS = ["10.10.10.12", "10.10.10.16", "10.10.10.17"]
-
     physicalSocket: Optional[socket.socket]
 
     rosSocket: Optional[socket.socket]
@@ -55,26 +53,22 @@ class AiosSocket:
         rosSocket.connect((ROS_HOST, ROS_PORT))
         self.rosSocket = rosSocket
 
-    def get_addresses(self):
+    def assertConnectedAddresses(self, expectedIPs):
         if self.physicalSocket is None:
-            return self.EXPECTED_IPS
+            return
 
         self.physicalSocket.sendto(
             "Is any AIOS server here?".encode("utf-8"), (self.NETWORK, PORT_srv)
         )
-        found_ips = []
+        foundIPs = []
         while True:
             try:
                 _, address = self.physicalSocket.recvfrom(1024)
-                print(address[0])
-                found_ips.append(address[0])
+                foundIPs.append(address[0])
             except socket.timeout:  # fail after 1 second of no activity
-                for ip in self.EXPECTED_IPS:
-                    if ip not in found_ips:
-                        print(f"Missing {ip}")
-                        exit()
-
-                return ConnectedAddresses(self.EXPECTED_IPS, self)
+                for ip in expectedIPs:
+                    if ip not in foundIPs:
+                        raise Exception(f"Missing IP: {ip}")
 
     def sendJSON(self, ip: str, port: int, data: dict):
         if self.physicalSocket is not None:
@@ -121,6 +115,15 @@ class CVP:
         return f"Current: {self.current}, Velocity: {self.velocity}, Position: {self.position}"
 
 
+class AxisState(Enum):
+    AXIS_STATE_UNDEFINED = 0
+    AXIS_STATE_IDLE = 1
+    AXIS_STATE_STARTUP_SEQUENCE = 2
+    AXIS_STATE_MOTOR_CALIBRATION = 4
+    AXIS_STATE_ENCODER_OFFSET_CALIBRATION = 7
+    AXIS_STATE_ENABLE = 8
+
+
 # Represents a motor connected to the system
 # Has methods to request and get the Current, Velocity and Position of the motor
 class ConnectedMotor:
@@ -129,6 +132,28 @@ class ConnectedMotor:
     def __init__(self, ip: str, socket: AiosSocket):
         self.ip = ip
         self.socket = socket
+
+    def enable(self):
+        self.socket.sendJSON(
+            self.ip,
+            PORT_srv,
+            {
+                "method": "SET",
+                "reqTarget": "/m1/requested_state",
+                "property": AxisState.AXIS_STATE_ENABLE.value,
+            },
+        )
+
+    def disable(self):
+        self.socket.sendJSON(
+            self.ip,
+            PORT_srv,
+            {
+                "method": "SET",
+                "reqTarget": "/m1/requested_state",
+                "property": AxisState.AXIS_STATE_IDLE.value,
+            },
+        )
 
     def requestCVP(self):
         self.socket.sendJSON(
@@ -249,26 +274,50 @@ class ConnectedMotor:
             print("Didn't receive anymore data! [Timeout]")
 
 
-# Represents a collection of connected IP addresses
-class ConnectedAddresses:
-    def __init__(self, ips, socket: AiosSocket):
-        self.ips = ips
+class TwinMotor:
+    CONTROL_BOX = "10.10.10.12"
+    MOTORS = {"top": "10.10.10.16", "bottom": "10.10.10.17"}
+
+    def __init__(self, socket: AiosSocket):
         self.socket = socket
+        self.topMotor = ConnectedMotor(self.MOTORS["top"], socket)
+        self.bottomMotor = ConnectedMotor(self.MOTORS["bottom"], socket)
 
     def enable(self):
-        for ip in self.ips:
-            aios.enable(ip, 1)
+        expectedIPs = self.getExpectedIPs()
+        self.socket.assertConnectedAddresses(expectedIPs)
+
+        self.topMotor.enable()
+        self.bottomMotor.enable()
 
     def disable(self):
-        for ip in self.ips:
-            aios.disable(ip, 1)
+        self.topMotor.disable()
+        self.bottomMotor.disable()
 
-    def getConnectedMotors(self) -> list[ConnectedMotor]:
-        connectedMotors = []
-        for ip in self.ips:
-            root = aios.getRoot(ip)
-            is_control_box = root.get("deviceType", None) == "ctrlbox"
-            if not is_control_box:
-                connectedMotors.append(ConnectedMotor(ip, self.socket))
+    def getExpectedIPs(self):
+        return [self.CONTROL_BOX] + list(self.MOTORS.values())
 
-        return connectedMotors
+
+# Represents a collection of connected IP addresses
+# class ConnectedAddresses:
+#     def __init__(self, ips, socket: AiosSocket):
+#         self.ips = ips
+#         self.socket = socket
+
+#     def enable(self):
+#         for ip in self.ips:
+#             aios.enable(ip, 1)
+
+#     def disable(self):
+#         for ip in self.ips:
+#             aios.disable(ip, 1)
+
+#     def getConnectedMotors(self) -> list[ConnectedMotor]:
+#         connectedMotors = []
+#         for ip in self.ips:
+#             root = aios.getRoot(ip)
+#             is_control_box = root.get("deviceType", None) == "ctrlbox"
+#             if not is_control_box:
+#                 connectedMotors.append(ConnectedMotor(ip, self.socket))
+
+#         return connectedMotors

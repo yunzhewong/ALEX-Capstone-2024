@@ -97,20 +97,19 @@ def threaded(motors: List[aiosv2.ConnectedMotor]):
 
 if __name__ == "__main__":
     socket = aiosv2.AiosSocket()
-    connected_addresses = socket.get_addresses()
-    connected_addresses.enable()
+    twinMotor = aiosv2.TwinMotor()
+    twinMotor.enable()
 
-    connectedMotors = connected_addresses.getConnectedMotors()
     time.sleep(1)
 
-    bottomMotor = connectedMotors[0]
-    topMotor = connectedMotors[1]
+    bottomMotor = twinMotor.bottomMotor
+    topMotor = twinMotor.topMotor
 
     print(time_single(bottomMotor))
     print(time_single_bulk(bottomMotor))
     print(time_double(bottomMotor, topMotor))
     print(time_double_bulk(bottomMotor, topMotor))
-    print(time_multi(connectedMotors))
-    print(threaded(connectedMotors))
+    print(time_multi([bottomMotor, topMotor]))
+    print(threaded([bottomMotor, topMotor]))
 
-    connected_addresses.disable()
+    twinMotor.disable()
