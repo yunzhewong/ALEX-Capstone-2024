@@ -21,12 +21,13 @@ PORT_rt = 2333  # Real-time control data port, ie. speed, position, current and 
 PORT_srv = 2334  # Low priority service data port. ie, parameter setting and reading
 PORT_pt = 10000  # Passthrough port
 
+
 # Create physical and ROS sockets, get addresses of connected devices, send and receive JSON data,
 # send and receive bytes
 class AiosSocket:
     NETWORK = "10.10.10.255"
-    PHYSICAL_ACTIVE = True
-    ROS_ACTIVE = False
+    PHYSICAL_ACTIVE = False
+    ROS_ACTIVE = True
 
     EXPECTED_IPS = ["10.10.10.12", "10.10.10.16", "10.10.10.17"]
 
@@ -76,13 +77,14 @@ class AiosSocket:
                 return ConnectedAddresses(self.EXPECTED_IPS, self)
 
     def sendJSON(self, ip: str, port: int, data: dict):
-        json_str = json.dumps(data)
-
         if self.physicalSocket is not None:
+            json_str = json.dumps(data)
             self.physicalSocket.sendto(json_str.encode(), (ip, port))
 
         if self.rosSocket is not None:
-            self.rosSocket.sendall(json_str.encode())
+            obj = {"IP": ip, "commandJSON": data}
+            json_str = json.dumps(obj)
+            self.rosSocket.send(json_str.encode())
 
     def readJSON(self):
         if self.physicalSocket is None:
@@ -106,6 +108,7 @@ class AiosSocket:
         data, address = self.physicalSocket.recvfrom(1024)
         return data
 
+
 # Represents the Current, Velocity and Position of the motor
 # Has attributes for current, velocity and position.
 class CVP:
@@ -114,8 +117,9 @@ class CVP:
         self.velocity = velocity
         self.position = position
 
-    def __str__(self): # provide a string representation of the object
+    def __str__(self):  # provide a string representation of the object
         return f"Current: {self.current}, Velocity: {self.velocity}, Position: {self.position}"
+
 
 # Represents a motor connected to the system
 # Has methods to request and get the Current, Velocity and Position of the motor
@@ -243,6 +247,7 @@ class ConnectedMotor:
             return feedback
         except socket.timeout:  # fail after 1 second of no activity
             print("Didn't receive anymore data! [Timeout]")
+
 
 # Represents a collection of connected IP addresses
 class ConnectedAddresses:

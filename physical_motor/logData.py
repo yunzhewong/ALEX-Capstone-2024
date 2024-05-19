@@ -9,9 +9,9 @@ FREQUENCY = 0.01
 SAVE_NAME = "lower_motor_pi_8.csv"
 
 ## For sinusoial waveform
-AMPLITUDE = 2 # Amplitude of the sinusoidal waveform (in amps)
+AMPLITUDE = 2  # Amplitude of the sinusoidal waveform (in amps)
 OFFSET = 0
-FREQUENCY_SIGNAL = 0.5 # Frequency of the sinusoidal waveform (in Hz)
+FREQUENCY_SIGNAL = 0.5  # Frequency of the sinusoidal waveform (in Hz)
 
 
 # Store currents, velocities, positions and a count of logged data points
@@ -103,7 +103,6 @@ if __name__ == "__main__":
     WAITING_TIME_S = 5
     dataLog = DataLog()
 
-
     ## Generate sinusoidal current input
     t = np.arange(0, WAITING_TIME_S, FREQUENCY)
     sinusoidal_currents = AMPLITUDE * np.sin(2 * np.pi * FREQUENCY_SIGNAL * t) + OFFSET
@@ -115,7 +114,6 @@ if __name__ == "__main__":
 
         # Log data
         dataLog.readConnection(connection, FREQUENCY)
-
 
     # ## Loop for free response input ##
     # while True:
@@ -132,7 +130,6 @@ if __name__ == "__main__":
     #     continue_response = input("Continue logging data? (y/n): ")
     #     if continue_response.lower() != 'y':
     #         break
-
 
     # aios.controlMode(aios.ControlMode.POSITION_CONTROL.value, connection.ip, 1)
     # connection.setPosition(0)
