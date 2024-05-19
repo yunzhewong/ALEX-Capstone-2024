@@ -46,15 +46,14 @@ def currentControl(motor: aiosv2.ConnectedMotor):
 
 
 if __name__ == "__main__":
-    connected_addresses = aiosv2.get_addresses()
-    connected_addresses.enable()
+    socket = aiosv2.AiosSocket()
+    twinMotor = aiosv2.TwinMotor(socket)
+    twinMotor.enable()
 
-    connectedMotors = connected_addresses.getConnectedMotors()
-    time.sleep(1)
+    bottomMotor = twinMotor.bottomMotor
 
-    bottomMotor = connectedMotors[1]
     positionControl(bottomMotor)
     velocityControl(bottomMotor)
     currentControl(bottomMotor)
 
-    connected_addresses.disable()
+    twinMotor.disable()
