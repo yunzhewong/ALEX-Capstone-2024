@@ -1,6 +1,6 @@
 import math
 import time
-import aios
+import physical_motor.aiosv2.aios as aios
 import aiosv2
 
 

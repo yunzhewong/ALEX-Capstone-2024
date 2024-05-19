@@ -1,6 +1,7 @@
 import math
 import time
-import aios
+import aiosv2.CVP
+import physical_motor.aiosv2.aios as aios
 import aiosv2
 import numpy as np
 import matplotlib.pyplot as plt

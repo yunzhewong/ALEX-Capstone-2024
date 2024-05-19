@@ -1,5 +1,5 @@
 import time
-import aios
+import physical_motor.aiosv2.aios as aios
 import aiosv2
 
 connected_addresses = aiosv2.get_addresses()

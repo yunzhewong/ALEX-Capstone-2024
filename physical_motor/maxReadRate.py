@@ -3,7 +3,7 @@ import math
 import sys
 from typing import List
 import aiosv2
-import aios
+import physical_motor.aiosv2.aios as aios
 import threading
 
 

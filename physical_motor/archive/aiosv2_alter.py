@@ -1,5 +1,5 @@
 import socket
-import aios
+import physical_motor.aiosv2.aios as aios
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

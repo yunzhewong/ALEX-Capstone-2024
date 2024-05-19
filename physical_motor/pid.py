@@ -1,5 +1,5 @@
 import aiosv2
-import aios
+import physical_motor.aiosv2.aios as aios
 import time
 import math
 

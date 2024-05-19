@@ -1,4 +1,4 @@
-import aios
+import physical_motor.aiosv2.aios as aios
 import time
 import threading
 import numpy as np
