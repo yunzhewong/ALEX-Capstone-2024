@@ -1,9 +1,9 @@
 from enum import Enum
 
 class CommandType(Enum):
-  Position = 0
-  Velocity = 1
-  Current = 2
+  Current = 1
+  Velocity = 2
+  Position = 3
 
   def convertToString(self):
     if self == CommandType.Position:

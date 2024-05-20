@@ -16,10 +16,10 @@ from motor_pubsub_utils.MotorController import MotorController
 
 PROPELLOR_CONTROLLER = "propellor_controller"
 
-EXPECTED_IPS = ["10.10.10.16", "10.10.10.17"]
+EXPECTED_IPS = ["10.10.10.17", "10.10.10.16"]
 IP_MAP = {
-    "10.10.10.16": "motor1",
-    "10.10.10.17": "motor2"
+    "10.10.10.17": "motor1",
+    "10.10.10.16": "motor2"
 }
 
 class MotorControllerNode(Node):
@@ -54,6 +54,7 @@ class MotorControllerNode(Node):
 
     def read_encoder(self, msg: JointState):
         for i, controller in enumerate(self.motorControllers):
+            name = msg.name[i]
             new_position = msg.position[i]
             new_velocity = msg.velocity[i]
             controller.updateState(self.index, new_position, new_velocity)

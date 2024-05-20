@@ -19,11 +19,13 @@ class MotorController():
         self.commandObject = commandObject
         if (commandObject.command == CommandType.Current):
             return
-        
         if (commandObject.command == CommandType.Position):
             self.positionPID.setTarget(commandObject.value)
-        else:
+            return
+        if (commandObject.command == CommandType.Velocity):
             self.velocityPID.setTarget(commandObject.value)
+            return
+        raise Exception("Invalid Command")
 
     def updateState(self, time, position, velocity):
         self.positionPID.updateLatest(time, position)

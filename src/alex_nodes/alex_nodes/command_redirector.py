@@ -18,25 +18,42 @@ from alex_nodes.serverConstants import ROS_HOST, ROS_PORT
 
 CONVERSION_RATIO = 100000 / math.pi
 
-class MessageParser():
-    def parseStream(self, stream: str) -> tuple[list[DirectedCommand], str]:
-        readJSONs = re.split(r'(?<=})\B(?={)', stream)
-        if len(readJSONs) == 1:
-            return [], stream
+class StreamParser():
+    def __init__(self):
+        self.messageParser = MessageParser()
     
+    def parseStream(self, stream) -> tuple[list[DirectedCommand], str]:
+        separatedStrings = re.split(r'(?<=})\B(?={)', stream)
+        parsedJSONs, newStream = self.extractJSONs(separatedStrings)
+        commands = self.createCommands(parsedJSONs)
+        return commands, newStream
+    
+    def extractJSONs(self, separatedStrings):
+        parsedJSONs = []
+        newStream = ""
+        for readString in separatedStrings:
+            try:
+                readJSON = json.loads(readString) # check if loadable
+                parsedJSONs.append(readJSON)
+            except:
+                newStream = readString
+
+        return parsedJSONs, newStream
+    
+    def createCommands(self, parsedJSONs):
         commands = []
-        for i in range(len(readJSONs) - 1):
-            json = readJSONs[i]
-            command = self.parseMessage(json)
+        for parsedJSON in parsedJSONs:
+            command = self.messageParser.parseMessage(parsedJSON)
             if command is not None:
                 commands.append(command)
-        return commands, readJSONs[-1]
+        return commands
 
-    def parseMessage(self, jsonString: str) -> DirectedCommand:
+
+class MessageParser():
+    def parseMessage(self, parsedJSON: dict) -> DirectedCommand:
         try:
-            fullJSON = json.loads(jsonString)
-            ip = fullJSON.get("IP")
-            commandJSON = fullJSON.get("commandJSON")
+            ip = parsedJSON.get("IP")
+            commandJSON = parsedJSON.get("commandJSON")
             commandResult = self.parseCommand(commandJSON)
             if commandResult is None:
                 return None
@@ -67,7 +84,7 @@ class CommandRedirector(Node):
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
         self.req = Command.Request()
-        self.messageParser = MessageParser()
+        self.streamParser = StreamParser()
 
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -87,15 +104,11 @@ class CommandRedirector(Node):
 
                 stream += data.decode("utf-8")
 
-                commands, newStream = self.messageParser.parseStream(stream)
+                commands, newStream = self.streamParser.parseStream(stream)
                 stream = newStream
 
                 for command in commands:
                     self.send_request(command)
-                    self.get_logger().info(f"Received: IP {command.ip} | {command.commandObject.toString()}")
-
-
-            
 
     def send_request(self, directedCommand: DirectedCommand):
         self.req.ip = directedCommand.ip
