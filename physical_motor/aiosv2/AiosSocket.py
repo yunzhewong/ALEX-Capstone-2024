@@ -2,9 +2,12 @@
 # send and receive bytes
 import json
 import socket
-from typing import Optional
 from aiosv2.constants import PORT_srv
 from aiosv2.serverConstants import ROS_HOST, ROS_PORT
+
+
+PHYSICAL_ACTIVE = False
+ROS_ACTIVE = True
 
 
 class PhysicalSocket:
@@ -28,6 +31,7 @@ class PhysicalSocket:
         self.socket.sendto(
             "Is any AIOS server here?".encode("utf-8"), (self.NETWORK, PORT_srv)
         )
+
         foundIPs = []
         while True:
             try:
@@ -87,16 +91,12 @@ class RosSocket:
 
 
 class AiosSocket:
-    PHYSICAL_ACTIVE = True
-    ROS_ACTIVE = False
-
     physicalSocket: PhysicalSocket
-
     rosSocket: RosSocket
 
     def __init__(self):
-        self.physicalSocket = PhysicalSocket(self.PHYSICAL_ACTIVE)
-        self.rosSocket = RosSocket(self.ROS_ACTIVE)
+        self.physicalSocket = PhysicalSocket(PHYSICAL_ACTIVE)
+        self.rosSocket = RosSocket(ROS_ACTIVE)
 
     def assertConnectedAddresses(self, expectedIPs):
         self.physicalSocket.assertConnectedAddresses(expectedIPs)

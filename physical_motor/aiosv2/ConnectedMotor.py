@@ -1,6 +1,7 @@
 import math
 import socket
 import struct
+from typing import Optional
 from aiosv2.constants import ControlMode, AxisState, PORT_rt, PORT_pt, PORT_srv
 from aiosv2.CVP import CVP
 from aiosv2.AiosSocket import AiosSocket
@@ -31,14 +32,17 @@ class ConnectedMotor:
             },
         )
 
-    def getCVP(self) -> CVP:
+    def getCVP(self) -> Optional[CVP]:
         data = {
             "method": "GET",
             "reqTarget": "/m1/CVP",
         }
         self.socket.sendJSON(self.ip, PORT_rt, data)
 
-        json_obj, _ = self.socket.readJSON()
+        response = self.socket.readJSON()
+        if response is None:
+            raise Exception("Could not read CVP")
+        json_obj, _ = response
         if json_obj.get("status") != "OK":
             raise Exception("Invalid CVP")
 
