@@ -18,8 +18,8 @@ PROPELLOR_CONTROLLER = "propellor_controller"
 
 EXPECTED_IPS = ["10.10.10.17", "10.10.10.16"]
 IP_MAP = {
-    "10.10.10.17": "motor1",
-    "10.10.10.16": "motor2"
+    "10.10.10.17": "bottom_motor",
+    "10.10.10.16": "top_motor"
 }
 
 class MotorControllerNode(Node):
