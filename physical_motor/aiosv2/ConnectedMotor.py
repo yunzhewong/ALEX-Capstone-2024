@@ -16,28 +16,10 @@ class ConnectedMotor:
         self.socket = socket
 
     def enable(self):
-        self.socket.sendJSON(
-            self.ip,
-            PORT_srv,
-            {
-                "method": "SET",
-                "reqTarget": "/m1/requested_state",
-                "property": AxisState.AXIS_STATE_ENABLE.value,
-            },
-        )
-        self.socket.readJSON()
+        self.socket.changeState(self.ip, AxisState.AXIS_STATE_ENABLE.value)
 
     def disable(self):
-        self.socket.sendJSON(
-            self.ip,
-            PORT_srv,
-            {
-                "method": "SET",
-                "reqTarget": "/m1/requested_state",
-                "property": AxisState.AXIS_STATE_IDLE.value,
-            },
-        )
-        self.socket.readJSON()
+        self.socket.changeState(self.ip, AxisState.AXIS_STATE_IDLE.value)
 
     def requestCVP(self):
         self.socket.sendJSON(
