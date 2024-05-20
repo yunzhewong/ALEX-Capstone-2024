@@ -3,18 +3,21 @@ import time
 import aiosv2
 import numpy as np
 import matplotlib.pyplot as plt
-import time
 
 SAMPLE_PERIOD = 0.01
-SAVE_NAME = "lower_motor_pi_8.csv"
+# SAVE_NAME = "lower_motor_pi_8.csv"
+SAVE_NAME = "jerk_motor.csv"
 
-## For sinusoial waveform
-AMPLITUDE = 1  # Amplitude of the sinusoidal waveform (in amps)
-OFFSET = 0
-FREQUENCY_SIGNAL = 0.5  # Frequency of the sinusoidal waveform (in Hz)
+## For jerk trajectory (6-degree)
+POLYNOMIAL_COEFFICIENTS = [1e-6, -1e-5, 1e-4, -1e-3, 1e-2, -1e-1, 1]
+
+# ## For sinusoidal waveform
+# AMPLITUDE = 1.5  # Amplitude of the sinusoidal waveform (in amps)
+# OFFSET = 0
+# FREQUENCY_SIGNAL = 0.5  # Frequency of the sinusoidal waveform (in Hz)
 
 
-# Store currents, velocities, positions and a count of logged data points
+# Store currents, velocities, positions, and a count of logged data points
 class DataLog:
     def __init__(self):
         self.currents = []
@@ -22,20 +25,18 @@ class DataLog:
         self.positions = []
         self.times = []
 
-    def addCVP(self, time, cvp: aiosv2.CVP):
+    def addCVP(self, current_time, cvp: aiosv2.CVP):
         self.currents.append(cvp.current)
         self.velocities.append(cvp.velocity)
         self.positions.append(cvp.position)
-        self.times.append(time)
+        self.times.append(current_time)
 
-    def readConnection(self, connection: aiosv2.ConnectedMotor, timeS):
-        iterations = int(timeS / SAMPLE_PERIOD)
-        startTime = time.time()
-
-        for _ in range(iterations):
+    def readConnection(self, connection: aiosv2.ConnectedMotor, duration):
+        start_time = time.time()
+        while time.time() - start_time < duration:
             cvp = connection.getCVP()
-            currentTime = time.time()
-            self.addCVP(currentTime - startTime, cvp)
+            current_time = time.time() - start_time
+            self.addCVP(current_time, cvp)
             time.sleep(SAMPLE_PERIOD)
 
     def plot(self):
@@ -65,14 +66,14 @@ class DataLog:
         plt.show()
 
     def download(self, name: str):
-        time = np.array(self.times)
+        times = np.array(self.times)
         currents = np.array(self.currents)
         velocities = np.array(self.velocities)
         positions = np.array(self.positions)
 
         data = np.column_stack(
             (
-                time,
+                times,
                 currents,
                 velocities,
                 positions,
@@ -102,48 +103,50 @@ if __name__ == "__main__":
 
     connection = twinMotor.bottomMotor
 
-    WAITING_TIME_S = 5
+    WAITING_TIME_S = 15
     dataLog = DataLog()
 
-    ## Generate sinusoidal current input
-    t = np.arange(0, WAITING_TIME_S, SAMPLE_PERIOD)
-    sinusoidal_currents = AMPLITUDE * np.sin(2 * np.pi * FREQUENCY_SIGNAL * t) + OFFSET
+    ## For polynomial current ##
+    # Generate polynomial current input for three phases
+    t = np.arange(0, 2, SAMPLE_PERIOD)
+    phase1 = np.polyval(POLYNOMIAL_COEFFICIENTS, t)  # Move in one direction
+    phase2 = -np.polyval(POLYNOMIAL_COEFFICIENTS, t)  # Move in the opposite direction
 
-    # Loop to set sinusoidal current input
-    for current in sinusoidal_currents:
+    # Define number of cycles
+    num_cycles = 5
+
+    # Repeat phases to create the desired number of cycles
+    polynomial_currents = np.tile(np.concatenate((phase1, phase2)), num_cycles)
+
+    # Loop to set polynomial current input
+    start_time = time.time()
+    for current in polynomial_currents:
         # Set current
         connection.setCurrent(current)
 
         # Log data
-        dataLog.readConnection(connection, SAMPLE_PERIOD)
+        cvp = connection.getCVP()
+        current_time = time.time() - start_time
+        dataLog.addCVP(current_time, cvp)
 
-    # ## Loop for free response input ##
-    # while True:
-    #     # Read current input from user or sensor
-    #     current_input = float(input("Enter desired current input (amps): "))
+        time.sleep(SAMPLE_PERIOD)
 
+    # ## Generate sinusoidal current input
+    # t = np.arange(0, WAITING_TIME_S, SAMPLE_PERIOD)
+    # sinusoidal_currents = AMPLITUDE * np.sin(2 * np.pi * FREQUENCY_SIGNAL * t) + OFFSET
+
+    # # Loop to set sinusoidal current input
+    # start_time = time.time()
+    # for i, current in enumerate(sinusoidal_currents):
     #     # Set current
-    #     connection.setCurrent(current_input)
+    #     connection.setCurrent(current)
 
     #     # Log data
-    #     dataLog.readConnection(connection, WAITING_TIME_S)
+    #     cvp = connection.getCVP()
+    #     current_time = time.time() - start_time
+    #     dataLog.addCVP(current_time, cvp)
 
-    #     # Ask if user wants to continue
-    #     continue_response = input("Continue logging data? (y/n): ")
-    #     if continue_response.lower() != 'y':
-    #         break
-
-    # aios.controlMode(aios.ControlMode.POSITION_CONTROL.value, connection.ip, 1)
-    # connection.setPosition(0)
-    # dataLog.readConnection(connection, WAITING_TIME_S)
-    # connection.setPosition(math.pi / 8)
-    # dataLog.readConnection(connection, WAITING_TIME_S)
-    # connection.setPosition(0)
-    # dataLog.readConnection(connection, WAITING_TIME_S)
-    # connection.setPosition(-math.pi / 8)
-    # dataLog.readConnection(connection, WAITING_TIME_S)
-    # connection.setPosition(0)
-    # dataLog.readConnection(connection, WAITING_TIME_S)
+    #     time.sleep(SAMPLE_PERIOD)
 
     twinMotor.disable()
 
