@@ -42,20 +42,20 @@ def generate_launch_description():
     )
 
     load_motor1 = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'motor1_controller'],
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'bottom_motor_controller'],
         output='screen'
     )
     
     load_motor2 = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'motor2_controller'],
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'top_motor_controller'],
         output='screen'
     )
 
-    # motor_controller = Node(
-    #     package='alex_nodes',
-    #     executable='motor_pubsub',
-    #     name="motor_pubsub"
-    # )
+    motor_controller = Node(
+        package='alex_nodes',
+        executable='motor_pubsub',
+        name="motor_pubsub"
+    )
 
     encoder_reader = Node(
         package='alex_nodes',
@@ -80,7 +80,7 @@ def generate_launch_description():
             robot_state_publisher,
             gazebo,
             spawn_entity, 
-            # motor_controller, 
+            motor_controller, 
             encoder_reader, 
             user_interface
         ]
