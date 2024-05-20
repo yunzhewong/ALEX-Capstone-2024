@@ -3,15 +3,9 @@ import time
 import aiosv2
 import numpy as np
 import matplotlib.pyplot as plt
-import time
 
-SAMPLE_PERIOD = 0.01
+FREQUENCY = 0.01
 SAVE_NAME = "lower_motor_pi_8.csv"
-
-## For sinusoial waveform
-AMPLITUDE = 1  # Amplitude of the sinusoidal waveform (in amps)
-OFFSET = 0
-FREQUENCY_SIGNAL = 0.5  # Frequency of the sinusoidal waveform (in Hz)
 
 
 # Store currents, velocities, positions and a count of logged data points
@@ -20,27 +14,24 @@ class DataLog:
         self.currents = []
         self.velocities = []
         self.positions = []
-        self.times = []
+        self.count = 0
 
-    def addCVP(self, time, cvp: aiosv2.CVP):
+    def addCVP(self, cvp: aiosv2.CVP):
         self.currents.append(cvp.current)
         self.velocities.append(cvp.velocity)
         self.positions.append(cvp.position)
-        self.times.append(time)
+        self.count += 1
 
     def readConnection(self, connection: aiosv2.ConnectedMotor, timeS):
-        iterations = int(timeS / SAMPLE_PERIOD)
-        startTime = time.time()
+        iterations = int(timeS / FREQUENCY)
 
         for _ in range(iterations):
-            cvp = connection.getCVP()
-            currentTime = time.time()
-            self.addCVP(currentTime - startTime, cvp)
-            time.sleep(SAMPLE_PERIOD)
+            self.addCVP(connection.getCVP())
+            time.sleep(FREQUENCY)
 
     def plot(self):
         fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 6), sharex=True)
-        x = np.array(self.times)
+        x = np.linspace(0, self.count * FREQUENCY, self.count)
 
         ax1.plot(x, np.array(self.currents), label="Current", color="blue")
         ax1.set_ylabel("Current")
@@ -65,7 +56,7 @@ class DataLog:
         plt.show()
 
     def download(self, name: str):
-        time = np.array(self.times)
+        time = np.linspace(0, self.count * FREQUENCY, self.count)
         currents = np.array(self.currents)
         velocities = np.array(self.velocities)
         positions = np.array(self.positions)
@@ -102,48 +93,19 @@ if __name__ == "__main__":
 
     connection = twinMotor.bottomMotor
 
-    WAITING_TIME_S = 5
+    WAITING_TIME_S = 1
     dataLog = DataLog()
 
-    ## Generate sinusoidal current input
-    t = np.arange(0, WAITING_TIME_S, SAMPLE_PERIOD)
-    sinusoidal_currents = AMPLITUDE * np.sin(2 * np.pi * FREQUENCY_SIGNAL * t) + OFFSET
-
-    # Loop to set sinusoidal current input
-    for current in sinusoidal_currents:
-        # Set current
-        connection.setCurrent(current)
-
-        # Log data
-        dataLog.readConnection(connection, SAMPLE_PERIOD)
-
-    # ## Loop for free response input ##
-    # while True:
-    #     # Read current input from user or sensor
-    #     current_input = float(input("Enter desired current input (amps): "))
-
-    #     # Set current
-    #     connection.setCurrent(current_input)
-
-    #     # Log data
-    #     dataLog.readConnection(connection, WAITING_TIME_S)
-
-    #     # Ask if user wants to continue
-    #     continue_response = input("Continue logging data? (y/n): ")
-    #     if continue_response.lower() != 'y':
-    #         break
-
-    # aios.controlMode(aios.ControlMode.POSITION_CONTROL.value, connection.ip, 1)
-    # connection.setPosition(0)
-    # dataLog.readConnection(connection, WAITING_TIME_S)
-    # connection.setPosition(math.pi / 8)
-    # dataLog.readConnection(connection, WAITING_TIME_S)
-    # connection.setPosition(0)
-    # dataLog.readConnection(connection, WAITING_TIME_S)
-    # connection.setPosition(-math.pi / 8)
-    # dataLog.readConnection(connection, WAITING_TIME_S)
-    # connection.setPosition(0)
-    # dataLog.readConnection(connection, WAITING_TIME_S)
+    connection.setPosition(0)
+    dataLog.readConnection(connection, WAITING_TIME_S)
+    connection.setPosition(math.pi / 8)
+    dataLog.readConnection(connection, WAITING_TIME_S)
+    connection.setPosition(0)
+    dataLog.readConnection(connection, WAITING_TIME_S)
+    connection.setPosition(-math.pi / 8)
+    dataLog.readConnection(connection, WAITING_TIME_S)
+    connection.setPosition(0)
+    dataLog.readConnection(connection, WAITING_TIME_S)
 
     twinMotor.disable()
 

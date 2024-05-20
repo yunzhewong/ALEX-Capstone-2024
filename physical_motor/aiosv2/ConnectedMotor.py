@@ -2,7 +2,8 @@ import math
 import socket
 import struct
 from aiosv2.constants import ControlMode, AxisState, PORT_rt, PORT_pt, PORT_srv
-from aiosv2 import CVP, AiosSocket
+from aiosv2.CVP import CVP
+from aiosv2.AiosSocket import AiosSocket
 
 
 # Represents a motor connected to the system
@@ -24,6 +25,7 @@ class ConnectedMotor:
                 "property": AxisState.AXIS_STATE_ENABLE.value,
             },
         )
+        self.socket.readJSON()
 
     def disable(self):
         self.socket.sendJSON(
@@ -35,6 +37,7 @@ class ConnectedMotor:
                 "property": AxisState.AXIS_STATE_IDLE.value,
             },
         )
+        self.socket.readJSON()
 
     def requestCVP(self):
         self.socket.sendJSON(

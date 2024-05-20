@@ -9,8 +9,8 @@ from aiosv2.serverConstants import ROS_HOST, ROS_PORT
 
 class AiosSocket:
     NETWORK = "10.10.10.255"
-    PHYSICAL_ACTIVE = False
-    ROS_ACTIVE = True
+    PHYSICAL_ACTIVE = True
+    ROS_ACTIVE = False
 
     physicalSocket: Optional[socket.socket]
 
@@ -52,6 +52,7 @@ class AiosSocket:
                 for ip in expectedIPs:
                     if ip not in foundIPs:
                         raise Exception(f"Missing IP: {ip}")
+                return
 
     def sendJSON(self, ip: str, port: int, data: dict):
         if self.physicalSocket is not None:
@@ -65,7 +66,7 @@ class AiosSocket:
 
     def readJSON(self):
         if self.physicalSocket is None:
-            raise Exception("Not physically connected")
+            return None
 
         data, addr = self.physicalSocket.recvfrom(1024)
 

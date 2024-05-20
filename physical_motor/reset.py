@@ -1,11 +1,11 @@
 import math
 import time
-import physical_motor.aiosv2.aios as aios
-import aiosv2
+import aiosv2.aios as aios
+from aiosv2 import AiosSocket, TwinMotor
 
 
-socket = aiosv2.AiosSocket()
-twinMotor = aiosv2.TwinMotor()
+socket = AiosSocket()
+twinMotor = TwinMotor(socket)
 twinMotor.enable()
 
 connectedMotors = [twinMotor.bottomMotor, twinMotor.topMotor]
