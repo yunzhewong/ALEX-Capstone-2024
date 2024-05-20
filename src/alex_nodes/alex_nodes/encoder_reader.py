@@ -27,56 +27,82 @@ class DataStore():
 
     def setTorque(self, torque):
         self.torque = torque
+
+    def plot(self, times, ax1, ax2, ax3):
+        ax1.cla()
+        ax1.plot(times, self.currents, label="Current", color="blue")
+        ax1.set_ylabel("Current")
+        ax1.legend()
+
+        ax2.cla()
+        ax2.plot(times, self.velocities, label="Velocity", color="red")
+        ax2.set_ylabel("Velocity")
+        ax2.legend()
+
+        ax3.cla()
+        ax3.plot(times, self.positions, label="Position (rad)", color="green")
+        ax3.set_xlabel("Time (s)")
+        ax3.set_ylabel("Position")
+        ax3.legend()
+
+    def export(self):
+        npCurrents = np.array(self.currents)
+        npVelocities = np.array(self.velocities)
+        npPositions = np.array(self.positions)
+        return (npCurrents, npVelocities, npPositions)
         
 
 class StateReader(Node):
     def __init__(self):
         super().__init__("encoder_reader")
-        _, axs = plt.subplots(3, 1)
+        _, axs = plt.subplots(3, 2)
         self.axs = axs
         
         self.position_sub = self.create_subscription(
             JointState, "/joint_states", self.read_position, 10
         )
-        self.torque_sub = self.create_subscription(
-                Float64MultiArray, f"/bottom_motor_controller/commands", self.read_torque, 10
+        self.bottomTorque = self.create_subscription(
+                Float64MultiArray, f"/bottom_motor_controller/commands", lambda msg: self.read_torque(msg, 0), 10
+            )
+        self.topTorque = self.create_subscription(
+                Float64MultiArray, f"/top_motor_controller/commands", lambda msg: self.read_torque(msg, 1), 10
             )
         self.times = []
-        self.dataStore = DataStore()
+        self.dataStores = [DataStore(), DataStore()]
+        self.count = 0
         self.update()
 
-    def read_torque(self, msg: Float64MultiArray):
-        self.dataStore.setTorque(msg.data[0])
+    def read_torque(self, msg: Float64MultiArray, index):
+        self.dataStores[index].setTorque(msg.data[0])
 
     def read_position(self, msg: JointState):
         timestamp = msg.header.stamp
         time = timestamp.sec + timestamp.nanosec / 1e9
 
-        newPosition = msg.position[0]
-        newVelocity = msg.velocity[0]
         self.times.append(time)
-        self.dataStore.addPositionVelocity(newPosition, newVelocity)
-        self.update()
+        for i in range(len(self.dataStores)):
+            newPosition = msg.position[i]
+            newVelocity = msg.velocity[i]
+            self.dataStores[i].addPositionVelocity(newPosition, newVelocity)
+        
+        self.count += 1
+        if self.count % 100 == 0:
+            self.update()
+            self.count = 0
 
     def update(self):
-        self.axs[0].cla()
-        self.axs[0].plot(self.times, self.dataStore.positions)
-        self.axs[0].set_ylabel('Positions (rad)')
-        
-        self.axs[1].cla()
-        self.axs[1].plot(self.times, self.dataStore.velocities)
-        self.axs[1].set_ylabel('Velocities (rad/s)')
-
-        self.axs[2].cla()
-        self.axs[2].plot(self.times, self.dataStore.currents)
-        self.axs[2].set_ylabel('Currents (A)')
-        plt.pause(0.01)
+        ax1, ax2, ax3, ax4, ax5, ax6 = self.axs.flatten()
+        self.dataStores[0].plot(self.times, ax1, ax3, ax5)
+        self.dataStores[1].plot(self.times, ax2, ax4, ax6)
+        plt.pause(1)
 
     def export_data(self):
         npTimes = np.array(self.times)
-        npPositions = np.array(self.dataStore.positions)
-        npVelocities = np.array(self.dataStore.velocities)
-        return np.column_stack((npTimes, npPositions, npVelocities))
+        totalTuple = (npTimes, )
+        for dataStore in self.dataStores:
+            exportTuple = dataStore.export()
+            totalTuple += exportTuple
+        return np.column_stack(totalTuple)
 
 def main(args=None):
     rclpy.init(args=args)
@@ -87,7 +113,7 @@ def main(args=None):
         rclpy.spin(state_reader)
     except KeyboardInterrupt:
         data = state_reader.export_data()
-        np.savetxt('data.csv', data, delimiter=',', header='times(s), positions(rads), velocities(rads^-1)', comments="")
+        np.savetxt('data.csv', data, delimiter=',', header='times(s), bottom currents(A), bottom velocities(rads^-1), bottom positions(rads), top currents(A), top velocities(rads^-1), top positions(rads)', comments="")
 
     state_reader.destroy_node()
     rclpy.shutdown()
