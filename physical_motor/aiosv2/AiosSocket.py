@@ -9,6 +9,7 @@ from aiosv2.serverConstants import ROS_HOST, ROS_PORT
 PHYSICAL_ACTIVE = True
 ROS_ACTIVE = False
 
+
 class PhysicalSocket:
     NETWORK = "10.10.10.255"
 
@@ -78,6 +79,8 @@ class RosSocket:
 
         rosSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         rosSocket.connect((ROS_HOST, ROS_PORT))
+        print("Connected")
+        rosSocket.send("".encode())
         self.socket = rosSocket
 
     def sendJSON(self, ip, port, data):
