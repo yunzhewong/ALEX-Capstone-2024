@@ -70,13 +70,13 @@ class StateReader(Node):
         self.times = []
         self.dataStores = [DataStore(), DataStore()]
         self.count = 0
-        self.update()
 
     def read_torque(self, msg: Float64MultiArray, index):
         self.dataStores[index].setTorque(msg.data[0])
 
     def read_position(self, msg: JointState):
         timestamp = msg.header.stamp
+
         time = timestamp.sec + timestamp.nanosec / 1e9
 
         self.times.append(time)
@@ -84,17 +84,6 @@ class StateReader(Node):
             newPosition = msg.position[i]
             newVelocity = msg.velocity[i]
             self.dataStores[i].addPositionVelocity(newPosition, newVelocity)
-        
-        self.count += 1
-        if self.count % 100 == 0:
-            self.update()
-            self.count = 0
-
-    def update(self):
-        ax1, ax2, ax3, ax4, ax5, ax6 = self.axs.flatten()
-        self.dataStores[0].plot(self.times, ax1, ax3, ax5)
-        self.dataStores[1].plot(self.times, ax2, ax4, ax6)
-        plt.pause(1)
 
     def export_data(self):
         npTimes = np.array(self.times)
