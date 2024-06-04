@@ -3,8 +3,14 @@
   <xacro:property name="zero_transform" value="0 0 0" />
   <xacro:property name="default_density" value="100" />
 
-  <xacro:macro name="box" params="width depth height density:=${default_density} xyz:=${zero_transform} color:=red">
-    <xacro:property name="size" value="${width} ${depth} ${height}" />
+  <xacro:macro name="box-geom" params="width depth height xyz:=${zero_transform}">
+    <geometry>
+      <box size="${width} ${depth} ${height}" />
+    </geometry>
+    <origin xyz="${xyz}" />
+  </xacro:macro>
+
+  <xacro:macro name="box-inertial" params="width depth height density:=${default_density} xyz:=${zero_transform}">
     <xacro:property name="volume" value="${width * depth * height}" />
     <xacro:property name="mass" value="${volume * density}" />
 
@@ -12,29 +18,34 @@
     <xacro:property name="ixx" value="${mass_multiplier * (depth * depth + height * height)}" />
     <xacro:property name="iyy" value="${mass_multiplier * (width * width + height * height)}" />
     <xacro:property name="izz" value="${mass_multiplier * (width * width + depth * depth)}" />
-
-    <visual>
-      <material name="${color}" />
-      <geometry>
-        <box size="${size}"/>
-      </geometry>
-      <origin xyz="${xyz}" />
-    </visual>
-    <collision>
-      <geometry>
-        <box size="${size}" />
-      </geometry>
-      <origin xyz="${xyz}" />
-    </collision>
+    
     <inertial>
       <origin xyz="${xyz}"/>
       <mass value="${mass}" />
       <inertia ixx="${ixx}" ixy="0.0" ixz="0.0" iyy="${iyy}" iyz="0.0" izz="${izz}" />
     </inertial>
   </xacro:macro>
+  
+  <xacro:macro name="box" params="width depth height density:=${default_density} xyz:=${zero_transform} color:=red">
+    <visual>
+      <material name="${color}" />
+      <xacro:box-geom width="${width}" depth="${depth}" height="${height}" xyz="${xyz}" />
+    </visual>
+    <collision>
+      <xacro:box-geom width="${width}" depth="${depth}" height="${height}" xyz="${xyz}" />
+    </collision>
+    <xacro:box-inertial width="${width}" depth="${depth}" height="${height}" xyz="${xyz}" />
+  </xacro:macro>
+
+  <xacro:macro name="cylinder-geom" params="length radius xyz:=${zero_transform} rpy:=${zero_transform}">
+    <geometry>
+      <cylinder length="${length}" radius="${radius}" />
+    </geometry>
+    <origin xyz="${xyz}" rpy="${rpy}"/>
+  </xacro:macro>
 
 
-  <xacro:macro name="cylinder" params="length radius density:=${default_density} xyz:=${zero_transform} rpy:=${zero_transform} color:=red">
+  <xacro:macro name="cylinder-inertia" params="length radius density:=${default_density} xyz:=${zero_transform} rpy:=${zero_transform}">
     <xacro:property name="volume" value="${pi * radius * radius * length}" />
     <xacro:property name="mass" value="${volume * density}" />
 
@@ -42,25 +53,23 @@
     <xacro:property name="ixx" value="${main_inertias}" />
     <xacro:property name="iyy" value="${main_inertias}" />
     <xacro:property name="izz" value="${mass / 2 * radius * radius}" />
-    
-    <visual>
-      <material name="${color}" />
-      <geometry>
-        <cylinder length="${length}" radius="${radius}" />
-      </geometry>
-      <origin xyz="${xyz}" rpy="${rpy}"/>
-    </visual>
-    <collision>
-      <geometry>
-        <cylinder length="${length}" radius="${radius}" />
-      </geometry>
-      <origin xyz="${xyz}" rpy="${rpy}"/>
-    </collision>
+
     <inertial>
       <origin xyz="${xyz}" rpy="${rpy}"/>
       <mass value="${mass}" />
       <inertia ixx="${ixx}" ixy="0.0" ixz="0.0" iyy="${iyy}" iyz="0.0" izz="${izz}" />
     </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="cylinder" params="length radius density:=${default_density} xyz:=${zero_transform} rpy:=${zero_transform} color:=red">
+    <visual>
+      <material name="${color}" />
+      <xacro:cylinder-geom length="${length}" radius="${radius}" xyz="${xyz}" rpy="${rpy}" />
+    </visual>
+    <collision>
+      <xacro:cylinder-geom length="${length}" radius="${radius}" xyz="${xyz}" rpy="${rpy}" />
+    </collision>
+    <xacro:cylinder-inertia length="${length}" radius="${radius}" density="${density}" xyz="${xyz}" rpy="${rpy}" />
   </xacro:macro>
 
 </robot>

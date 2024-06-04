@@ -52,7 +52,11 @@
   </joint>
 
   <link name="top_motor_shaft">
-    <xacro:common.cylinder length="0.025" radius="0.01" density="10000" rpy="0 ${pi / 2} 0" />
+    <visual>
+      <material name="blue" />
+      <xacro:common.cylinder-geom length="0.1" radius="0.01" xyz="${0.025/2} 0 ${0.1/2}"/>
+    </visual>
+    <xacro:common.cylinder length="0.025" radius="0.01" density="10000" rpy="0 ${pi / 2} 0"/>
   </link>
 
   <joint name="top_motor" type="revolute">
@@ -62,16 +66,6 @@
     <limit lower="${-100 * pi}" upper="${100 * pi}" effort="100000" velocity="1000000" />
     <axis xyz="-1 0 0" />
     <dynamics damping="1" friction="0.1" />
-  </joint>
-
-  <link name="top_motor_propellor">
-    <xacro:common.cylinder length="0.1" radius="0.01" density="10000" rpy="0 0 0" />
-  </link>
-
-  <joint name="propellor_joint" type="fixed">
-    <parent link="top_motor_shaft" />
-    <child link="top_motor_propellor" />
-    <origin xyz="${0.025 / 2} 0 ${0.1 / 2}" rpy="0 0 0"/>
   </joint>
 
   <ros2_control name="GazeboSystem" type="system">
