@@ -8,6 +8,18 @@ from aiosv2.CVP import CVP
 from aiosv2.AiosSocket import AiosSocket
 
 
+class PIDConfig:
+    def __init__(self, response):
+        self.positionP = response.get("pos_gain")
+        self.velocityP = response.get("vel_gain")
+        self.velocityI = response.get("vel_integrator_gain")
+        self.velocityLimit = response.get("vel_limit")
+        self.limitTolerance = response.get("vel_limit_tolerance")
+
+    def __str__(self):
+        return f"Position Gain: {self.positionP}, Velocity Gain: {self.velocityP}, Velocity Int: {self. velocityI}"
+
+
 # Represents a motor connected to the system
 # Has methods to request and get the Current, Velocity and Position of the motor
 class ConnectedMotor:
@@ -115,26 +127,13 @@ class ConnectedMotor:
             PORT_srv,
             {
                 "method": "GET",
-                "reqTarget": "/m1/controller/pid",
+                "reqTarget": "/m1/controller/config",
             },
         )
-        try:
-            json_obj = self.socket.readJSON()
-            if json_obj.get("status") == "OK":
-                return {
-                    "kp": json_obj.get("kp"),
-                    "ki": json_obj.get("ki"),
-                    "kd": json_obj.get("kd"),
-                }
-            else:
-                print("Failed to get PID config:", json_obj.get("error"))
-                return None
-        except socket.timeout:
-            print("Network Timeout, no response received.")
-            return None
-        except Exception as e:
-            print(f"Error fetching PID config: {str(e)}")
-            return None
+
+        response, _ = self.socket.readJSON()
+
+        return PIDConfig(response)
 
     def getCVP_pt(self):
         tx_messages = struct.pack("<B", 0x1A)
