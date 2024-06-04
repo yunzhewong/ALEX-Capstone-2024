@@ -10,7 +10,7 @@ class MotorController():
         self.ip = ip
         self.publisher = publisher
         self.positionPID = PIDController(POSITION_GAIN, 0, 0)
-        self.velocityPID = PIDController(VEL_GAIN / VEL_GAIN, VEL_INTEGRATOR_GAIN, 0)
+        self.velocityPID = PIDController(0.5 * VEL_GAIN / VEL_GAIN, VEL_INTEGRATOR_GAIN, 0)
         self.commandObject = None
 
     def updateCommand(self, commandObject: CommandObject):
