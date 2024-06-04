@@ -1,6 +1,7 @@
 import math
 import socket
 import struct
+import time
 from typing import Optional
 from aiosv2.constants import ControlMode, AxisState, PORT_rt, PORT_pt, PORT_srv
 from aiosv2.CVP import CVP
@@ -40,6 +41,7 @@ class ConnectedMotor:
         self.socket.sendJSON(self.ip, PORT_rt, data)
 
         response = self.socket.readJSON()
+
         if response is None:
             raise Exception("Could not read CVP")
         json_obj, _ = response
@@ -59,6 +61,7 @@ class ConnectedMotor:
                 "method": "SET",
                 "reqTarget": "/m1/controller/config",
                 "control_mode": mode.value,
+                "reply_enable": False,
             },
         )
 
