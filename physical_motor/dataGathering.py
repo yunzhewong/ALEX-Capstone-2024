@@ -4,12 +4,15 @@ from classes.DataLog import DataLog
 import numpy as np
 import time
 
-DURATION = 3
+DURATION = 2
 NAME = "constantCurrent.csv"
 
 
 def func(connection: aiosv2.ConnectedMotor, t):
-    connection.setCurrent(1)
+    if t < 0.05:
+        connection.setCurrent(10)
+        return
+    connection.setCurrent(0)
 
 
 if __name__ == "__main__":
