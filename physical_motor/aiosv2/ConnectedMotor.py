@@ -46,7 +46,7 @@ class ConnectedMotor:
             },
         )
 
-    def getCVP(self) -> Optional[CVP]:
+    def getCVP(self) -> CVP:
         self.socket.sendJSON(self.ip, PORT_rt, {
             "method": "GET",
             "reqTarget": "/m1/CVP",
