@@ -28,6 +28,7 @@ class ConnectedMotor:
     def __init__(self, ip: str, socket: AiosSocket):
         self.ip = ip
         self.socket = socket
+        self.controlMode = ControlMode.Current
 
     def enable(self):
         self.socket.changeState(self.ip, AxisState.AXIS_STATE_ENABLE.value)
@@ -88,7 +89,6 @@ class ConnectedMotor:
         )
 
     def setPosition(self, position: float, velocity_ff=0, current_ff=0):
-        self.setControlMode(ControlMode.Position)
         positionCommand = position * self.CONVERSION_RATIO
         self.socket.sendJSON(
             self.ip,
@@ -104,7 +104,6 @@ class ConnectedMotor:
         )
 
     def setVelocity(self, velocity: float, current_ff=0):
-        self.setControlMode(ControlMode.Velocity)
         velocityCommand = velocity * self.CONVERSION_RATIO
         self.socket.sendJSON(
             self.ip,
@@ -119,7 +118,6 @@ class ConnectedMotor:
         )
 
     def setCurrent(self, current: float):
-        self.setControlMode(ControlMode.Current)
         self.socket.sendJSON(
             self.ip,
             PORT_rt,
