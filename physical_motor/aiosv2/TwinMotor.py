@@ -12,7 +12,7 @@ class TwinMotor:
         self.socket = socket
         
         self.socket.assertConnectedAddresses(self.EXPECTED_IPS)
-        config = SafetyConfiguration(maximum_current=3, maximum_velocity=100)
+        config = SafetyConfiguration(maximum_current=1, maximum_velocity=100)
         self.topMotor = SafeMotor(self.MOTORS["top"], socket, config)
         self.bottomMotor = SafeMotor(self.MOTORS["bottom"], socket, config)
 
@@ -20,10 +20,19 @@ class TwinMotor:
         self.topMotor.disable()
         self.bottomMotor.disable()
 
+    def on_error(self):
+        self.topMotor.setCurrent(0)
+        self.bottomMotor.setCurrent(0)
+
 def setup_teardown_twin_motor(actions: Callable[[TwinMotor], None]):
     socket = AiosSocket()
     twinMotor = TwinMotor(socket)
 
-    actions(twinMotor)
+    try:
+        actions(twinMotor)
+    except Exception as e:
+        print(e)
+        twinMotor.on_error()
 
     twinMotor.disable()
+

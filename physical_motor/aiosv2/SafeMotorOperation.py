@@ -29,16 +29,19 @@ class SafeMotor:
     
     def setPosition(self, position: float):
         self.check_operatable()
+        self.check_within_limits()
         self.modeChangeIfNecessary(ControlMode.Position)
         self.raw_motor.setPosition(position)
 
     def setVelocity(self, velocity: float):
         self.check_operatable()
+        self.check_within_limits()
         self.modeChangeIfNecessary(ControlMode.Velocity)
         self.raw_motor.setVelocity(velocity)
 
     def setCurrent(self, current: float):
         self.check_operatable()
+        self.check_within_limits()
         self.modeChangeIfNecessary(ControlMode.Current)
         self.raw_motor.setCurrent(current)
 
