@@ -4,18 +4,8 @@ from classes.DataLog import DataLog
 import numpy as np
 import time
 
-DURATION = 2
-NAME = "constantCurrent.csv"
 
-
-def func(connection: aiosv2.ConnectedMotor, t):
-    if t < 0.05:
-        connection.setCurrent(10)
-        return
-    connection.setCurrent(0)
-
-
-if __name__ == "__main__":
+def gather_data(func, duration, name):
     socket = aiosv2.AiosSocket()
     twinMotor = aiosv2.TwinMotor(socket)
     twinMotor.enable()
@@ -26,7 +16,7 @@ if __name__ == "__main__":
 
     startTime = time.time()
     currentTime = startTime
-    while currentTime - startTime < DURATION:
+    while currentTime - startTime < duration:
         currentTime = time.time()
         timeSinceStart = currentTime - startTime
         func(connection, timeSinceStart)
@@ -35,4 +25,10 @@ if __name__ == "__main__":
     twinMotor.disable()
 
     dataLog.plot()
-    dataLog.download(NAME)
+    dataLog.download(name)
+
+
+
+
+
+    
