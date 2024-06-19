@@ -46,23 +46,33 @@ class ConnectedMotor:
         )
 
     def getCVP(self) -> Optional[CVP]:
-        data = {
+        self.socket.sendJSON(self.ip, PORT_rt, {
             "method": "GET",
             "reqTarget": "/m1/CVP",
-        }
-        self.socket.sendJSON(self.ip, PORT_rt, data)
+        })
 
         response = self.socket.readJSON()
 
         if response is None:
             raise Exception("Could not read CVP")
         json_obj, _ = response
-        if json_obj.get("status") != "OK":
+
+        readStatus = json_obj.get("status")
+        readPosition = json_obj.get("position")
+        readVelocity = json_obj.get("velocity")
+        readCurrent = json_obj.get("current")
+
+        validStatus = readStatus == "OK"
+        validPosition = readPosition is not None
+        validVelocity = readVelocity is not None
+        validCurrent = readCurrent is not None
+
+        if not validStatus or not validPosition or not validVelocity or not validCurrent:
             raise Exception("Invalid CVP")
 
-        position = json_obj.get("position") / self.CONVERSION_RATIO
-        velocity = json_obj.get("velocity") / self.CONVERSION_RATIO
-        current = json_obj.get("current")
+        position = readPosition / self.CONVERSION_RATIO
+        velocity = readVelocity / self.CONVERSION_RATIO
+        current = readCurrent
         return CVP(current, velocity, position)
 
     def setControlMode(self, mode: ControlMode):
