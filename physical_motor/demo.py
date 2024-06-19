@@ -1,4 +1,5 @@
 import aiosv2
+from aiosv2.TwinMotor import setup_teardown_twin_motor
 import time
 import math
 
@@ -45,15 +46,13 @@ def currentControl(motor: aiosv2.ConnectedMotor):
     time.sleep(WAITING_TIME_S)
 
 
-if __name__ == "__main__":
-    socket = aiosv2.AiosSocket()
-    twinMotor = aiosv2.TwinMotor(socket)
-    twinMotor.enable()
-
+def func(twinMotor: aiosv2.TwinMotor):
     bottomMotor = twinMotor.bottomMotor
-
     positionControl(bottomMotor)
     velocityControl(bottomMotor)
     currentControl(bottomMotor)
 
-    twinMotor.disable()
+
+if __name__ == "__main__":
+    setup_teardown_twin_motor(func)
+    

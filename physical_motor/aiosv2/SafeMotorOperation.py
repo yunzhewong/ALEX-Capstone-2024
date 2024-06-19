@@ -1,7 +1,7 @@
-from AiosSocket import AiosSocket
-from ConnectedMotor import ConnectedMotor
-from constants import ControlMode
-from CVP import CVP
+from aiosv2.AiosSocket import AiosSocket
+from aiosv2.ConnectedMotor import ConnectedMotor
+from aiosv2.constants import ControlMode
+from aiosv2.CVP import CVP
 
 class SafetyConfiguration:
     def __init__(self, maximum_current, maximum_velocity):
@@ -15,7 +15,7 @@ class SafeMotor:
         self.raw_motor.enable()
         self.valid = True
         self.config = config
-        self.control_mode = ControlMode.Current
+        self.control_mode = None
         self.last_checked_CVP: CVP | None = None
         
     def disable(self):
@@ -40,12 +40,11 @@ class SafeMotor:
     def setCurrent(self, current: float):
         self.check_operatable()
         self.modeChangeIfNecessary(ControlMode.Current)
-        self.setCurrent(current)
+        self.raw_motor.setCurrent(current)
 
     def modeChangeIfNecessary(self, desired_control_mode: ControlMode):
-        if self.control_mode == desired_control_mode:
+        if self.control_mode is not None and self.control_mode.value == desired_control_mode.value:
             return
-        
         self.raw_motor.setControlMode(desired_control_mode)        
         self.control_mode = desired_control_mode
 
