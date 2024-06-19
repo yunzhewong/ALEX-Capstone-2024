@@ -12,9 +12,15 @@ class SafetyConfiguration:
 class SafeMotor:
     def __init__(self, ip: str, socket: AiosSocket, config: SafetyConfiguration):
         self.raw_motor = ConnectedMotor(ip, socket)
+        self.raw_motor.enable()
+        self.valid = True
         self.config = config
         self.control_mode = ControlMode.Current
         self.last_checked_CVP: CVP | None = None
+        
+    def disable(self):
+        self.valid = False
+        self.raw_motor.disable()
 
     def getMeasuredCVP(self, cached=True):
         if self.last_checked_CVP is None or not cached:
@@ -22,16 +28,26 @@ class SafeMotor:
         return self.last_checked_CVP
     
     def setPosition(self, position: float):
+        self.check_operatable()
         self.modeChangeIfNecessary(ControlMode.Position)
         self.raw_motor.setPosition(position)
 
     def setVelocity(self, velocity: float):
+        self.check_operatable()
         self.modeChangeIfNecessary(ControlMode.Velocity)
         self.raw_motor.setVelocity(velocity)
 
     def setCurrent(self, current: float):
+        self.check_operatable()
         self.modeChangeIfNecessary(ControlMode.Current)
         self.setCurrent(current)
+
+    def modeChangeIfNecessary(self, desired_control_mode: ControlMode):
+        if self.control_mode == desired_control_mode:
+            return
+        
+        self.raw_motor.setControlMode(desired_control_mode)        
+        self.control_mode = desired_control_mode
 
     def check_within_limits(self):
         cvp = self.raw_motor.getCVP()
@@ -43,14 +59,12 @@ class SafeMotor:
             raise Exception("Driving outside of the preset limits")
         
         self.last_checked_CVP = cvp
-    
-    def modeChangeIfNecessary(self, desired_control_mode: ControlMode):
-        if self.control_mode == desired_control_mode:
-            return
-        
-        self.raw_motor.setControlMode(desired_control_mode)        
-        self.control_mode = desired_control_mode
 
+    def check_operatable(self):
+        if not self.valid:
+            raise Exception("Motor was already turned off")
+    
+    
     
 
     
