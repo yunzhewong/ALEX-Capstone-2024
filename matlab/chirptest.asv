@@ -1,0 +1,36 @@
+close all
+clear
+
+% sample transer fucntion 
+sys = tf(3, [1 0.5 30]);
+% sys = tf(1, [1 2])
+
+figure
+bode(sys)
+
+POINTS = 10000;
+
+t = linspace(0, 20, POINTS);
+sample_t = t(2) - t(1);
+sample_freq = 1 / sample_t;
+chirp_f = linspace(0, 50, POINTS);
+u = sin(2 * pi * chirp_f .* t);
+% u = sin(2 * pi * 10 * t);
+
+y_true = lsim(sys, u, t)';
+
+uffted = fft(u);
+yffted = fft(y_true);
+ratio = yffted ./ uffted;
+
+
+full_f = sample_freq / POINTS * (0:POINTS - 1);
+
+P2 = abs(ratio);
+P1 = P2(1:POINTS/2+1);
+P1(2:end-1) = P1(2:end-1);
+half_f = full_f(1:POINTS / 2 + 1);
+
+figure
+semilogx(2*pi*half_f, 20*log10(P1))
+
