@@ -2,8 +2,8 @@ close all
 clear
 
 % sample transer function
-% sys = tf(3, [1 0.5 30]);
-sys = tf(1, [1 2]);
+sys = tf(3, [1 0.5 30]);
+% sys = tf(1, [1 2]);
 
 % the true bode magnitude distribution
 figure
