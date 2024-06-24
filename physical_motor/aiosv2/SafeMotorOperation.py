@@ -12,12 +12,14 @@ class SafetyConfiguration:
 class SafeMotor:
     def __init__(self, ip: str, socket: AiosSocket, config: SafetyConfiguration):
         self.raw_motor = ConnectedMotor(ip, socket)
-        self.raw_motor.enable()
         self.valid = True
         self.config = config
         self.control_mode = None
         self.last_checked_CVP: CVP | None = None
-        
+
+    def enable(self):
+        self.raw_motor.enable()
+
     def disable(self):
         self.valid = False
         self.raw_motor.disable()
@@ -26,6 +28,9 @@ class SafeMotor:
         if self.last_checked_CVP is None or not cached:
             return self.raw_motor.getCVP()
         return self.last_checked_CVP
+
+    def getCVP(self):
+        return self.getMeasuredCVP(cached=False)
     
     def setPosition(self, position: float):
         self.check_operatable()
@@ -65,8 +70,3 @@ class SafeMotor:
     def check_operatable(self):
         if not self.valid:
             raise Exception("Motor was already turned off")
-    
-    
-    
-
-    
