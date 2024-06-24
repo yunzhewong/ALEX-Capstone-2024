@@ -2,7 +2,6 @@ from typing import Callable
 from aiosv2 import AiosSocket, ConnectedMotor
 from aiosv2.SafeMotorOperation import SafeMotor, SafetyConfiguration
 
-
 class TwinMotor:
     CONTROL_BOX = "10.10.10.12"
     MOTORS = {"top": "10.10.10.16", "bottom": "10.10.10.17"}
@@ -12,17 +11,21 @@ class TwinMotor:
         self.socket = socket
         
         self.socket.assertConnectedAddresses(self.EXPECTED_IPS)
-        config = SafetyConfiguration(maximum_current=1, maximum_velocity=100)
+        config = SafetyConfiguration(maximum_current=10, maximum_velocity=100)
         self.topMotor = SafeMotor(self.MOTORS["top"], socket, config)
         self.bottomMotor = SafeMotor(self.MOTORS["bottom"], socket, config)
 
+    def enable(self):
+        self.topMotor.enable()  # Enable the top motor
+        self.bottomMotor.enable()  # Enable the bottom motor
+
     def disable(self):
-        self.topMotor.disable()
-        self.bottomMotor.disable()
+        self.topMotor.disable()  # Disable the top motor
+        self.bottomMotor.disable()  # Disable the bottom motor
 
     def on_error(self):
-        self.topMotor.setCurrent(0)
-        self.bottomMotor.setCurrent(0)
+        self.topMotor.setCurrent(0)  # Stop the top motor
+        self.bottomMotor.setCurrent(0)  # Stop the bottom motor
 
 def setup_teardown_twin_motor(actions: Callable[[TwinMotor], None]):
     socket = AiosSocket()
@@ -35,4 +38,3 @@ def setup_teardown_twin_motor(actions: Callable[[TwinMotor], None]):
         twinMotor.on_error()
 
     twinMotor.disable()
-

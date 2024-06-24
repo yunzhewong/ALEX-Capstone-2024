@@ -5,12 +5,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from classes.DataLog import DataLog
 
-SAMPLE_PERIOD = 0.01
 # SAVE_NAME = "lower_motor_pi_8.csv"
-SAVE_NAME = "jerk_motor.csv"
+SAVE_NAME = "polynomial_position_motor.csv"
 
-## For jerk trajectory (6-degree)
-POLYNOMIAL_COEFFICIENTS = [1e-6, -1e-5, 1e-4, -1e-3, 1e-2, -1e-1, 1]
+## For jerk trajectory (6-degree in position)
+SAMPLE_PERIOD = 0.04
+POLYNOMIAL_COEFFICIENTS = [0.01, 0.1, 0.01, 0.01]
 
 # ## For sinusoidal waveform
 # AMPLITUDE = 1.5  # Amplitude of the sinusoidal waveform (in amps)
@@ -36,30 +36,42 @@ if __name__ == "__main__":
     dataLog = DataLog()
 
     ## For polynomial current ##
-    # Generate polynomial current input for three phases
+    # Generate position input
     t = np.arange(0, 2, SAMPLE_PERIOD)
-    phase1 = np.polyval(POLYNOMIAL_COEFFICIENTS, t)  # Move in one direction
-    phase2 = -np.polyval(POLYNOMIAL_COEFFICIENTS, t)  # Move in the opposite direction
+    position = np.polyval(POLYNOMIAL_COEFFICIENTS, t)
 
-    # Define number of cycles
-    num_cycles = 5
-
-    # Repeat phases to create the desired number of cycles
-    polynomial_currents = np.tile(np.concatenate((phase1, phase2)), num_cycles)
-
-    # Loop to set polynomial current input
     start_time = time.time()
-    for current in polynomial_currents:
-        # Set current
-        connection.setCurrent(current)
+    start_time_actual = start_time
+    cycle_duration = 4.0  # Duration of each cycle (2 seconds in each direction)
 
-        # Log data
-        cvp = connection.getCVP()
-        current_time = time.time() - start_time
-        dataLog.addCVP(current_time, cvp)
+    while time.time() - start_time_actual < WAITING_TIME_S:
+        #print(position)
+        for i in range(len(position)):
+            # Set position
+            pos = position[i]
+            #print(pos)
+            connection.setPosition(pos)
 
-        time.sleep(SAMPLE_PERIOD)
+            # Log data
+            cvp = connection.getCVP()
+            current_time = time.time() - start_time_actual
+            dataLog.addCVP(current_time, cvp)
+            
+            if (i == len(position)-1):
+                position = [position[-1-i] for i in range(len(position))]
+                start_time = time.time()
+                break
+                #time.sleep(max(cycle_duration/2-(time.time()-start_time),0))
+            
 
+            # # Check if it's time to reverse direction
+            # if time.time() - start_time >= cycle_duration/2:
+                
+            #     position = [position[-1-i] for i in range(len(position))]
+            #     #POLYNOMIAL_COEFFICIENTS[-1] *= -1  # Reverse direction
+            #     start_time = time.time()  # Reset start time for next cycle
+            #     break  # Break out of the inner loop to switch direction
+            
     # ## Generate sinusoidal current input
     # t = np.arange(0, WAITING_TIME_S, SAMPLE_PERIOD)
     # sinusoidal_currents = AMPLITUDE * np.sin(2 * np.pi * FREQUENCY_SIGNAL * t) + OFFSET
