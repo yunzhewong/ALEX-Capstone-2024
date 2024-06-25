@@ -19,44 +19,49 @@ class TwinMotor:
         self.socket = socket
         
         self.socket.assertConnectedAddresses(self.EXPECTED_IPS)
-        config = SafetyConfiguration(maximum_current=15, maximum_velocity=2 * math.pi, minimum_position=-math.pi /2, maximum_position=math.pi / 2)
+        config = SafetyConfiguration(maximum_current=15, maximum_velocity=math.pi, minimum_position=-math.pi /2, maximum_position=math.pi / 2)
         self.topMotor = SafeMotor(self.MOTORS["top"], socket, config)
         self.bottomMotor = SafeMotor(self.MOTORS["bottom"], socket, config)
-        self.cvpStream = DataStream(socket, [self.topMotor, self.bottomMotor])
+        self.dataStream = DataStream(socket, [self.topMotor, self.bottomMotor])
 
     def enable(self):
         self.topMotor.enable()  # Enable the top motor
         self.bottomMotor.enable()  # Enable the bottom motor
-        self.cvpStream.enable()
+        self.dataStream.enable()
 
     def disable(self):
         self.topMotor.setCurrent(0) # Stop the top motor
         self.bottomMotor.setCurrent(0) # Stop the bottom motor
         self.topMotor.disable()  # Disable the top motor
         self.bottomMotor.disable()  # Disable the bottom motor
-        self.cvpStream.disable()
+        self.dataStream.disable()
 
 def setup_teardown_twin_motor(actions: Callable[[TwinMotor, float], None], totalRunningTime: float):
-    socket = AiosSocket()
-    twinMotor = TwinMotor(socket)
-    twinMotor.enable()
-
-    startTime = time.perf_counter()
-    currentTime = startTime
-    endTime = currentTime + totalRunningTime
-
     try:
-        while currentTime < endTime:
-            currentTime = time.perf_counter()
-            error = twinMotor.cvpStream.errored() 
-            if error:
-                raise Exception(error)
-            
-            runningTime = currentTime - startTime
-            actions(twinMotor, runningTime)
-            
-            time.sleep(SAMPLING_PERIOD)
-    except Exception as e:
-        print(e)
+        socket = AiosSocket()
+        twinMotor = TwinMotor(socket)
+        twinMotor.enable()
 
-    twinMotor.disable()
+        startTime = time.perf_counter()
+        currentTime = startTime
+        endTime = currentTime + totalRunningTime
+
+        try:
+            while currentTime < endTime:
+                currentTime = time.perf_counter()
+                error = twinMotor.dataStream.errored() 
+                if error:
+                    raise Exception(error)
+                
+                runningTime = currentTime - startTime
+                actions(twinMotor, runningTime)
+                
+                time.sleep(SAMPLING_PERIOD)
+        except Exception as e:
+            print(e)
+
+        twinMotor.disable()
+    except KeyboardInterrupt:
+        print("Keyboard Interrupted: Motors turned off")
+        print("Keyboard Interrupt again to release locks")
+        twinMotor.disable()
