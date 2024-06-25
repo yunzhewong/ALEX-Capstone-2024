@@ -38,6 +38,7 @@ class PhysicalSocket:
                 _, address = self.socket.recvfrom(1024)
                 foundIPs.append(address[0])
             except socket.timeout:  # fail after 1 second of no activity
+                print(foundIPs)
                 for ip in expectedIPs:
                     if ip not in foundIPs:
                         raise Exception(f"Missing IP: {ip}")

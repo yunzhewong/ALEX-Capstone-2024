@@ -62,6 +62,7 @@ if __name__ == "__main__":
                 start_time = time.time()
                 break
                 #time.sleep(max(cycle_duration/2-(time.time()-start_time),0))
+        time.sleep(1)
             
 
             # # Check if it's time to reverse direction
