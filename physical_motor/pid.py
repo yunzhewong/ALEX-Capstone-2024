@@ -6,12 +6,14 @@ import time
 if __name__ == "__main__":
     socket = AiosSocket()
     twinMotor = TwinMotor(socket)
-    twinMotor.enable()
+    twinMotor.bottomMotor.enable()
+    twinMotor.topMotor.enable()
 
     time.sleep(1)
 
-    topPID = twinMotor.topMotor.getPIDConfig()
-    bottomPID = twinMotor.bottomMotor.getPIDConfig()
+    topPID = twinMotor.topMotor.raw_motor.getPIDConfig()
+    bottomPID = twinMotor.bottomMotor.raw_motor.getPIDConfig()
     print("Top Motor:", topPID)
     print("Bottom Motor:", bottomPID)
-    twinMotor.disable()
+    twinMotor.bottomMotor.disable()
+    twinMotor.topMotor.disable()

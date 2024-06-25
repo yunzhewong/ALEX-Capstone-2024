@@ -127,3 +127,4 @@ class AiosSocket:
                 "reply_enable": False,
             },
         )
+        self.physicalSocket.readJSON()
