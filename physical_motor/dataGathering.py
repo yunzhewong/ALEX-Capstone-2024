@@ -1,34 +1,24 @@
-import math
+from typing import Callable
 import aiosv2
 from classes.DataLog import DataLog
 import numpy as np
 import time
+from aiosv2.TwinMotor import setup_teardown_twin_motor
 
-
-def gather_data(func, duration, name):
-    socket = aiosv2.AiosSocket()
-    twinMotor = aiosv2.TwinMotor(socket)
-    twinMotor.enable()
-
-    connection = twinMotor.bottomMotor
-
+def gather_data(command_func: Callable[[aiosv2.SafeMotor, float], None], duration: float, name: str):
     dataLog = DataLog()
 
-    startTime = time.time()
-    currentTime = startTime
-    while currentTime - startTime < duration:
-        currentTime = time.time()
-        timeSinceStart = currentTime - startTime
-        func(connection, timeSinceStart)
+    def func(twinMotor: aiosv2.TwinMotor, runningTime: float):
+        connection = twinMotor.bottomMotor
+        command_func(connection, runningTime)
         cvp = connection.getCVP()
-        dataLog.addCVP(timeSinceStart, cvp)
-    twinMotor.disable()
+        dataLog.addCVP(runningTime, cvp)
+
+    setup_teardown_twin_motor(func, duration)
 
     dataLog.plot()
     dataLog.download(name)
-
-
-
+    
 
 
     

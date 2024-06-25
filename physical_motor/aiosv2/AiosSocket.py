@@ -127,4 +127,8 @@ class AiosSocket:
                 "reply_enable": False,
             },
         )
-        self.physicalSocket.readJSON()
+        try:
+            self.physicalSocket.readJSON()
+        except:
+            # its fine to not read anything, as we just want to collect it
+            pass

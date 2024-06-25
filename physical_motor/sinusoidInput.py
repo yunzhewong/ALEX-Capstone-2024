@@ -4,19 +4,13 @@ import numpy as np
 import time
 
 from aiosv2.TwinMotor import setup_teardown_twin_motor
+from dataGathering import gather_data
 
 if __name__ == "__main__":
-    dataLog = DataLog()
-
-    def func(twinMotor: aiosv2.TwinMotor, runningTime: float):
-        connection = twinMotor.bottomMotor
+    def command_func(connection: aiosv2.SafeMotor, runningTime: float):
         current = 2 * np.sin(2 * np.pi * runningTime)
-        connection.setCurrent(current)
-        cvp = connection.getCVP()
-        dataLog.addCVP(runningTime, cvp)
+        connection.setCurrent(current)    
+        
+    gather_data(command_func, 10, "sinusoid.csv")
 
-    setup_teardown_twin_motor(func, 15)
-
-    dataLog.plot()
-    dataLog.download("sinusoid.csv")
     
