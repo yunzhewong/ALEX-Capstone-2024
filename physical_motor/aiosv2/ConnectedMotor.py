@@ -79,6 +79,16 @@ class ConnectedMotor:
             },
         )
 
+    def requestErrorCheck(self):
+        self.socket.sendJSON(
+            self.ip,
+            PORT_srv,
+            {
+                "method": "GET",
+                "reqTarget": "/m1/error",
+            },
+        )
+
     def setControlMode(self, mode: ControlMode):
         self.socket.sendJSON(
             self.ip,

@@ -4,17 +4,16 @@ import aiosv2
 from dataGathering import gather_data
 
 
-DURATION = 5
-NAME = "chirp025.csv"
+DURATION = 25
+NAME = "chirp0to25.csv"
 
-WAVE_MAGNITUDE = 2
+WAVE_MAGNITUDE = 3
 INITIAL_FREQUENCY = 0
-FINAL_FREQUENCY = 5
+FINAL_FREQUENCY = 25
 CHIRP_RATE = (FINAL_FREQUENCY - INITIAL_FREQUENCY) / DURATION
 
 def get_frequency(t):
-    frequency_slope = CHIRP_RATE
-    return frequency_slope * t + INITIAL_FREQUENCY
+    return CHIRP_RATE * t + INITIAL_FREQUENCY
 
 if __name__ == "__main__":
     def command_func(connection: aiosv2.SafeMotor, runningTime: float):

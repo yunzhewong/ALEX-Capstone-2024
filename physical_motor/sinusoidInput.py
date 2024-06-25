@@ -8,7 +8,7 @@ from dataGathering import gather_data
 
 if __name__ == "__main__":
     def command_func(connection: aiosv2.SafeMotor, runningTime: float):
-        current = 2 * np.sin(2 * np.pi * runningTime)
+        current = 3 * np.sin(2 * np.pi * runningTime)
         connection.setCurrent(current)    
 
     gather_data(command_func, 10, "sinusoid.csv")

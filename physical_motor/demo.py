@@ -12,7 +12,7 @@ def getValue(offset: float, values: List[float]):
 
 
 def positionControl(motor: aiosv2.SafeMotor, offset: float):
-    change = math.pi / 8
+    change = math.pi / 16
     position = getValue(offset, [0, change, 0, -1 * change, 0])
 
     if position is not None:
