@@ -1,8 +1,14 @@
+import math
 import time
 from typing import Callable
 from aiosv2 import AiosSocket, ConnectedMotor
 from aiosv2.SafeMotorOperation import SafeMotor, SafetyConfiguration
 from aiosv2.CVPStream import CVPStream
+
+# experimentally, a sampling time of 300Hz yields consistent results
+SAMPLING_FREQUENCY = 300
+SAMPLING_PERIOD = 1 / SAMPLING_FREQUENCY
+
 
 class TwinMotor:
     CONTROL_BOX = "10.10.10.12"
@@ -13,7 +19,7 @@ class TwinMotor:
         self.socket = socket
         
         self.socket.assertConnectedAddresses(self.EXPECTED_IPS)
-        config = SafetyConfiguration(maximum_current=1, maximum_velocity=100)
+        config = SafetyConfiguration(maximum_current=10, maximum_velocity=math.pi)
         self.topMotor = SafeMotor(self.MOTORS["top"], socket, config)
         self.bottomMotor = SafeMotor(self.MOTORS["bottom"], socket, config)
         self.cvpStream = CVPStream(socket, [self.topMotor, self.bottomMotor])
@@ -49,7 +55,7 @@ def setup_teardown_twin_motor(actions: Callable[[TwinMotor, float], None], total
             if error:
                 raise Exception(error)
             actions(twinMotor, currentTime - startTime)
-            time.sleep(0.01)
+            time.sleep(SAMPLING_PERIOD)
     except Exception as e:
         print(e)
         twinMotor.on_error()

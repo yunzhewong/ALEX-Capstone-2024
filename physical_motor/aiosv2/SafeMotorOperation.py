@@ -39,9 +39,6 @@ class SafeMotor:
             self.current_CVP = cvp
         self.check_within_limits(cvp)
 
-    def requestCVP(self):
-        self.raw_motor.requestCVP()
-
     def setPosition(self, position: float):
         self.check_operatable()
         self.modeChangeIfNecessary(ControlMode.Position)
@@ -67,13 +64,15 @@ class SafeMotor:
         self.control_mode = desired_control_mode
 
     def check_within_limits(self, cvp: CVP):
-        within_velocity_limits = abs(cvp.velocity) < self.config.maximum_velocity
-        within_current_limits = abs(cvp.current) < self.config.maximum_current
+        abs_velocity = abs(cvp.velocity)
+        abs_current = abs(cvp.current)
 
-        if not within_current_limits or not within_velocity_limits:
-            raise Exception("Driving outside of the preset limits")
+        if abs_current > self.config.maximum_current:
+            raise Exception(f"Exceeded Current Limit: (current: {abs_current:.2f} A, limit: {self.config.maximum_current:.2f} A)")
 
-        self.current_CVP = cvp
+        if abs_velocity > self.config.maximum_velocity:
+            raise Exception(f"Exceeded Velocity Limit: (velocity: {abs_velocity:.2f} rad/s, limit: {self.config.maximum_velocity:.2f} rad/s)")
+
 
     def check_operatable(self):
         if not self.valid:

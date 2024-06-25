@@ -18,7 +18,7 @@ def positionControl(motor: aiosv2.SafeMotor, currentTime: float):
 
 
 def velocityControl(motor: aiosv2.SafeMotor, currentTime: float):
-    change = math.pi / 8
+    change = math.pi / 4
     velocities = [0, change, 0, -1 * change, 0]
 
     index = math.floor(currentTime)

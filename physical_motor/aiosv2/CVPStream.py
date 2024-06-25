@@ -7,9 +7,6 @@ from aiosv2.ConnectedMotor import CVPConverter
 from aiosv2.CVP import CVP
 
 
-# experimentally, a sampling time of 300Hz yields consistent results
-SAMPLING_FREQUENCY = 300
-SAMPLING_PERIOD = 1 / SAMPLING_FREQUENCY
 
 class CVPStream:
     def __init__(self, socket: AiosSocket, motors: List[SafeMotor]):
@@ -25,13 +22,9 @@ class CVPStream:
         self.readThread = threading.Thread(target=self.read)
         self.readThread.start()
 
-        # self.requestThread = threading.Thread(target=self.request)
-        # self.requestThread.start()
-
     def disable(self):
         self.stop = True
         self.readThread.join()
-        # self.requestThread.join()
         
     def errored(self):
         return self.error
@@ -59,23 +52,11 @@ class CVPStream:
     def check_for_cvp(self):
         try:
             json_obj, ip = self.socket.readJSON()
-            if json_obj.get('reqTarget') != '/m1/CVP':
+
+            valid_targets = ["/m1/setPosition", "/m1/setVelocity","/m1/setCurrent"]
+            target = json_obj.get('reqTarget')
+            if target not in valid_targets:
                 return None
             return json_obj, ip
         except:
             return None
-        
-        
-
-    def request(self):
-        while True:
-            if self.stop:
-                break
-            
-            try:
-                for motor in self.motors:
-                    motor.requestCVP()
-                time.sleep(SAMPLING_PERIOD)
-            except: 
-                pass
-            

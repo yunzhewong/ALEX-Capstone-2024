@@ -99,7 +99,6 @@ class ConnectedMotor:
             {
                 "method": "SET",
                 "reqTarget": "/m1/setPosition",
-                "reply_enable": False,
                 "position": positionCommand,
                 "velocity_ff": velocity_ff,
                 "current_ff": current_ff,
@@ -114,7 +113,6 @@ class ConnectedMotor:
             {
                 "method": "SET",
                 "reqTarget": "/m1/setVelocity",
-                "reply_enable": False,
                 "velocity": velocityCommand,
                 "current_ff": current_ff,
             },
@@ -127,7 +125,6 @@ class ConnectedMotor:
             {
                 "method": "SET",
                 "reqTarget": "/m1/setCurrent",
-                "reply_enable": False,
                 "current": current,
             },
         )
