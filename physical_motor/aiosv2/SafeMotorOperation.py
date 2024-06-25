@@ -6,9 +6,28 @@ from aiosv2.CVP import CVP
 
 
 class SafetyConfiguration:
-    def __init__(self, maximum_current, maximum_velocity):
+    def __init__(self, maximum_current, maximum_velocity, minimum_position, maximum_position):
         self.maximum_current = maximum_current
         self.maximum_velocity = maximum_velocity
+        self.minimum_position = minimum_position
+        self.maximum_position = maximum_position
+
+    def check_within_limits(self, cvp: CVP):
+        pos = cvp.position
+        abs_velocity = abs(cvp.velocity)
+        abs_current = abs(cvp.current)
+
+        if abs_current >= self.maximum_current:
+            raise Exception(f"Exceeded Current Limit: (current: {abs_current:.2f} A, limit: {self.maximum_current:.2f} A)")
+
+        if abs_velocity >= self.maximum_velocity:
+            raise Exception(f"Exceeded Velocity Limit: (velocity: {abs_velocity:.2f} rad/s, limit: {self.maximum_velocity:.2f} rad/s)")
+        
+        if pos <= self.minimum_position:
+            raise Exception(f"Exceeded Minimum Position: (position: {pos:.2f} rad, limit: {self.minimum_position:.2f} rad)") 
+        
+        if pos >= self.maximum_position:
+            raise Exception(f"Exceeded Maximum Position: (position: {pos:.2f} rad, limit: {self.maximum_position:.2f} rad)") 
 
 
 class SafeMotor:
@@ -64,14 +83,7 @@ class SafeMotor:
         self.control_mode = desired_control_mode
 
     def check_within_limits(self, cvp: CVP):
-        abs_velocity = abs(cvp.velocity)
-        abs_current = abs(cvp.current)
-
-        if abs_current > self.config.maximum_current:
-            raise Exception(f"Exceeded Current Limit: (current: {abs_current:.2f} A, limit: {self.config.maximum_current:.2f} A)")
-
-        if abs_velocity > self.config.maximum_velocity:
-            raise Exception(f"Exceeded Velocity Limit: (velocity: {abs_velocity:.2f} rad/s, limit: {self.config.maximum_velocity:.2f} rad/s)")
+        self.config.check_within_limits(cvp)
 
 
     def check_operatable(self):
