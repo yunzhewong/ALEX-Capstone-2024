@@ -17,7 +17,7 @@ class SafeMotor:
         self.valid = True
         self.config = config
         self.control_mode = None
-        self.current_CVP: CVP | None = None
+        self.current_CVP: CVP = CVP(0,0,0)
         self.cvp_lock = threading.Lock()
 
     def getIP(self):
@@ -30,9 +30,7 @@ class SafeMotor:
         self.valid = False
         self.raw_motor.disable()
 
-    def getMeasuredCVP(self, cached=True):
-        if self.current_CVP is None or not cached:
-            return self.raw_motor.getCVP()
+    def getCVP(self):
         with self.cvp_lock:
             return self.current_CVP
 
@@ -43,24 +41,21 @@ class SafeMotor:
     def requestCVP(self):
         self.raw_motor.requestCVP()
 
-    def getCVP(self):
-        return self.getMeasuredCVP(cached=False)
-
     def setPosition(self, position: float):
         self.check_operatable()
-        self.check_within_limits()
+        # self.check_within_limits()
         self.modeChangeIfNecessary(ControlMode.Position)
         self.raw_motor.setPosition(position)
 
     def setVelocity(self, velocity: float):
         self.check_operatable()
-        self.check_within_limits()
+        # self.check_within_limits()
         self.modeChangeIfNecessary(ControlMode.Velocity)
         self.raw_motor.setVelocity(velocity)
 
     def setCurrent(self, current: float):
         self.check_operatable()
-        self.check_within_limits()
+        # self.check_within_limits()
         self.modeChangeIfNecessary(ControlMode.Current)
         self.raw_motor.setCurrent(current)
 
@@ -73,16 +68,16 @@ class SafeMotor:
         self.raw_motor.setControlMode(desired_control_mode)
         self.control_mode = desired_control_mode
 
-    def check_within_limits(self):
-        cvp = self.raw_motor.getCVP()
+    # def check_within_limits(self):
+    #     cvp = self.raw_motor.getCVP()
 
-        within_velocity_limits = abs(cvp.velocity) < self.config.maximum_velocity
-        within_current_limits = abs(cvp.current) < self.config.maximum_current
+    #     within_velocity_limits = abs(cvp.velocity) < self.config.maximum_velocity
+    #     within_current_limits = abs(cvp.current) < self.config.maximum_current
 
-        if not within_current_limits or not within_velocity_limits:
-            raise Exception("Driving outside of the preset limits")
+    #     if not within_current_limits or not within_velocity_limits:
+    #         raise Exception("Driving outside of the preset limits")
 
-        self.current_CVP = cvp
+    #     self.current_CVP = cvp
 
     def check_operatable(self):
         if not self.valid:

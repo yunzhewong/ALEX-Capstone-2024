@@ -79,24 +79,6 @@ class ConnectedMotor:
             },
         )
 
-    def getCVP(self) -> CVP:
-        self.socket.sendJSON(
-            self.ip,
-            PORT_rt,
-            {
-                "method": "GET",
-                "reqTarget": "/m1/CVP",
-            },
-        )
-
-        response = self.socket.readJSON()
-
-        if response is None:
-            raise Exception("Could not read CVP")
-        json_obj, _ = response
-
-        return self.converter.parseCVP(json_obj)
-
     def setControlMode(self, mode: ControlMode):
         self.socket.sendJSON(
             self.ip,

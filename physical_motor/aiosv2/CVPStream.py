@@ -1,10 +1,15 @@
 import threading
+import time
 from typing import List
 from aiosv2.AiosSocket import AiosSocket
 from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.ConnectedMotor import CVPConverter
 from aiosv2.CVP import CVP
 
+
+# experimentally, a sampling time of 300Hz yields consistent results
+SAMPLING_FREQUENCY = 300
+SAMPLING_PERIOD = 1 / SAMPLING_FREQUENCY
 
 class CVPStream:
     def __init__(self, socket: AiosSocket, motors: List[SafeMotor]):
@@ -15,7 +20,7 @@ class CVPStream:
         self.requestThread = None
         self.converter = CVPConverter()
 
-    def start(self):
+    def enable(self):
         self.readThread = threading.Thread(target=self.read)
         self.readThread.start()
 
@@ -28,16 +33,27 @@ class CVPStream:
         self.requestThread.join()
 
     def read(self):
-        while not self.stop:
-            json_obj, ip = self.socket.readJSON()
+        while True:
+            if self.stop:
+                break
+            try:
+                json_obj, ip = self.socket.readJSON()
+                for motor in self.motors:
+                    if motor.getIP() == ip:
+                        cvp = self.converter.parseCVP(json_obj)
+                        motor.setCVP(cvp)
+            except:
+                pass
 
-            for motor in self.motors:
-                if motor.getIP() == ip:
-                    cvp = self.converter.parseCVP(json_obj)
-                    motor.setCVP(cvp)
-                    print(ip)
-
-    def request(self, motor: SafeMotor):
-        while not self.stop:
-            for motor in self.motors:
-                motor.requestCVP()
+    def request(self):
+        while True:
+            if self.stop:
+                break
+            
+            try:
+                for motor in self.motors:
+                    motor.requestCVP()
+                time.sleep(SAMPLING_PERIOD)
+            except: 
+                pass
+            

@@ -124,6 +124,6 @@ class AiosSocket:
                 "method": "SET",
                 "reqTarget": "/m1/requested_state",
                 "property": stateValue,
+                "reply_enable": False,
             },
         )
-        self.physicalSocket.readJSON()
