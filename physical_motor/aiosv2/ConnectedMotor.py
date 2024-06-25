@@ -20,15 +20,48 @@ class PIDConfig:
         return f"Position Gain: {self.positionP}, Velocity Gain: {self.velocityP}, Velocity Int: {self. velocityI}"
 
 
+class CVPConverter:
+    CONVERSION_RATIO = 100000 / math.pi
+
+    def convertToMotorCommand(self, value):
+        return value * self.CONVERSION_RATIO
+
+    def convertFromMotorCommand(self, value):
+        return value / self.CONVERSION_RATIO
+
+    def parseCVP(self, json_obj):
+        readStatus = json_obj.get("status")
+        readPosition = json_obj.get("position")
+        readVelocity = json_obj.get("velocity")
+        readCurrent = json_obj.get("current")
+
+        validStatus = readStatus == "OK"
+        validPosition = readPosition is not None
+        validVelocity = readVelocity is not None
+        validCurrent = readCurrent is not None
+
+        if (
+            not validStatus
+            or not validPosition
+            or not validVelocity
+            or not validCurrent
+        ):
+            raise Exception("Invalid CVP")
+
+        position = self.convertFromMotorCommand(readPosition)
+        velocity = self.convertFromMotorCommand(readVelocity)
+        current = readCurrent
+        return CVP(current, velocity, position)
+
+
 # Represents a motor connected to the system
 # Has methods to request and get the Current, Velocity and Position of the motor
 class ConnectedMotor:
-    CONVERSION_RATIO = 100000 / math.pi
-
     def __init__(self, ip: str, socket: AiosSocket):
         self.ip = ip
         self.socket = socket
         self.controlMode = ControlMode.Current
+        self.converter = CVPConverter()
 
     def enable(self):
         self.socket.changeState(self.ip, AxisState.AXIS_STATE_ENABLE.value)
@@ -47,10 +80,14 @@ class ConnectedMotor:
         )
 
     def getCVP(self) -> CVP:
-        self.socket.sendJSON(self.ip, PORT_rt, {
-            "method": "GET",
-            "reqTarget": "/m1/CVP",
-        })
+        self.socket.sendJSON(
+            self.ip,
+            PORT_rt,
+            {
+                "method": "GET",
+                "reqTarget": "/m1/CVP",
+            },
+        )
 
         response = self.socket.readJSON()
 
@@ -58,23 +95,7 @@ class ConnectedMotor:
             raise Exception("Could not read CVP")
         json_obj, _ = response
 
-        readStatus = json_obj.get("status")
-        readPosition = json_obj.get("position")
-        readVelocity = json_obj.get("velocity")
-        readCurrent = json_obj.get("current")
-
-        validStatus = readStatus == "OK"
-        validPosition = readPosition is not None
-        validVelocity = readVelocity is not None
-        validCurrent = readCurrent is not None
-
-        if not validStatus or not validPosition or not validVelocity or not validCurrent:
-            raise Exception("Invalid CVP")
-
-        position = readPosition / self.CONVERSION_RATIO
-        velocity = readVelocity / self.CONVERSION_RATIO
-        current = readCurrent
-        return CVP(current, velocity, position)
+        return self.converter.parseCVP(json_obj)
 
     def setControlMode(self, mode: ControlMode):
         self.socket.sendJSON(
@@ -89,7 +110,7 @@ class ConnectedMotor:
         )
 
     def setPosition(self, position: float, velocity_ff=0, current_ff=0):
-        positionCommand = position * self.CONVERSION_RATIO
+        positionCommand = self.converter.convertToMotorCommand(position)
         self.socket.sendJSON(
             self.ip,
             PORT_rt,
@@ -104,7 +125,7 @@ class ConnectedMotor:
         )
 
     def setVelocity(self, velocity: float, current_ff=0):
-        velocityCommand = velocity * self.CONVERSION_RATIO
+        velocityCommand = self.converter.convertToMotorCommand(velocity)
         self.socket.sendJSON(
             self.ip,
             PORT_rt,
