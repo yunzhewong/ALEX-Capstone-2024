@@ -19,7 +19,7 @@ class TwinMotor:
         self.socket = socket
         
         self.socket.assertConnectedAddresses(self.EXPECTED_IPS)
-        config = SafetyConfiguration(maximum_current=10, maximum_velocity=math.pi)
+        config = SafetyConfiguration(maximum_current=15, maximum_velocity=2 * math.pi)
         self.topMotor = SafeMotor(self.MOTORS["top"], socket, config)
         self.bottomMotor = SafeMotor(self.MOTORS["bottom"], socket, config)
         self.cvpStream = CVPStream(socket, [self.topMotor, self.bottomMotor])
@@ -39,14 +39,14 @@ class TwinMotor:
         self.bottomMotor.setCurrent(0)  # Stop the bottom motor
         self.cvpStream.disable()
 
-def setup_teardown_twin_motor(actions: Callable[[TwinMotor, float], None], totalTime: float):
+def setup_teardown_twin_motor(actions: Callable[[TwinMotor, float], None], totalRunningTime: float):
     socket = AiosSocket()
     twinMotor = TwinMotor(socket)
     twinMotor.enable()
 
     startTime = time.perf_counter()
-    currentTime = time.perf_counter()
-    endTime = startTime + totalTime
+    currentTime = startTime
+    endTime = currentTime + totalRunningTime
 
     try:
         while currentTime < endTime:
@@ -54,7 +54,10 @@ def setup_teardown_twin_motor(actions: Callable[[TwinMotor, float], None], total
             error = twinMotor.cvpStream.errored() 
             if error:
                 raise Exception(error)
-            actions(twinMotor, currentTime - startTime)
+            
+            runningTime = currentTime - startTime
+            actions(twinMotor, runningTime)
+            
             time.sleep(SAMPLING_PERIOD)
     except Exception as e:
         print(e)
