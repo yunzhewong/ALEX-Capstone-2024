@@ -7,7 +7,7 @@ from classes.DataLog import DataLog
 from dataGathering import gather_data
 
 SAVE_NAME = "polynomial_position_motor.csv"
-DURATION = 15
+DURATION = 5
 
 SAMPLE_PERIOD = 0.04
 POLYNOMIAL_COEFFICIENTS = [0.01, 0.1, 0.01, 0.01]

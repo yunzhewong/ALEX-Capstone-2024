@@ -6,11 +6,13 @@ from aiosv2.CVP import CVP
 
 
 class SafetyConfiguration:
-    def __init__(self, maximum_current, maximum_velocity, minimum_position, maximum_position):
-        self.maximum_current = maximum_current
-        self.maximum_velocity = maximum_velocity
-        self.minimum_position = minimum_position
-        self.maximum_position = maximum_position
+    def __init__(self, margin, maximum_current, maximum_velocity, minimum_position, maximum_position):
+        self.margin = margin
+        self.maximum_current = maximum_current * (1 - margin)
+        self.maximum_velocity = maximum_velocity * (1 - margin)
+        position_range = maximum_position - minimum_position
+        self.minimum_position = minimum_position + (margin * position_range) 
+        self.maximum_position = maximum_position + (margin * position_range)
 
     def check_within_limits(self, cvp: CVP):
         pos = cvp.position
@@ -18,16 +20,16 @@ class SafetyConfiguration:
         abs_current = abs(cvp.current)
 
         if abs_current >= self.maximum_current:
-            raise Exception(f"Exceeded Current Limit: (current: {abs_current:.2f} A, limit: {self.maximum_current:.2f} A)")
+            raise Exception(f"Within Current Limit Margin: (current: {abs_current:.2f} A, limit: {self.maximum_current:.2f} A)")
 
         if abs_velocity >= self.maximum_velocity:
-            raise Exception(f"Exceeded Velocity Limit: (velocity: {abs_velocity:.2f} rad/s, limit: {self.maximum_velocity:.2f} rad/s)")
+            raise Exception(f"Within Velocity Limit Margin: (velocity: {abs_velocity:.2f} rad/s, limit: {self.maximum_velocity:.2f} rad/s)")
         
         if pos <= self.minimum_position:
-            raise Exception(f"Exceeded Minimum Position: (position: {pos:.2f} rad, limit: {self.minimum_position:.2f} rad)") 
+            raise Exception(f"Within Minimum Position Margin: (position: {pos:.2f} rad, limit: {self.minimum_position:.2f} rad)") 
         
         if pos >= self.maximum_position:
-            raise Exception(f"Exceeded Maximum Position: (position: {pos:.2f} rad, limit: {self.maximum_position:.2f} rad)") 
+            raise Exception(f"Within Maximum Position Margin: (position: {pos:.2f} rad, limit: {self.maximum_position:.2f} rad)") 
 
 
 class SafeMotor:

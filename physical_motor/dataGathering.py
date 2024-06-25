@@ -1,8 +1,6 @@
 from typing import Callable
 import aiosv2
 from classes.DataLog import DataLog
-import numpy as np
-import time
 from aiosv2.TwinMotor import setup_teardown_twin_motor
 
 def gather_data(command_func: Callable[[aiosv2.SafeMotor, float], None], duration: float, name: str):
@@ -18,7 +16,3 @@ def gather_data(command_func: Callable[[aiosv2.SafeMotor, float], None], duratio
 
     dataLog.plot()
     dataLog.download(name)
-    
-
-
-    
