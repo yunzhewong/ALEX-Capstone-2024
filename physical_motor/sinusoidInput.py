@@ -3,29 +3,20 @@ from classes.DataLog import DataLog
 import numpy as np
 import time
 
-DURATION = 10
+from aiosv2.TwinMotor import setup_teardown_twin_motor
 
 if __name__ == "__main__":
-    socket = aiosv2.AiosSocket()
-    twinMotor = aiosv2.TwinMotor(socket)
-    twinMotor.enable()
-
-    connection = twinMotor.bottomMotor
-
     dataLog = DataLog()
 
-    startTime = time.time()
-    currentTime = startTime
-    while currentTime - startTime < DURATION:
-        currentTime = time.time()
-        timeSinceStart = currentTime - startTime
-        current = 2 * np.sin(2 * np.pi * timeSinceStart)
+    def func(twinMotor: aiosv2.TwinMotor, runningTime: float):
+        connection = twinMotor.bottomMotor
+        current = 2 * np.sin(2 * np.pi * runningTime)
         connection.setCurrent(current)
         cvp = connection.getCVP()
-        dataLog.addCVP(timeSinceStart, cvp)
-        time.sleep(0.01)
+        dataLog.addCVP(runningTime, cvp)
 
-    twinMotor.disable()
+    setup_teardown_twin_motor(func, 15)
 
     dataLog.plot()
-    dataLog.download("sinusoid")
+    dataLog.download("sinusoid.csv")
+    

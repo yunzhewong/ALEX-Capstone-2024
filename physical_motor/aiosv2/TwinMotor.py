@@ -19,7 +19,7 @@ class TwinMotor:
         self.socket = socket
         
         self.socket.assertConnectedAddresses(self.EXPECTED_IPS)
-        config = SafetyConfiguration(maximum_current=15, maximum_velocity=2 * math.pi)
+        config = SafetyConfiguration(maximum_current=3, maximum_velocity=2 * math.pi)
         self.topMotor = SafeMotor(self.MOTORS["top"], socket, config)
         self.bottomMotor = SafeMotor(self.MOTORS["bottom"], socket, config)
         self.cvpStream = CVPStream(socket, [self.topMotor, self.bottomMotor])
