@@ -57,10 +57,13 @@ class MinimalSubscriber : public rclcpp::Node
             starting_time = time;
         }
         double relative_time = time - starting_time;
-        file << relative_time << ',' << 0  << ',' << msg.velocity[0] << ',' << msg.position[0] << '\n';
+        file << relative_time << ',' << torque << ',' << msg.velocity[0] << ',' << msg.position[0] << '\n';
     }
 
     void on_torque(const Float64MultiArray &msg) {
+        {
+            RCLCPP_INFO(this->get_logger(), "%f", msg.data[0]);
+        }
         torque_read = true;
         torque = msg.data[0];
     }
