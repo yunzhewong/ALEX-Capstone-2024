@@ -8,13 +8,15 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+
 
 add_executable(talker src/simple_publisher.cpp)
 add_executable(listener src/simple_subscriber.cpp)
 add_executable(encoder_reader src/encoder_reader.cpp)
 ament_target_dependencies(talker rclcpp std_msgs)
 ament_target_dependencies(listener rclcpp std_msgs)
-ament_target_dependencies(encoder_reader rclcpp std_msgs)
+ament_target_dependencies(encoder_reader rclcpp sensor_msgs)
 
 install(TARGETS
   talker

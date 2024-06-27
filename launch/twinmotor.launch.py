@@ -58,7 +58,7 @@ def generate_launch_description():
     )
 
     encoder_reader = Node(
-        package='alex_nodes',
+        package='alex_nodes_cpp',
         executable='encoder_reader',
         name="encoder_reader"
     )
