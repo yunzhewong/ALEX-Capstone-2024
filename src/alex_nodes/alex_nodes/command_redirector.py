@@ -47,15 +47,15 @@ class ParsedJSON():
 
 class StreamParser():
     def parseStream(self, stream) -> tuple[list[DirectedCommand], str]:
-        separatedStrings = re.split(r'(?<=})\B(?={)', stream)
+        separatedJSONStrings = re.split(r'(?<=})\B(?={)', stream)
         commands = []
         newStream = ""
-        for readString in separatedStrings:
+        for (i, jsonString) in enumerate(separatedJSONStrings):
             try:
-                command = ParsedJSON(json.loads(readString)).convertToCommand() # check if loadable
+                command = ParsedJSON(json.loads(jsonString)).convertToCommand() # check if loadable
                 commands.append(command)
             except:
-                newStream = readString
+                newStream = "".join(separatedJSONStrings[i:])
                 break
 
         return commands, newStream
