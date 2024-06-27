@@ -1,4 +1,4 @@
-function chirp_identification(t, u, y)
+function [omega, M, theta] = chirp_identification(t, u, y)
     % as the fourier transform creates a frequency domain plot from 0Hz to the
     % nyquist frequency of the system (e.g. sample_freq / 2), we need to use
     % these values to reconstruct the graph
@@ -25,20 +25,25 @@ function chirp_identification(t, u, y)
     P1 = P2(1:total_points/2+1);
     half_f = full_f(1:total_points / 2 + 1);
     
-    theta = angle(ratio) / pi * 180;
+    ratio_angle = angle(ratio) / pi * 180;
 
     % bode is typically plotted as w (rads^-1) vs M (db)
     omega = 2*pi*half_f;
+    M = 20*log10(P1);
+    theta = ratio_angle(1:total_points / 2 + 1);
+
 
     figure
-    semilogx(omega, 20*log10(P1))
+    semilogx(omega, M)
     title("Magnitude Plot")
     xlabel("Frequency (rads^-1)")
     ylabel("Magnitude (db)")
 
     figure
-    semilogx(omega, theta(1:total_points / 2 + 1));
+    semilogx(omega, theta);
     title("Phase Plot vs Frequency")
     xlabel("Frequency (rads^-1)")
     ylabel("Phase (degrees)")
+
+
 end
