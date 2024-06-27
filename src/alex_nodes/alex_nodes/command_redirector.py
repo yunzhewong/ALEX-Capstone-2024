@@ -18,64 +18,47 @@ from alex_nodes.serverConstants import ROS_HOST, ROS_PORT
 
 CONVERSION_RATIO = 100000 / math.pi
 
+class ParsedJSON():
+    def __init__(self, jsonData: dict):
+        self.ip = jsonData.get("IP", None)
+        self.commandJSON = jsonData.get("commandJSON", None)
+
+        if self.ip is None or self.commandJSON is None:
+            raise Exception("JSON not parsable")
+        
+    def convertToCommand(self):
+        reqTarget = self.throwIfMissingGet("reqTarget")
+
+        if (reqTarget == "/m1/setPosition"):
+            position = self.throwIfMissingGet("position")            
+            return DirectedCommand(self.ip, CommandType.Position, position / CONVERSION_RATIO)
+        elif (reqTarget == "/m1/setVelocity"):
+            velocity = self.throwIfMissingGet("velocity")            
+            return DirectedCommand(self.ip, CommandType.Velocity, velocity / CONVERSION_RATIO)
+        elif (reqTarget == "/m1/setCurrent"):
+            current = self.throwIfMissingGet("current")
+            return DirectedCommand(self.ip, CommandType.Current, current)
+        
+    def throwIfMissingGet(self, key):
+        value = self.commandJSON.get(key, None)
+        if value is None:
+            raise Exception("Not convertable")
+        return value
+
 class StreamParser():
-    def __init__(self):
-        self.messageParser = MessageParser()
-    
     def parseStream(self, stream) -> tuple[list[DirectedCommand], str]:
         separatedStrings = re.split(r'(?<=})\B(?={)', stream)
-        parsedJSONs, newStream = self.extractJSONs(separatedStrings)
-        commands = self.createCommands(parsedJSONs)
-        return commands, newStream
-    
-    def extractJSONs(self, separatedStrings):
-        parsedJSONs = []
+        commands = []
         newStream = ""
         for readString in separatedStrings:
             try:
-                readJSON = json.loads(readString) # check if loadable
-                parsedJSONs.append(readJSON)
+                command = ParsedJSON(json.loads(readString)).convertToCommand() # check if loadable
+                commands.append(command)
             except:
                 newStream = readString
+                break
 
-        return parsedJSONs, newStream
-    
-    def createCommands(self, parsedJSONs):
-        commands = []
-        for parsedJSON in parsedJSONs:
-            command = self.messageParser.parseMessage(parsedJSON)
-            if command is not None:
-                commands.append(command)
-        return commands
-
-
-class MessageParser():
-    def parseMessage(self, parsedJSON: dict) -> DirectedCommand:
-        try:
-            ip = parsedJSON.get("IP")
-            commandJSON = parsedJSON.get("commandJSON")
-            commandResult = self.parseCommand(commandJSON)
-            if commandResult is None:
-                return None
-            commandNumber, value = commandResult
-            finalCommand = DirectedCommand(ip, commandNumber, value)
-            return finalCommand
-        except Exception as e:
-            print(e)
-            return None
-
-    def parseCommand(self, commandJSON: dict) -> tuple[CommandType, float] | None:
-        reqTarget = commandJSON.get("reqTarget")
-        if (reqTarget == "/m1/setPosition"):
-            position = commandJSON.get("position")
-            return CommandType.Position.value, position / CONVERSION_RATIO
-        elif (reqTarget == "/m1/setVelocity"):
-            velocity = commandJSON.get("velocity")
-            return CommandType.Velocity.value, velocity / CONVERSION_RATIO
-        elif (reqTarget == "/m1/setCurrent"):
-            current = commandJSON.get("current")
-            return CommandType.Current.value, current
-        return None
+        return commands, newStream
 
 class CommandRedirector(Node):
     def __init__(self):
@@ -104,8 +87,8 @@ class CommandRedirector(Node):
 
                 stream += data.decode("utf-8")
 
-                commands, newStream = self.streamParser.parseStream(stream)
-                stream = newStream
+                commands, nextStream = self.streamParser.parseStream(stream)
+                stream = nextStream
 
                 for command in commands:
                     self.send_request(command)
