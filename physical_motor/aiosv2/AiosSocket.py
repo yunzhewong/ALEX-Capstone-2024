@@ -97,6 +97,9 @@ class AiosSocket:
     rosSocket: RosSocket
 
     def __init__(self):
+        print(f"Physical Socket Active: {PHYSICAL_ACTIVE}")
+        print(f"ROS Socket Active: {ROS_ACTIVE}")
+
         self.physicalSocket = PhysicalSocket(PHYSICAL_ACTIVE)
         self.rosSocket = RosSocket(ROS_ACTIVE)
 
