@@ -78,11 +78,11 @@ function [Kt_b, J_b] = method_3(omega, M)
 
     m = -20;
     b = -1 * m * log10(LARGE_FREQUENCY) + large_w_M;
-
-    figure
-    plot(log10(omega), M)
-    hold on
-    plot(log10(omega), m * log10(omega) + b)
+    % 
+    % figure
+    % plot(log10(omega), M)
+    % hold on
+    % plot(log10(omega), m * log10(omega) + b)
 
     log_breakpoint_freq = (small_w_M - b) / m;
     breakpoint_freq = 10 ^ log_breakpoint_freq;
@@ -104,8 +104,9 @@ function validate_parameters(omega, M, Kt_b, J_b, name)
     semilogx(omega, sysM, omega, M);
     title(name)
     
+    fprintf("%s\n", name)
     fprintf("J / b: %f\n", J_b)
-    fprintf("Kt / b: %f\n", Kt_b)
+    fprintf("Kt / b: %f\n\n", Kt_b)
 end
 
 function [w_range, m_range] = extract_range(freq, mags, low_freq, high_freq)
