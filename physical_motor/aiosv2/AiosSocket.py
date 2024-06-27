@@ -6,8 +6,8 @@ from aiosv2.constants import PORT_srv
 from aiosv2.serverConstants import ROS_HOST, ROS_PORT
 
 
-PHYSICAL_ACTIVE = True
-ROS_ACTIVE = False
+PHYSICAL_ACTIVE = False
+ROS_ACTIVE = True
 
 
 class PhysicalSocket:
@@ -79,7 +79,6 @@ class RosSocket:
 
         rosSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         rosSocket.connect((ROS_HOST, ROS_PORT))
-        print("Connected")
         rosSocket.send("".encode())
         self.socket = rosSocket
 

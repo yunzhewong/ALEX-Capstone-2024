@@ -12,13 +12,11 @@ def generate_launch_description():
     doc = xacro.process_file("../urdf/twinMotor.urdf.xacro")
     robot_desc = doc.toxml()
     robot_description = {"robot_description": robot_desc}
+
     gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [
-                os.path.join(get_package_share_directory("gazebo_ros"), "launch"),
-                "/gazebo.launch.py",
-            ]
-        ),
+            PythonLaunchDescriptionSource([os.path.join(
+                get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')]
+         ),launch_arguments={'extra_gazebo_args': '--ros-args --params-file ../config/gazebo_params.yaml' }.items()
     )
 
     robot_state_publisher = Node(
