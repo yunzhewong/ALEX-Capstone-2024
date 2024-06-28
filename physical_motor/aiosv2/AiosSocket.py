@@ -120,7 +120,7 @@ class AiosSocket:
         self.rosSocket.sendJSON(ip, port, data)
 
     def readJSON(self):
-        return self.rosSocket.readJSON()
+        return self.physicalSocket.readJSON()
 
     def sendBytes(self, ip: str, port: int, bytesToSend: bytes):
         self.physicalSocket.sendBytes(ip, port, bytesToSend)

@@ -104,15 +104,12 @@ class CommandRedirector(Node):
                 cvps = []
                 for i in range(len(self.joints)):
                     cvps.append((self.joints[i][0], self.currents[i], self.joints[i][1], self.joints[i][2]))
-                    print(cvps[0])
 
                 for target_command in target_commands:
                     reqTarget, command = target_command
                     self.send_request(command)
 
                     if len(cvps) != 0:
-                        print(cvps[0])
-
                         formatted_str = json.dumps({
                             "status": "OK",
                             "reqTarget": reqTarget,
@@ -120,8 +117,6 @@ class CommandRedirector(Node):
                             "velocity": cvps[0][2],
                             "position": cvps[0][3],
                         })
-
-                        print(formatted_str)
                         client_socket.send(formatted_str.encode("utf-8"))
 
     def send_request(self, directedCommand: DirectedCommand):
