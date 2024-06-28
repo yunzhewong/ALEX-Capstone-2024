@@ -11,7 +11,7 @@ package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
 from alex_nodes.classes.Commands import CommandObject
-from motor_pubsub_utils.constants import TIMER_PERIOD
+from motor_pubsub_utils.constants import MOTOR_TORQUE_CONSTANT, TIMER_PERIOD
 from motor_pubsub_utils.MotorController import MotorController
 
 PROPELLOR_CONTROLLER = "propellor_controller"
@@ -22,49 +22,65 @@ IP_MAP = {
     "10.10.10.16": "top_motor"
 }
 
+class Float64MultiArrayPublisher():
+    def __init__(self, ros_publisher):
+        self.publisher = ros_publisher
+
+    def publish(self, values: List[float]):
+        msg = Float64MultiArray()
+        msg.data = values
+        msg.layout.data_offset = 0
+        self.publisher.publish(msg)
+
 class MotorControllerNode(Node):
     def __init__(self):
         super().__init__("motor_controller")
 
-        self.motorControllers: List[MotorController] = []
-
-        for ip in EXPECTED_IPS:
-            publisher = self.create_publisher(
-                Float64MultiArray, f"/{IP_MAP[ip]}_controller/commands", 10
-            )
-            motorController = MotorController(ip, publisher)
-            self.motorControllers.append(motorController)
-            
-        self.timer = self.create_timer(TIMER_PERIOD, self.sendCommands)
-        self.get_logger().info("Publisher Initialised")
+        self.motor_pairs: List[tuple[Float64MultiArrayPublisher, MotorController]] = []
 
         self.reader = self.create_subscription(
             JointState, "/joint_states", self.read_encoder, 10
         )
         self.get_logger().info("Reader Initialised")
+        
+        for ip in EXPECTED_IPS:
+            publisher = Float64MultiArrayPublisher(self.create_publisher(
+                Float64MultiArray, f"/{IP_MAP[ip]}_controller/commands", 10
+            ))
+            controller = MotorController(ip)
+            self.motor_pairs.append((publisher, controller))
+
+        self.current_publisher = Float64MultiArrayPublisher(self.create_publisher(Float64MultiArray, f"/currents", 10))
+            
+        self.timer = self.create_timer(TIMER_PERIOD, self.sendCommands)
+        self.get_logger().info("Publisher Initialised")
 
         self.command_receiver = self.create_service(Command, 'command_receiver', self.respond_to_command)
         self.get_logger().info("Command Receiver Initialised")
-
         self.index = 0
 
+
     def sendCommands(self):
-        for controller in self.motorControllers:
-            controller.sendActuationCommand()
+        currents = []
+        for (publisher, controller) in self.motor_pairs:
+            torque = controller.calculateTorque()
+            current = torque / MOTOR_TORQUE_CONSTANT
+            currents.append(current)
+            publisher.publish([float(torque)])
+        self.current_publisher.publish(currents)
 
     def read_encoder(self, msg: JointState):
-        for i, controller in enumerate(self.motorControllers):
-            name = msg.name[i]
+        for i, (_, controller) in enumerate(self.motor_pairs):
             new_position = msg.position[i]
             new_velocity = msg.velocity[i]
             controller.updateState(self.index, new_position, new_velocity)
         self.index += 1
 
     def respond_to_command(self, request: Command.Request, response: Command.Response):
-        for controller in self.motorControllers:
+        for (_, controller) in self.motor_pairs:
             if controller.ip == request.ip:
                 controller.updateCommand(CommandObject(request.command, request.value))
-                self.get_logger().info(f"{controller.ip} -> {controller.commandObject.toString()}")
+                # self.get_logger().info(f"{controller.ip} -> {controller.commandObject.toString()}")
                 response.received = True
                 return response
 

@@ -6,9 +6,8 @@ from std_msgs.msg import Float64MultiArray
 
 
 class MotorController():
-    def __init__(self, ip, publisher):
+    def __init__(self, ip):
         self.ip = ip
-        self.publisher = publisher
         self.positionPID = PIDController(POSITION_GAIN, 0, 0)
         self.velocityPID = PIDController(0.5 * VEL_GAIN / VEL_GAIN, VEL_INTEGRATOR_GAIN, 0)
         self.commandObject = None
@@ -42,11 +41,4 @@ class MotorController():
         if (self.commandObject.command == CommandType.Velocity):
             return self.velocityPID.getControlValue()
         raise Exception("No Command")
-    
-    def sendActuationCommand(self):
-        torque = -1 * self.calculateTorque()
-        msg = Float64MultiArray()
-        msg.data = [float(torque)]
-        msg.layout.data_offset = 0
-        self.publisher.publish(msg)
 

@@ -7,8 +7,8 @@ from aiosv2.TwinMotor import setup_teardown_twin_motor
 from dataGathering import gather_data
 
 
-FREQUENCY = 15
-MAGNITUDE = 7.5
+FREQUENCY = 1
+MAGNITUDE = 2
 DURATION = 10
 
 if __name__ == "__main__":

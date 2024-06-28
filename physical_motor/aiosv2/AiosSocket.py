@@ -90,6 +90,16 @@ class RosSocket:
         json_str = json.dumps(obj)
         self.socket.send(json_str.encode())
 
+    def readJSON(self):
+        if not self.connected:
+            return None
+        
+        data, _  = self.socket.recvfrom(1024)
+
+        json_obj = json.loads(data.decode("utf-8"))
+
+        return (json_obj, "10.10.10.17")
+
 
 class AiosSocket:
     physicalSocket: PhysicalSocket
@@ -110,7 +120,7 @@ class AiosSocket:
         self.rosSocket.sendJSON(ip, port, data)
 
     def readJSON(self):
-        return self.physicalSocket.readJSON()
+        return self.rosSocket.readJSON()
 
     def sendBytes(self, ip: str, port: int, bytesToSend: bytes):
         self.physicalSocket.sendBytes(ip, port, bytesToSend)
