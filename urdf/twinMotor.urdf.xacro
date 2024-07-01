@@ -30,7 +30,7 @@
   </joint>
 
   <link name="bottom_motor_shaft">
-    <xacro:common.cylinder length="0.04" radius="${0.0275 / 2}" density="${steeldensity}" />
+    <xacro:common.cylinder length="0.04" radius="${0.0275 / 2}" density="${10 * steeldensity}" />
   </link>
 
   <joint name="bottom_motor" type="revolute">
@@ -43,7 +43,7 @@
   </joint>
   
   <link name="top_motor_base">
-    <xacro:common.cylinder radius="${0.085 / 2}" length="0.07" density="${steeldensity}" rpy="0 ${-pi / 2} 0" />
+    <xacro:common.cylinder radius="${0.085 / 2}" length="0.07" density="${10 * steeldensity}" rpy="0 ${-pi / 2} 0" />
   </link>
 
   <joint name="top_motor_base_bottom_motor_shaft" type="fixed">
@@ -57,7 +57,7 @@
       <material name="blue" />
       <xacro:common.cylinder-geom length="0.1" radius="0.01" xyz="${0.025/2} 0 ${0.1/2}"/>
     </visual>
-    <xacro:common.cylinder length="0.025" radius="0.01" density="${steeldensity}" rpy="0 ${pi / 2} 0"/>
+    <xacro:common.cylinder length="0.025" radius="0.1" density="${10 * steeldensity}" rpy="0 ${pi / 2} 0"/>
   </link>
 
   <joint name="top_motor" type="revolute">

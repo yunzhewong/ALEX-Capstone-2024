@@ -63,8 +63,8 @@ def generate_launch_description():
 
     user_interface = Node(
         package="alex_nodes",
-        executable='command_redirector',
-        name="command_redirector"
+        executable='command_generator',
+        name="command_generator"
     )
 
     return LaunchDescription(
