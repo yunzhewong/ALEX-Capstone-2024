@@ -10,3 +10,17 @@ mass = volume * density
 izz = 0.5 * mass * radius * radius
 
 print(izz)
+
+current = 1
+torque = current * 0.1
+a = torque / izz
+
+
+dvdx = 0.1421
+dxdt = 0.004
+
+dv = dvdx/dxdt
+
+
+print(dv)
+print(a)

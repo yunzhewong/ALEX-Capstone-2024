@@ -61,11 +61,11 @@ def generate_launch_description():
         name="cvp_reader"
     )
 
-    user_interface = Node(
-        package="alex_nodes",
-        executable='command_generator',
-        name="command_generator"
-    )
+    # command_generator = Node(
+    #     package="alex_nodes",
+    #     executable='command_generator',
+    #     name="command_generator"
+    # )
 
     return LaunchDescription(
         [
@@ -80,6 +80,6 @@ def generate_launch_description():
             spawn_entity, 
             motor_controller, 
             cvp_reader, 
-            user_interface
+            # command_generator
         ]
     )

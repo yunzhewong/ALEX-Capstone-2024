@@ -46,9 +46,8 @@ class CommandGenerator(Node):
         self.velocities = msg.velocity
 
     def commands(self, t):
-        val = 5 * math.sin(2 * math.pi * 0.1 * t)
         self.types = [CommandType.Current.value, CommandType.Current.value] 
-        self.values = [val, -val]
+        self.values = [0.0, 1.0]
 
 def main(args=None):
     rclpy.init(args=args)
