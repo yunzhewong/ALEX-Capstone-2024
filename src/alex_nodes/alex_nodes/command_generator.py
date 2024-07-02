@@ -2,7 +2,6 @@ import math
 import os
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
 from alex_interfaces.msg import Command
 from sensor_msgs.msg import JointState
 
