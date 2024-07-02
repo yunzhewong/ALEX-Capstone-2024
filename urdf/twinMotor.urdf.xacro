@@ -19,6 +19,49 @@
     <origin xyz="0 0 ${0.015/2}" rpy="0 0 0" />
   </joint>
 
+  <link name="bottom_motor_link">
+    <visual>
+      <xacro:common.cylinder-geom length="0.07" radius="${0.085 / 2}"/>
+    </visual>
+    <collision>
+      <xacro:common.cylinder-geom length="0.07" radius="${0.085 / 2}"/>
+    </collision>
+    <xacro:common.cylinder-inertia length="0.07" radius="${0.085 / 2}" density="${steeldensity}" />
+  </link>
+
+  <joint name="bottom_motor" type="revolute">
+    <parent link="base" />
+    <child link="bottom_motor_link" />
+    <origin xyz="0 0 ${(0.07 + 0.015)/ 2}" />
+    <limit lower="${-100 * pi}" upper="${100 * pi}" effort="100000" velocity="1000000" />
+    <axis xyz="0 0 -1" />
+  </joint>
+
+  <link name="top_motor_link">
+    <visual>
+      <xacro:common.cylinder-geom length="0.03" radius="0.03" rpy="0 ${pi / 2} 0" xyz="0.05 0 0"/>
+    </visual>
+    <visual>
+      <xacro:common.cylinder-geom length="0.1" radius="0.01" rpy="0 0 0" xyz="0.05 0 0.05"/>
+    </visual>
+    <visual>
+      <xacro:common.cylinder-geom length="0.07" radius="${0.085 / 2}" rpy="0 ${pi / 2} 0"/>
+    </visual>
+    <collision>
+      <xacro:common.cylinder-geom length="0.07" radius="${0.085 / 2}" rpy="0 ${pi / 2} 0"/>
+    </collision>
+    <xacro:common.cylinder-inertia length="0.07" radius="${0.085 / 2}" density="${steeldensity}" rpy="0 ${pi / 2} 0" />
+  </link>
+
+  <joint name="top_motor" type="revolute">
+    <parent link="bottom_motor_link" />
+    <child link="top_motor_link" />
+    <origin xyz="0 0 ${0.07 + 0.03}" />
+    <limit lower="${-100 * pi}" upper="${100 * pi}" effort="100000" velocity="1000000" />
+    <axis xyz="1 0 0" />
+  </joint>
+<!-- 
+
   <link name="bottom_motor_base">
     <xacro:common.cylinder radius="${0.085 / 2}" length="0.07" density="${steeldensity}" />
   </link>
@@ -67,7 +110,7 @@
     <limit lower="${-100 * pi}" upper="${100 * pi}" effort="100000" velocity="1000000" />
     <axis xyz="-1 0 0" />
     <dynamics damping="0.7" friction="0.01" />
-  </joint>
+  </joint> -->
 
   <ros2_control name="GazeboSystem" type="system">
     <hardware>
