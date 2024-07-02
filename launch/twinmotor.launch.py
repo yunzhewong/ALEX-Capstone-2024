@@ -55,10 +55,10 @@ def generate_launch_description():
         name="motor_pubsub"
     )
 
-    encoder_reader = Node(
-        package='alex_nodes_cpp',
-        executable='encoder_reader',
-        name="encoder_reader"
+    cvp_reader = Node(
+        package='alex_nodes',
+        executable='cvp_reader',
+        name="cvp_reader"
     )
 
     user_interface = Node(
@@ -79,7 +79,7 @@ def generate_launch_description():
             gazebo,
             spawn_entity, 
             motor_controller, 
-            encoder_reader, 
+            cvp_reader, 
             user_interface
         ]
     )
