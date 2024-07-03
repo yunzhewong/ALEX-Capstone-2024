@@ -6,8 +6,8 @@ from aiosv2.constants import PORT_srv
 from aiosv2.serverConstants import ROS_HOST, ROS_PORT
 
 
-PHYSICAL_ACTIVE = True
-ROS_ACTIVE = False
+PHYSICAL_ACTIVE = False
+ROS_ACTIVE = True
 
 
 class PhysicalSocket:
@@ -38,7 +38,6 @@ class PhysicalSocket:
                 _, address = self.socket.recvfrom(1024)
                 foundIPs.append(address[0])
             except socket.timeout:  # fail after 1 second of no activity
-                print(foundIPs)
                 for ip in expectedIPs:
                     if ip not in foundIPs:
                         raise Exception(f"Missing IP: {ip}")
@@ -80,7 +79,6 @@ class RosSocket:
 
         rosSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         rosSocket.connect((ROS_HOST, ROS_PORT))
-        print("Connected")
         rosSocket.send("".encode())
         self.socket = rosSocket
 
@@ -92,12 +90,25 @@ class RosSocket:
         json_str = json.dumps(obj)
         self.socket.send(json_str.encode())
 
+    def readJSON(self):
+        if not self.connected:
+            return None
+        
+        data, _  = self.socket.recvfrom(1024)
+
+        json_obj = json.loads(data.decode("utf-8"))
+
+        return (json_obj, "10.10.10.17")
+
 
 class AiosSocket:
     physicalSocket: PhysicalSocket
     rosSocket: RosSocket
 
     def __init__(self):
+        print(f"Physical Socket Active: {PHYSICAL_ACTIVE}")
+        print(f"ROS Socket Active: {ROS_ACTIVE}")
+
         self.physicalSocket = PhysicalSocket(PHYSICAL_ACTIVE)
         self.rosSocket = RosSocket(ROS_ACTIVE)
 

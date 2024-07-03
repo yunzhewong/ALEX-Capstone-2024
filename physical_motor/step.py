@@ -6,16 +6,13 @@ import time
 from aiosv2.TwinMotor import setup_teardown_twin_motor
 from dataGathering import gather_data
 
-
-FREQUENCY = 1
-MAGNITUDE = 2
-DURATION = 10
+MAGNITUDE = 2.5
+DURATION = 5
 
 if __name__ == "__main__":
     def command_func(connection: aiosv2.SafeMotor, runningTime: float):
-        current = MAGNITUDE * np.sin(2 * np.pi * FREQUENCY * runningTime)
-        connection.setCurrent(current)    
+        connection.setCurrent(MAGNITUDE)    
 
-    gather_data(command_func, DURATION, f"sinusoid{FREQUENCY}Hz{MAGNITUDE}A.csv")
+    gather_data(command_func, DURATION, f"step{MAGNITUDE}A.csv")
 
     

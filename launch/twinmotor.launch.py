@@ -12,13 +12,11 @@ def generate_launch_description():
     doc = xacro.process_file("../urdf/twinMotor.urdf.xacro")
     robot_desc = doc.toxml()
     robot_description = {"robot_description": robot_desc}
+
     gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [
-                os.path.join(get_package_share_directory("gazebo_ros"), "launch"),
-                "/gazebo.launch.py",
-            ]
-        ),
+            PythonLaunchDescriptionSource([os.path.join(
+                get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')]
+         ),launch_arguments={'extra_gazebo_args': '--ros-args --params-file ../config/gazebo_params.yaml' }.items()
     )
 
     robot_state_publisher = Node(
@@ -57,17 +55,17 @@ def generate_launch_description():
         name="motor_pubsub"
     )
 
-    encoder_reader = Node(
+    cvp_reader = Node(
         package='alex_nodes',
-        executable='encoder_reader',
-        name="encoder_reader"
+        executable='cvp_reader',
+        name="cvp_reader"
     )
 
-    user_interface = Node(
-        package="alex_nodes",
-        executable='command_redirector',
-        name="command_redirector"
-    )
+    # command_generator = Node(
+    #     package="alex_nodes",
+    #     executable='command_generator',
+    #     name="command_generator"
+    # )
 
     return LaunchDescription(
         [
@@ -81,7 +79,7 @@ def generate_launch_description():
             gazebo,
             spawn_entity, 
             motor_controller, 
-            encoder_reader, 
-            user_interface
+            cvp_reader, 
+            # command_generator
         ]
     )

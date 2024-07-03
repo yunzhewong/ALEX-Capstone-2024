@@ -4,12 +4,12 @@ import aiosv2
 from dataGathering import gather_data
 
 
-DURATION = 25
-NAME = "chirp25to50.csv"
+DURATION = 50
+NAME = "chirp0to2550s.csv"
 
-WAVE_MAGNITUDE = 5
-INITIAL_FREQUENCY = 25
-FINAL_FREQUENCY = 50
+WAVE_MAGNITUDE = 3
+INITIAL_FREQUENCY = 0
+FINAL_FREQUENCY = 25
 CHIRP_RATE = (FINAL_FREQUENCY - INITIAL_FREQUENCY) / DURATION
 
 def get_frequency(t):
