@@ -1,0 +1,28 @@
+
+FILE_NAME = "../data/chirp0to5.csv";
+DATA_COLUMN = 3;
+
+table = readmatrix(FILE_NAME);
+
+times = table(:, 1);
+data = table(:, DATA_COLUMN);
+
+length = numel(data);
+
+
+x = -1;
+while index ~= -1
+    figure
+    plot(1:length, data);
+    hold on
+
+    index = input("Select an X index (1:" + length + "): ");
+    xline(index);
+
+    txt = input("Confirm? (y/n): ", 's');
+
+    if txt == "y"
+        index = tempIndex
+    end
+end
+
