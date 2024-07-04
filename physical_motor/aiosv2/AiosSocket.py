@@ -6,8 +6,8 @@ from aiosv2.constants import PORT_srv
 from aiosv2.serverConstants import ROS_HOST, ROS_PORT
 
 
-PHYSICAL_ACTIVE = False
-ROS_ACTIVE = True
+PHYSICAL_ACTIVE = True
+ROS_ACTIVE = False
 
 
 class PhysicalSocket:
