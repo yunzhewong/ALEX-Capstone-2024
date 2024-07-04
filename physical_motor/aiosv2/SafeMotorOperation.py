@@ -38,7 +38,7 @@ class SafeMotor:
         self.valid = True
         self.config = config
         self.control_mode = None
-        self.current_CVP: CVP = CVP(0,0,0)
+        self.current_CVP: CVP | None = None
         self.cvp_lock = threading.Lock()
 
     def getIP(self):

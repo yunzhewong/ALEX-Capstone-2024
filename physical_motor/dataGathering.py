@@ -10,7 +10,9 @@ def gather_data(command_func: Callable[[aiosv2.SafeMotor, float], None], duratio
         connection = twinMotor.bottomMotor
         command_func(connection, runningTime)
         cvp = connection.getCVP()
-        dataLog.addCVP(runningTime, cvp)
+
+        if cvp is not None:
+            dataLog.addCVP(runningTime, cvp)
 
     setup_teardown_twin_motor(func, duration)
 
