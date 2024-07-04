@@ -29,6 +29,16 @@ class CommandGenerator(Node):
         self.positions = [0, 0]
         self.velocities = [0, 0]
 
+        self.start_reset = -1
+        self.end_reset = -1
+        self.pause = -1
+        self.start_current = 0.5
+        self.increment = 0.1
+        self.index = 0
+        self.reading = False
+        self.start_time = -1
+        self.reset_angle = -1
+
     def send_command(self):
         self.commands(self.time)
         
@@ -46,8 +56,44 @@ class CommandGenerator(Node):
         self.velocities = msg.velocity
 
     def commands(self, t):
-        self.types = [CommandType.Current.value, CommandType.Current.value] 
-        self.values = [0.0, 1.0]
+        MAX_ANGLE = math.pi / 2
+        MAX_TIME = 10
+        STARTING_ANGLE = -math.pi / 2
+        RESET_TIME = 5
+        PAUSE_TIME = 1
+        
+        if len(self.positions) < 2:
+            return
+        
+        should_stop = self.positions[1] >= MAX_ANGLE
+    
+        if t > self.pause and should_stop:
+            self.pause = t + PAUSE_TIME
+            self.start_reset = self.pause
+            self.end_reset = self.start_reset + RESET_TIME
+            self.reset_angle = self.positions[1]
+
+        if t >= self.start_reset and t <= self.end_reset:
+            expected_pos = self.reset_angle - ((self.reset_angle - STARTING_ANGLE) / RESET_TIME) * (t - self.start_reset)
+
+            self.types = [CommandType.Current.value, CommandType.Position.value]
+            self.values = [0.0, float(expected_pos)]
+            self.pause = self.end_reset + PAUSE_TIME
+            if self.reading:
+                self.index += 1
+                self.reading = False
+        elif t <= self.pause:
+            self.types = [CommandType.Current.value, CommandType.Current.value] 
+            self.values = [0.0, 0.0]
+        else:
+            command = self.start_current + self.increment * self.index
+            if not self.reading:
+                print(command)
+                self.start_time = t
+                self.reading = True
+
+            self.types = [CommandType.Current.value, CommandType.Current.value] 
+            self.values = [0.0, command]
 
 def main(args=None):
     rclpy.init(args=args)
