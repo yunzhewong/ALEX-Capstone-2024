@@ -1,12 +1,8 @@
 import aiosv2
-from classes.DataLog import DataLog
-import numpy as np
-import time
 
-from aiosv2.TwinMotor import setup_teardown_twin_motor
 from dataGathering import gather_data
 
-MAGNITUDE = 0.8
+MAGNITUDE = 1
 DURATION = 5
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ class SafetyConfiguration:
         self.maximum_velocity = maximum_velocity * (1 - margin)
         position_range = maximum_position - minimum_position
         self.minimum_position = minimum_position + (margin * position_range) 
-        self.maximum_position = maximum_position + (margin * position_range)
+        self.maximum_position = maximum_position - (margin * position_range)
 
     def check_within_limits(self, cvp: CVP):
         pos = cvp.position
@@ -52,6 +52,9 @@ class SafeMotor:
         self.raw_motor.disable()
 
     def getCVP(self):
+        if self.current_CVP is None:
+            self.setCurrent(0)
+            return None
         with self.cvp_lock:
             return self.current_CVP
 

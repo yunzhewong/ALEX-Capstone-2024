@@ -1,9 +1,7 @@
 
 from enum import Enum
 import math
-import numpy as np
 import aiosv2
-from dataGathering import gather_data
 from classes.DataLog import DataLog
 from aiosv2.TwinMotor import setup_teardown_twin_motor
 
@@ -13,12 +11,12 @@ class State(Enum):
     Resetting = 3
 
 MAX_ANGLE = math.pi / 2
-MAX_TIME = 10
+MAX_TIME = 5
 STARTING_ANGLE = -math.pi / 2
 RESET_TIME = 5
 PAUSE_TIME = 1
-START_CURRENT = 0.7
-INCREMENT = 0.02
+LOG_FREQUENCY = 1
+LOG_INCREMENT = 0.1
 
 
 class BulkDataBatcher():
@@ -26,8 +24,8 @@ class BulkDataBatcher():
     def __init__(self):
         self.log = DataLog()
 
-        self.state = State.Collecting
-        self.post_pause_state = State.Resetting
+        self.state = State.Resetting
+        self.post_pause_state = State.Paused
         self.initialised = False
         self.collecting_start = -1
         self.collect_index = 0
@@ -39,24 +37,29 @@ class BulkDataBatcher():
 
     def at_time(self, t, connection: aiosv2.SafeMotor):
         cvp = connection.getCVP()
+        if cvp is None:
+            return
+        
         position = cvp.position
+        print(self.state)
 
         if self.state == State.Collecting:
-            command = START_CURRENT + INCREMENT * self.collect_index
             if not self.initialised:
                 self.collecting_start = t
                 self.initialised = True
                 self.log = DataLog()
-                print(command)
+
+            frequency = 10 ** (LOG_FREQUENCY + LOG_INCREMENT * self.collect_index) 
 
             self.log.addCVP(t, cvp)
 
-            exceeded_max_angle = position > MAX_ANGLE
+            # exceeded_max_angle = position > MAX_ANGLE
             exceeded_max_time = (t - self.collecting_start) >= MAX_TIME
-            should_stop = exceeded_max_angle or exceeded_max_time
+            # should_stop = exceeded_max_angle or exceeded_max_time
+            command = 5 * math.sin(2 * math.pi * frequency * (t - self.collecting_start))
 
-            if should_stop:
-                self.log.download(f"step{command}A.csv")
+            if exceeded_max_time:
+                self.log.download(f"sinusoid{round(frequency, 2)}Hz.csv")
                 self.state = State.Paused
                 self.post_pause_state = State.Resetting
                 self.collect_index += 1
