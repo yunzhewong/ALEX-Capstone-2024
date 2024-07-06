@@ -28,24 +28,16 @@ class CommandGenerator(Node):
         self.publish_timer = self.create_timer(TIMER_PERIOD, self.send_command)
 
         self.subscriber = self.create_subscription(JointState, "/joint_states", self.read_time, 10)
-        self.time = 0
+        self.time = -1
 
         self.types = [CommandType.Current.value, CommandType.Current.value]
-        self.values = [0, 0]
+        self.values = [0.0, 0.0]
 
-        self.positions = [0, 0]
-        self.velocities = [0, 0]
+        self.positions = [0.0, 0.0]
+        self.velocities = [0.0, 0.0]
 
         self.initialised = False
-
-        self.state = State.Collecting
-        self.post_pause_state = State.Resetting
-        self.collecting_start = -1
-        self.collect_index = 0
-        self.pause_end_time = -1
-        self.reset_start = -1
-        self.reset_end = -1
-        self.reset_angle = -1
+        self.start_time = -1
 
     def send_command(self):
         self.commands(self.time)
@@ -64,64 +56,34 @@ class CommandGenerator(Node):
         self.velocities = msg.velocity
 
     def commands(self, t):
-        MAX_ANGLE = math.pi / 2
-        MAX_TIME = 10
-        STARTING_ANGLE = -math.pi / 2
-        RESET_TIME = 5
-        PAUSE_TIME = 1
-        START_CURRENT = 0.1
-        INCREMENT = 0.1
-        
-        if len(self.positions) < 2:
+        if self.time < 0:
             return
 
-        if self.state == State.Collecting:
-            command = START_CURRENT + INCREMENT * self.collect_index
-            if not self.initialised:
-                self.collecting_start = t
-                self.initialised = True
-                print(command)
+        if not self.initialised:
+            self.start_time = t
+            self.initialised = True
 
-            exceeded_max_angle = self.positions[1] >= MAX_ANGLE
-            exceeded_max_time = (t - self.collecting_start) >= MAX_TIME
+        DURATION = 50
+        WAVE_MAGNITUDE = 3
+        INITIAL_FREQUENCY = 0
+        FINAL_FREQUENCY = 25
+        CHIRP_RATE = (FINAL_FREQUENCY - INITIAL_FREQUENCY) / DURATION
 
-            should_stop = exceeded_max_angle or exceeded_max_time
+        runningTime = t - self.start_time
 
-            if should_stop:
-                self.state = State.Paused
-                self.post_pause_state = State.Resetting
-                self.collect_index += 1
-                self.initialised = False
-
-            self.types = [CommandType.Current.value, CommandType.Current.value] 
-            self.values = [0.0, command]
-        elif self.state == State.Paused:
-            if not self.initialised:
-                self.pause_end_time = t + PAUSE_TIME
-                self.initialised = True
-
-            if t > self.pause_end_time:
-                self.state = self.post_pause_state
-                self.initialised = False
-
-            self.types = [CommandType.Current.value, CommandType.Current.value] 
+        if runningTime > DURATION:
+            self.types = [CommandType.Current.value, CommandType.Position.value]
             self.values = [0.0, 0.0]
-        elif self.state == State.Resetting:
-            if not self.initialised:
-                self.reset_start = t
-                self.reset_end = t + RESET_TIME
-                self.reset_angle = self.positions[1]
-                self.initialised = True
+            return
 
-            expected_pos = self.reset_angle - ((self.reset_angle - STARTING_ANGLE) / RESET_TIME) * (t - self.reset_start)
+        frequency = CHIRP_RATE * runningTime + INITIAL_FREQUENCY
+        current = WAVE_MAGNITUDE * math.sin(2 * math.pi * frequency * runningTime)
 
-            if t > self.reset_end:
-                self.post_pause_state = State.Collecting
-                self.state = State.Paused
-                self.initialised = False
-            
-            self.types = [CommandType.Current.value, CommandType.Position.value] 
-            self.values = [0.0, float(expected_pos)]
+        self.types = [CommandType.Current.value, CommandType.Current.value]
+        self.values = [0.0, current]
+        
+        
+  
 
 def main(args=None):
     rclpy.init(args=args)
