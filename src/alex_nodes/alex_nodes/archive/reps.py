@@ -10,7 +10,7 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-from motor_pubsub_utils.constants import TIMER_PERIOD
+from motor_pubsub_utils.constants import SEND_PERIOD
 from twinmotor import IPS
 from commandTypes import CommandType
 
