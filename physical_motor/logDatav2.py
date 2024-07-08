@@ -1,11 +1,14 @@
 import math
 import time
-import aiosv2
-import numpy as np
-import matplotlib.pyplot as plt
+import sys
+import os
+
+# Ensure the parent directory is in the PYTHONPATH
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from classes.DataLog import DataLog
 from dataGathering import gather_data
-from aiosv2 import AiosSocket, SafeMotor, SafetyConfiguration
+from aiosv2.SafeMotorOperation import AiosSocket, SafeMotor, SafetyConfiguration
 
 SAVE_NAME = "polynomial_position_motor.csv"
 DURATION = 5
@@ -21,14 +24,10 @@ def get_poly_time(runningTime: float):
         return CYCLE_DURATION - cycle_time
     return cycle_time
 
+def calculate_position(running_time: float):
+    return sum(coef * (running_time ** i) for i, coef in enumerate(POLYNOMIAL_COEFFICIENTS))
 
 if __name__ == "__main__":
-    def command_func(connection: aiosv2.SafeMotor, runningTime: float):
-        poly_time = get_poly_time(runningTime) 
-        position = np.polyval(POLYNOMIAL_COEFFICIENTS, poly_time)
-        twin_motor.topMotor.setPosition(position)
-        twin_motor.bottomMotor.setPosition(position)
-
     try:
         socket = AiosSocket()
         config = SafetyConfiguration(margin=0.05, maximum_current=15, maximum_velocity=4*math.pi, minimum_position=-2 * math.pi / 3, maximum_position=2 * math.pi / 3)
@@ -39,7 +38,13 @@ if __name__ == "__main__":
         bottomMotor.enable()
 
         time.sleep(1)
-        gather_data(lambda _, t: command_func(topMotor, bottomMotor, t), DURATION, SAVE_NAME)
+
+        command_func = lambda top_motor, bottom_motor, running_time: (
+            top_motor.setPosition(calculate_position(running_time)),
+            bottom_motor.setPosition(calculate_position(running_time))
+        )
+
+        gather_data(command_func, DURATION, SAVE_NAME)
 
     finally:
         topMotor.disable()
