@@ -11,22 +11,20 @@ class MotorController():
         self.commandObject = None
 
     def updateCommand(self, commandObject: CommandObject):
-        self.positionPID.clear()
-        self.velocityPID.clear()
         self.commandObject = commandObject
         if (commandObject.command == CommandType.Current):
             return
         if (commandObject.command == CommandType.Position):
-            self.positionPID.setTarget(commandObject.value)
+            self.positionPID.setReference(commandObject.value)
             return
         if (commandObject.command == CommandType.Velocity):
-            self.velocityPID.setTarget(commandObject.value)
+            self.velocityPID.setReference(commandObject.value)
             return
         raise Exception("Invalid Command")
 
     def updateState(self, time, position, velocity):
-        self.positionPID.updateLatest(time, position)
-        self.velocityPID.updateLatest(time, velocity)
+        self.positionPID.update(time, position)
+        self.velocityPID.update(time, velocity)
 
     def calculateTorque(self):
         if not self.commandObject:

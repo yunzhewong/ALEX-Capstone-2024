@@ -61,8 +61,6 @@ class MotorControllerNode(Node):
 
     def sendCommands(self):
         currents = []
-        # (publisher, controller) = self.motor_pairs[1]
-        # publisher.publish([float(controller.calculateTorque())])
         for (publisher, controller) in self.motor_pairs:
             torque = controller.calculateTorque()
             current = torque / MOTOR_TORQUE_CONSTANT
