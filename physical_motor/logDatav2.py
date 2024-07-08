@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from classes.DataLog import DataLog
 from dataGathering import gather_data
+from aiosv2 import AiosSocket, SafeMotor, SafetyConfiguration
 
 SAVE_NAME = "polynomial_position_motor.csv"
 DURATION = 5
@@ -25,9 +26,21 @@ if __name__ == "__main__":
     def command_func(connection: aiosv2.SafeMotor, runningTime: float):
         poly_time = get_poly_time(runningTime) 
         position = np.polyval(POLYNOMIAL_COEFFICIENTS, poly_time)
-        connection.setPosition(position)
+        twin_motor.topMotor.setPosition(position)
+        twin_motor.bottomMotor.setPosition(position)
 
+    try:
+        socket = AiosSocket()
+        config = SafetyConfiguration(margin=0.05, maximum_current=15, maximum_velocity=4*math.pi, minimum_position=-2 * math.pi / 3, maximum_position=2 * math.pi / 3)
+        topMotor = SafeMotor("10.10.10.16", socket, config)
+        bottomMotor = SafeMotor("10.10.10.17", socket, config)
 
-    time.sleep(1)
-    gather_data(command_func, DURATION, SAVE_NAME)
+        topMotor.enable()
+        bottomMotor.enable()
 
+        time.sleep(1)
+        gather_data(lambda _, t: command_func(topMotor, bottomMotor, t), DURATION, SAVE_NAME)
+
+    finally:
+        topMotor.disable()
+        bottomMotor.disable()
