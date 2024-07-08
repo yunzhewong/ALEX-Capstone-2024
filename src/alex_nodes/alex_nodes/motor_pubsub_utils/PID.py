@@ -1,4 +1,3 @@
-from alex_nodes.motor_pubsub_utils.constants import FREQUENCY
 
 class PIDController():
     def __init__(self, K_p, K_i, K_d):
@@ -6,37 +5,34 @@ class PIDController():
         self.K_i = K_i
         self.K_d = K_d
 
-        self.target = None
+        self.reference = None
 
         self.previousTime = 0
-        self.previousValue = 0
 
         self.e = 0
         self.e_int = 0
         self.e_dot = 0
 
-    def clear(self):
-        self.target = None
-        self.e = 0
-        self.e_int = 0
-        self.e_dot = 0
-
-         
-    def setTarget(self, target):
-        self.target = target
+    def setReference(self, reference):
+        self.reference = reference
         self.e = 0
         self.e_int = 0
         self.e_dot = 0
 
     def updateLatest(self, time, value):
-        if self.target is None:
+        if self.reference is None:
             return
-        self.e = value - self.target 
-        self.e_dot = (value - self.previousValue) / (FREQUENCY * (time - self.previousTime))
-        self.e_int += self.e * (1 / FREQUENCY)
+
+        dt = time - self.previousTime
+        # E = Y - R
+        newError = value - self.reference 
+
+        self.e_dot = (newError - self.e) / dt
+        self.e_int += newError * dt
+
+        self.e = newError
 
         self.previousTime = time
-        self.previousValue = value
 
     def getControlValue(self):
         return self.K_p * self.e + self.K_d * self.e_dot + self.K_i * self.e_int

@@ -10,7 +10,7 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-from alex_nodes.classes.Commands import CommandObject
+from commands import CommandObject
 from motor_pubsub_utils.constants import MOTOR_TORQUE_CONSTANT, SIMULATION_PERIOD
 from motor_pubsub_utils.MotorController import MotorController
 
