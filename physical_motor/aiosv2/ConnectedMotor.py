@@ -78,6 +78,16 @@ class ConnectedMotor:
                 "reqTarget": "/m1/CVP",
             },
         )
+    
+    def requestEncoderCheck(self):
+        self.socket.sendJSON(
+            self.ip,
+            PORT_srv,
+            {
+                "method": "GET",
+                "reqTarget": "/m1/encoder/is_ready",
+            }
+        )
 
     def requestErrorCheck(self):
         self.socket.sendJSON(

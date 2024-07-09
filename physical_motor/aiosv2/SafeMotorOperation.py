@@ -44,6 +44,8 @@ class SafeMotor:
         self.control_mode = None
         self.current_CVP: CVP | None = None
         self.cvp_lock = threading.Lock()
+        self.encoder_ready = False
+        self.encoder_lock = threading.Lock()
 
     def getIP(self):
         return self.raw_motor.ip
@@ -66,6 +68,17 @@ class SafeMotor:
         with self.cvp_lock:
             self.current_CVP = cvp
         self.check_within_limits(cvp)
+
+    def encoderIsReady(self):
+        with self.encoder_lock:
+            return self.encoder_ready
+
+    def confirmEncoderReady(self):
+        with self.encoder_lock:
+            self.encoder_ready = True
+
+    def requestEncoderReady(self):
+        self.raw_motor.requestEncoderCheck()
 
     def setPosition(self, position: float):
         self.check_operatable()

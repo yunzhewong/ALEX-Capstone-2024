@@ -10,7 +10,8 @@ from aiosv2.CVP import CVP
 
 class DataType(Enum):
     CVP = "CVP",
-    ERR = "ERR"
+    ERROR = "ERROR"
+    ENCODER = "ENCODER"
 
 
 class ErrorParser():
@@ -70,8 +71,16 @@ class DataStream:
                         if motor.getIP() == ip:
                             cvp = self.cvpConverter.parseCVP(json_obj)
                             motor.setCVP(cvp)
-                elif datatype == DataType.ERR:
+                elif datatype == DataType.ERROR:
                     self.errorParser.check_for_error(json_obj)
+                elif datatype == DataType.ENCODER:
+                    ready = json_obj.get("property", None)
+                    if ready is None or not ready:
+                        return
+                    
+                    for motor in self.motors:
+                        if motor.getIP() == ip:
+                            motor.confirmEncoderReady()
                 else:
                     raise Exception("This should not happen")
             except Exception as err:
@@ -85,7 +94,9 @@ class DataStream:
             if target in ["/m1/setPosition", "/m1/setVelocity","/m1/setCurrent"]:
                 return json_obj, ip, DataType.CVP
             if target in ["/m1/error"]:
-                return json_obj, ip, DataType.ERR
+                return json_obj, ip, DataType.ERROR
+            if target == "/m1/encoder/is_ready":
+                return json_obj, ip, DataType.ENCODER
             return None
         except:
             return None

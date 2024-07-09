@@ -45,6 +45,14 @@ def setup_teardown_twin_motor(actions: Callable[[TwinMotor, float], None], total
         twinMotor = TwinMotor(socket)
         twinMotor.enable()
 
+        twinMotor.bottomMotor.requestEncoderReady()
+        twinMotor.topMotor.requestEncoderReady()
+
+        while not twinMotor.topMotor.encoderIsReady() or not twinMotor.bottomMotor.encoderIsReady():
+            print("Checking Encoder Status...")
+            time.sleep(0.1)
+        print("Encoder Ready")
+
         startTime = time.perf_counter()
         currentTime = startTime
         endTime = currentTime + totalRunningTime
