@@ -11,10 +11,9 @@ package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
 from commands import CommandObject
-from motor_pubsub_utils.constants import MOTOR_TORQUE_CONSTANT, SIMULATION_PERIOD
-from motor_pubsub_utils.MotorController import MotorController
+from constants import MOTOR_TORQUE_CONSTANT, SIMULATION_PERIOD
+from MotorController import MotorController
 
-PROPELLOR_CONTROLLER = "propellor_controller"
 
 EXPECTED_IPS = ["10.10.10.17", "10.10.10.16"]
 IP_MAP = {

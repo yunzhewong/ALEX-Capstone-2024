@@ -1,4 +1,3 @@
-
 class PIDController():
     def __init__(self, K_p, K_i, K_d):
         self.K_p = K_p
@@ -19,7 +18,7 @@ class PIDController():
         self.e_int = 0
         self.e_dot = 0
 
-    def updateLatest(self, time, value):
+    def update(self, time, value):
         if self.reference is None:
             return
 

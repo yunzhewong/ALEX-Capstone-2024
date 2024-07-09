@@ -10,7 +10,7 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-from motor_pubsub_utils.constants import SEND_PERIOD
+from constants import SEND_PERIOD
 from twinmotor import IPS
 from commands import CommandType
 
@@ -64,24 +64,22 @@ class CommandGenerator(Node):
 
         runningTime = t - self.start_time
 
-        REPEAT_TIME = 10
+        REPEAT_TIME = 20
         remainderTime = runningTime % REPEAT_TIME
-        print(remainderTime)
 
-        if (remainderTime < 2.5) :
+        if (remainderTime < 5) :
             self.types = [CommandType.Current.value, CommandType.Position.value]
             self.values = [0.0, -math.pi / 2]
-        elif remainderTime < 5:
+        elif remainderTime < 10:
             self.types = [CommandType.Current.value, CommandType.Position.value]
             self.values = [0.0, 0.0]
-        elif remainderTime < 7.5:
+        elif remainderTime < 15:
             self.types = [CommandType.Current.value, CommandType.Position.value]
             self.values = [0.0, math.pi / 2]
         else:
             self.types = [CommandType.Current.value, CommandType.Position.value]
             self.values = [0.0, 0.0]
 
-        print(self.types, self.values)
         
   
 

@@ -1,6 +1,11 @@
-from alex_nodes.motor_pubsub_utils.PID import PIDController
-from alex_nodes.commands import CommandType, CommandObject
-from alex_nodes.motor_pubsub_utils.constants import MOTOR_TORQUE_CONSTANT, POSITION_GAIN, VEL_GAIN, VEL_INTEGRATOR_GAIN
+import os
+import sys
+package_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(package_dir)
+
+from PID import PIDController
+from commands import CommandType, CommandObject
+from constants import MOTOR_TORQUE_CONSTANT, POSITION_GAIN, VEL_GAIN, VEL_INTEGRATOR_GAIN
 
 class MotorController():
     def __init__(self, ip):
@@ -10,6 +15,12 @@ class MotorController():
         self.commandObject = None
 
     def updateCommand(self, commandObject: CommandObject):
+        if self.commandObject:
+            matchingCommand = commandObject.command == self.commandObject.command
+            matchingValue = commandObject.value == self.commandObject.value
+            if matchingCommand and matchingValue:
+                return  
+
         self.commandObject = commandObject
         if (commandObject.command == CommandType.Current):
             return
