@@ -7,6 +7,9 @@ density = 7850
 volume = math.pi * radius * radius * length
 mass = volume * density
 
+# full twinmotor measured to be 3.3753kg
+print(mass)
+
 izz = 0.5 * mass * radius * radius
 
 print(izz)

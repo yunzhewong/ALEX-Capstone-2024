@@ -19,9 +19,12 @@ class TwinMotor:
         self.socket = socket
         
         self.socket.assertConnectedAddresses(self.EXPECTED_IPS)
-        config = SafetyConfiguration(margin=0.05, maximum_current=15, maximum_velocity=4*math.pi, minimum_position=-2 * math.pi / 3, maximum_position=2 * math.pi / 3)
-        self.topMotor = SafeMotor(self.MOTORS["top"], socket, config)
-        self.bottomMotor = SafeMotor(self.MOTORS["bottom"], socket, config)
+
+        topConfig = SafetyConfiguration(margin=0.05, maximum_current=15, maximum_velocity=4*math.pi, minimum_position=-15 * math.pi, maximum_position=15 * math.pi)
+        self.topMotor = SafeMotor(self.MOTORS["top"], socket, topConfig)
+
+        bottomConfig = SafetyConfiguration(margin=0.05, maximum_current=15, maximum_velocity=4*math.pi, minimum_position=-2 * math.pi / 3, maximum_position=2 * math.pi / 3) 
+        self.bottomMotor = SafeMotor(self.MOTORS["bottom"], socket, bottomConfig)
         self.dataStream = DataStream(socket, [self.topMotor, self.bottomMotor])
 
     def enable(self):

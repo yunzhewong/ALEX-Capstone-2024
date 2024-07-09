@@ -7,4 +7,4 @@ class CVP:
         self.position = position
 
     def __str__(self):  # provide a string representation of the object
-        return f"Current: {self.current}, Velocity: {self.velocity}, Position: {self.position}"
+        return f"Current: {self.current:8.4f}, Velocity: {self.velocity:8.4f}, Position: {self.position:8.4f}"

@@ -4,19 +4,20 @@ import math
 import aiosv2
 from classes.DataLog import DataLog
 from aiosv2.TwinMotor import setup_teardown_twin_motor
+from aiosv2 import CVP
 
 class State(Enum):
     Collecting = 1,
     Paused = 2,
     Resetting = 3
 
-MAX_ANGLE = math.pi / 2
-MAX_TIME = 5
-STARTING_ANGLE = -math.pi / 2
-RESET_TIME = 5
+MAX_ANGLE = 5 * math.pi
+MAX_TIME = 10
+STARTING_ANGLE = -5 * math.pi
+RESET_TIME = 10
 PAUSE_TIME = 1
-LOG_FREQUENCY = 1
-LOG_INCREMENT = 0.1
+START_MAGNITUDE = 0.2
+INCREMENT_MAGNITUDE = 0.02
 
 
 class BulkDataBatcher():
@@ -49,23 +50,22 @@ class BulkDataBatcher():
                 self.initialised = True
                 self.log = DataLog()
 
-            frequency = 10 ** (LOG_FREQUENCY + LOG_INCREMENT * self.collect_index) 
+            current = START_MAGNITUDE + self.collect_index * INCREMENT_MAGNITUDE 
 
-            self.log.addCVP(t, cvp)
+            self.log.addCVP(t, cvp, CVP(0,0,0))
 
-            # exceeded_max_angle = position > MAX_ANGLE
+            exceeded_max_angle = position > MAX_ANGLE
             exceeded_max_time = (t - self.collecting_start) >= MAX_TIME
-            # should_stop = exceeded_max_angle or exceeded_max_time
-            command = 5 * math.sin(2 * math.pi * frequency * (t - self.collecting_start))
+            should_stop = exceeded_max_angle or exceeded_max_time
 
-            if exceeded_max_time:
-                self.log.download(f"sinusoid{round(frequency, 2)}Hz.csv")
+            if should_stop:
+                self.log.download(f"step{round(current, 2)}A.csv")
                 self.state = State.Paused
                 self.post_pause_state = State.Resetting
                 self.collect_index += 1
                 self.initialised = False
 
-            connection.setCurrent(command)
+            connection.setCurrent(current)
         elif self.state == State.Paused:
             if not self.initialised:
                 self.pause_end_time = t + PAUSE_TIME
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     dataBatcher = BulkDataBatcher()
 
     def func(twinMotor: aiosv2.TwinMotor, runningTime: float):
-        dataBatcher.at_time(runningTime, twinMotor.bottomMotor)
+        dataBatcher.at_time(runningTime, twinMotor.topMotor)
 
     setup_teardown_twin_motor(func, 1000)
 
