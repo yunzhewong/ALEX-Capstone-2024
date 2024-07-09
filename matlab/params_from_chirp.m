@@ -1,9 +1,23 @@
 close all
 clear
 
-[times, currents, velocities, positions] = load_data("data/chirp0to25.csv");
+% [times, currents, velocities, positions] = load_data("data/chirp0to25.csv");
 
-[omega, M, theta] = chirp_identification(times, currents', velocities');
+data = readmatrix("data.csv");
+
+times = data(:, 1);
+currents = data(:, 5);
+velocities = data(:, 6);
+
+
+start = 1460;
+last = 52600;
+slicedTimes = times(start:last) - times(start);
+slicedCurrents = currents(start:last);
+slicedVelocities= velocities(start:last);
+
+
+[omega, M, theta] = chirp_identification(slicedTimes, slicedCurrents', slicedVelocities');
 
 %%
 % small w M = 20log10(Kt/J)
@@ -20,6 +34,10 @@ validate_parameters(omega, M, Kt_b, J_b, "Method 2")
 [Kt_b, J_b] = method_3(omega, M);
 validate_parameters(omega, M, Kt_b, J_b, "Method 3")
 
+
+% method 1 uses a known breakpoint frequency + the amplitude at small
+% frequencies to calculate
+
 function [Kt_b, J_b] = method_1(omega, M)
     SMALL_FREQUENCY = 0.3;
     BREAKPOINT_FREQUENCY = 10.26;
@@ -29,6 +47,10 @@ function [Kt_b, J_b] = method_1(omega, M)
     Kt_b = 10 ^ (small_w_M / 20);
     J_b = 1 / BREAKPOINT_FREQUENCY;
 end
+
+
+% method 2 uses lines of best fit on the locations of linearity, 
+% i.e. w << 1 and w >> 1
 
 function [Kt_b, J_b] = method_2(omega, M)
     SMALL_FREQUENCY = 0.3;
@@ -65,6 +87,9 @@ function [Kt_b, J_b] = method_2(omega, M)
     Kt_b = 10 ^ (constantM / 20);
     J_b = 1 / breakpoint_freq;
 end
+
+% method 3 uses a line of best fit on the for high frequencies, 
+% given a known frequency value and a known slope of -20db/dec
 
 function [Kt_b, J_b] = method_3(omega, M)
     SMALL_FREQUENCY = 0.3;

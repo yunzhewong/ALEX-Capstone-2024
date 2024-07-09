@@ -12,15 +12,14 @@ for i = 1:length(files)
     data = readmatrix("./data/" + filename);
     
     times = data(:, 1);
+    startTime = times(1);
     currents = data(:, 2);
     velocities = data(:, 3);
 
     amperage = mean(currents);
 
-    plot(times, velocities, '-', "DisplayName", amperage + "A")
+    plot(times - startTime, velocities, '-', "DisplayName", filename)
 end
-
-legend("show")
 
 dcm = datacursormode(gcf);
 set(dcm, 'UpdateFcn', @myUpdateFcn);
