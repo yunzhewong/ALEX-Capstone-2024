@@ -3,31 +3,17 @@
 import json
 import socket
 from aiosv2.constants import PORT_srv
-from aiosv2.serverConstants import ROS_HOST, ROS_PORT
-
-
-PHYSICAL_ACTIVE = True
-ROS_ACTIVE = False
-
 
 class PhysicalSocket:
     NETWORK = "10.10.10.255"
 
-    def __init__(self, connected):
-        self.connected = connected
-
-        if not self.connected:
-            return
-
+    def __init__(self):
         physicalSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         physicalSocket.settimeout(2)
         physicalSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.socket = physicalSocket
 
     def assertConnectedAddresses(self, expectedIPs):
-        if not self.connected:
-            return
-
         self.socket.sendto(
             "Is any AIOS server here?".encode("utf-8"), (self.NETWORK, PORT_srv)
         )
@@ -44,16 +30,10 @@ class PhysicalSocket:
                 return
 
     def sendJSON(self, ip, port, data):
-        if not self.connected:
-            return
-
         json_str = json.dumps(data)
         self.socket.sendto(json_str.encode(), (ip, port))
 
     def readJSON(self):
-        if not self.connected:
-            return None
-
         data, addr = self.socket.recvfrom(1024)
 
         json_obj = json.loads(data.decode("utf-8"))
@@ -61,63 +41,25 @@ class PhysicalSocket:
         return (json_obj, ip)
 
     def sendBytes(self, ip, port, bytesToSend):
-        if not self.connected:
-            return
         self.socket.sendto(bytesToSend, (ip, port))
 
     def readBytes(self):
         data, address = self.socket.recvfrom(1024)
         return data
 
-
-class RosSocket:
-    def __init__(self, connected):
-        self.connected = connected
-
-        if not self.connected:
-            return
-
-        rosSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        rosSocket.connect((ROS_HOST, ROS_PORT))
-        rosSocket.send("".encode())
-        self.socket = rosSocket
-
-    def sendJSON(self, ip, port, data):
-        if not self.connected:
-            return
-
-        obj = {"IP": ip, "commandJSON": data}
-        json_str = json.dumps(obj)
-        self.socket.send(json_str.encode())
-
-    def readJSON(self):
-        if not self.connected:
-            return None
-        
-        data, _  = self.socket.recvfrom(1024)
-
-        json_obj = json.loads(data.decode("utf-8"))
-
-        return (json_obj, "10.10.10.17")
-
-
 class AiosSocket:
     physicalSocket: PhysicalSocket
-    rosSocket: RosSocket
 
     def __init__(self):
-        print(f"Physical Socket Active: {PHYSICAL_ACTIVE}")
-        print(f"ROS Socket Active: {ROS_ACTIVE}")
+        print(f"Physical Socket Active")
 
-        self.physicalSocket = PhysicalSocket(PHYSICAL_ACTIVE)
-        self.rosSocket = RosSocket(ROS_ACTIVE)
+        self.physicalSocket = PhysicalSocket()
 
     def assertConnectedAddresses(self, expectedIPs):
         self.physicalSocket.assertConnectedAddresses(expectedIPs)
 
     def sendJSON(self, ip: str, port: int, data: dict):
         self.physicalSocket.sendJSON(ip, port, data)
-        self.rosSocket.sendJSON(ip, port, data)
 
     def readJSON(self):
         return self.physicalSocket.readJSON()
