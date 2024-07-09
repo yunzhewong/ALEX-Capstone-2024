@@ -10,11 +10,10 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-from alex_nodes.classes.Commands import CommandObject
-from motor_pubsub_utils.constants import MOTOR_TORQUE_CONSTANT, SIMULATION_PERIOD
-from motor_pubsub_utils.MotorController import MotorController
+from commands import CommandObject
+from constants import MOTOR_TORQUE_CONSTANT, SIMULATION_PERIOD
+from MotorController import MotorController
 
-PROPELLOR_CONTROLLER = "propellor_controller"
 
 EXPECTED_IPS = ["10.10.10.17", "10.10.10.16"]
 IP_MAP = {
@@ -61,8 +60,6 @@ class MotorControllerNode(Node):
 
     def sendCommands(self):
         currents = []
-        # (publisher, controller) = self.motor_pairs[1]
-        # publisher.publish([float(controller.calculateTorque())])
         for (publisher, controller) in self.motor_pairs:
             torque = controller.calculateTorque()
             current = torque / MOTOR_TORQUE_CONSTANT

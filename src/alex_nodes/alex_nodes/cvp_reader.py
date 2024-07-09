@@ -1,7 +1,6 @@
 import os
 import rclpy
 from rclpy.node import Node
-from alex_interfaces.msg import Command
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 

@@ -10,9 +10,9 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-from motor_pubsub_utils.constants import SEND_PERIOD
+from constants import SEND_PERIOD
 from twinmotor import IPS
-from commandTypes import CommandType
+from commands import CommandType
 
 class State(Enum):
     Collecting = 1,
@@ -62,25 +62,24 @@ class CommandGenerator(Node):
             self.start_time = t
             self.initialised = True
 
-        DURATION = 60
-        WAVE_MAGNITUDE = 5
-        INITIAL_FREQUENCY = 0
-        FINAL_FREQUENCY = 25
-        CHIRP_RATE = (FINAL_FREQUENCY - INITIAL_FREQUENCY) / DURATION
-
         runningTime = t - self.start_time
 
-        if runningTime > DURATION:
+        REPEAT_TIME = 20
+        remainderTime = runningTime % REPEAT_TIME
+
+        if (remainderTime < 5) :
+            self.types = [CommandType.Current.value, CommandType.Position.value]
+            self.values = [0.0, -math.pi / 2]
+        elif remainderTime < 10:
             self.types = [CommandType.Current.value, CommandType.Position.value]
             self.values = [0.0, 0.0]
-            return
+        elif remainderTime < 15:
+            self.types = [CommandType.Current.value, CommandType.Position.value]
+            self.values = [0.0, math.pi / 2]
+        else:
+            self.types = [CommandType.Current.value, CommandType.Position.value]
+            self.values = [0.0, 0.0]
 
-        frequency = CHIRP_RATE * runningTime + INITIAL_FREQUENCY
-        current = WAVE_MAGNITUDE * math.sin(2 * math.pi * frequency * runningTime)
-
-        self.types = [CommandType.Current.value, CommandType.Current.value]
-        self.values = [0.0, current]
-        
         
   
 

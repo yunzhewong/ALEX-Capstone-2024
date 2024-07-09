@@ -1,7 +1,11 @@
-from alex_nodes.motor_pubsub_utils.PID import PIDController
-from alex_nodes.motor_pubsub_utils.Commands import CommandObject
-from alex_nodes.commandTypes import CommandType
-from alex_nodes.motor_pubsub_utils.constants import MOTOR_TORQUE_CONSTANT, POSITION_GAIN, VEL_GAIN, VEL_INTEGRATOR_GAIN
+import os
+import sys
+package_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(package_dir)
+
+from PID import PIDController
+from commands import CommandType, CommandObject
+from constants import MOTOR_TORQUE_CONSTANT, POSITION_GAIN, VEL_GAIN, VEL_INTEGRATOR_GAIN
 
 class MotorController():
     def __init__(self, ip):
@@ -11,22 +15,26 @@ class MotorController():
         self.commandObject = None
 
     def updateCommand(self, commandObject: CommandObject):
-        self.positionPID.clear()
-        self.velocityPID.clear()
+        if self.commandObject:
+            matchingCommand = commandObject.command == self.commandObject.command
+            matchingValue = commandObject.value == self.commandObject.value
+            if matchingCommand and matchingValue:
+                return  
+
         self.commandObject = commandObject
         if (commandObject.command == CommandType.Current):
             return
         if (commandObject.command == CommandType.Position):
-            self.positionPID.setTarget(commandObject.value)
+            self.positionPID.setReference(commandObject.value)
             return
         if (commandObject.command == CommandType.Velocity):
-            self.velocityPID.setTarget(commandObject.value)
+            self.velocityPID.setReference(commandObject.value)
             return
         raise Exception("Invalid Command")
 
     def updateState(self, time, position, velocity):
-        self.positionPID.updateLatest(time, position)
-        self.velocityPID.updateLatest(time, velocity)
+        self.positionPID.update(time, position)
+        self.velocityPID.update(time, velocity)
 
     def calculateTorque(self):
         if not self.commandObject:
