@@ -14,7 +14,7 @@ SAVE_NAME = "polynomial_position_motor.csv"
 DURATION = 5
 
 SAMPLE_PERIOD = 0.04
-POLYNOMIAL_COEFFICIENTS = [0.016, 0.04, 0.0, 0.0]
+POLYNOMIAL_COEFFICIENTS = [0.0, 0.0, 0.04, 0.016]
 
 def get_poly_time(runningTime: float):
     CYCLE_DURATION = 5.0 
