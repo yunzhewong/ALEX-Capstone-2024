@@ -27,6 +27,9 @@ def get_poly_time(runningTime: float):
 def calculate_position(running_time: float):
     return sum(coef * (running_time ** i) for i, coef in enumerate(POLYNOMIAL_COEFFICIENTS))
 
+def reset_position(running_time: float,start_position):
+    return max(0,start_position-running_time*(start_position/5))
+
 if __name__ == "__main__":
     try:
         socket = AiosSocket()
@@ -39,10 +42,24 @@ if __name__ == "__main__":
 
         time.sleep(1)
 
-        command_func = lambda top_motor, bottom_motor, running_time: (
-            top_motor.setPosition(calculate_position(running_time)),
-            bottom_motor.setPosition(calculate_position(running_time))
-        )
+        def command_func(top_motor: SafeMotor, bottom_motor:SafeMotor, running_time):
+            half_duration = DURATION / 2
+            if running_time > half_duration:
+                # Reverse the position for the bottom motor after half the duration
+                top_motor.setPosition(calculate_position(DURATION - running_time))
+                bottom_motor.setPosition(calculate_position(DURATION - running_time))
+            else:
+                top_motor.setPosition(calculate_position(running_time))
+                bottom_motor.setPosition(calculate_position(running_time))
+        
+        # Reset the motor's position to zero
+        def command_func1(top_motor: SafeMotor, bottom_motor:SafeMotor, running_time):
+            if (top_motor.getCVP() is None or bottom_motor.getCVP() is None):
+                return
+            x1 = top_motor.getCVP().position
+            x2 = bottom_motor.getCVP().position
+            top_motor.setPosition(reset_position(running_time,x1))
+            bottom_motor.setPosition(reset_position(running_time,x2))
 
         gather_data(command_func, DURATION, SAVE_NAME)
 
