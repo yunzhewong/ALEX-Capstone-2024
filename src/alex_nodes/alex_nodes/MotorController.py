@@ -43,8 +43,8 @@ class MotorController():
         if (self.commandObject.command == CommandType.Current):
             return MOTOR_TORQUE_CONSTANT * self.commandObject.value
         if (self.commandObject.command == CommandType.Position):
-            return -1 * self.positionPID.getControlValue()
+            return self.positionPID.getControlValue()
         if (self.commandObject.command == CommandType.Velocity):
-            return -1 * self.velocityPID.getControlValue()
+            return self.velocityPID.getControlValue()
         raise Exception("No Command")
 

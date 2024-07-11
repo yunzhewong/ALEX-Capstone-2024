@@ -23,8 +23,10 @@ class PIDController():
             return
 
         dt = time - self.previousTime
-        # E = Y - R
-        newError = value - self.reference 
+        if dt == 0:
+            return
+        # E = R - Y
+        newError = self.reference - value 
 
         self.e_dot = (newError - self.e) / dt
         self.e_int += newError * dt

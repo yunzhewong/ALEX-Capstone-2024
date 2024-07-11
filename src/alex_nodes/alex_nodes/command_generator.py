@@ -64,16 +64,16 @@ class CommandGenerator(Node):
 
         runningTime = t - self.start_time
 
-        REPEAT_TIME = 20
+        REPEAT_TIME = 10
         remainderTime = runningTime % REPEAT_TIME
 
-        if (remainderTime < 5) :
+        if (remainderTime < 2.5) :
             self.types = [CommandType.Current.value, CommandType.Position.value]
             self.values = [0.0, -math.pi / 2]
-        elif remainderTime < 10:
+        elif remainderTime < 5:
             self.types = [CommandType.Current.value, CommandType.Position.value]
             self.values = [0.0, 0.0]
-        elif remainderTime < 15:
+        elif remainderTime < 7.5:
             self.types = [CommandType.Current.value, CommandType.Position.value]
             self.values = [0.0, math.pi / 2]
         else:
