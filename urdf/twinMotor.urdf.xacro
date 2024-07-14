@@ -45,9 +45,10 @@
   <joint name="bottom_motor" type="revolute">
     <parent link="base" />
     <child link="bottom_motor_link" />
-    <origin xyz="0 0 ${(inner_length + 0.015)/ 2}" />
+    <origin xyz="0 0 ${(inner_length + 0.02)/ 2}" />
     <limit lower="${-100 * pi}" upper="${100 * pi}" effort="100000" velocity="1000000" />
     <axis xyz="0 0 -1" />
+    <dynamics damping="0.0" friction="0.0"/>
   </joint>
 
   <gazebo reference="top_motor_link">
@@ -74,9 +75,9 @@
     <parent link="bottom_motor_link" />
     <child link="top_motor_link" />
     <origin xyz="${-motor_offset} 0 ${inner_length + attachment_height}" />
-    <limit lower="${-100 * pi}" upper="${100 * pi}" effort="100000" velocity="1000000" />
+    <limit lower="${-1000 * pi}" upper="${1000 * pi}" effort="10000" velocity="10000" />
     <axis xyz="1 0 0" />
-    <dynamics damping="0.5"/>
+    <dynamics damping="0.001" friction="0.0"/>
   </joint>
 
   <ros2_control name="GazeboSystem" type="system">

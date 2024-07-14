@@ -1,7 +1,7 @@
 import math
 
-radius = 0.085 / 2
-length = 0.07
+radius = 0.06 / 2
+length = 0.055
 density = 7850
 
 volume = math.pi * radius * radius * length
