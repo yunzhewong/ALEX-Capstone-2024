@@ -142,8 +142,5 @@ function [w_range, m_range] = extract_range(freq, mags, low_freq, high_freq)
     m_range = mags(low_index:high_index);
 end
 
-function [match, index] = closest_match(values, searchValue) 
-    [match, index] = min(abs(values - searchValue));
-end
 
 
