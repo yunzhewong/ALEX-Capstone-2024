@@ -1,4 +1,4 @@
-function [omega, M, theta] = chirp_identification(t, u, y)
+function [omega, M, theta] = bode_from_chirp(t, u, y)
     % as the fourier transform creates a frequency domain plot from 0Hz to the
     % nyquist frequency of the system (e.g. sample_freq / 2), we need to use
     % these values to reconstruct the graph

@@ -17,6 +17,6 @@ slicedCurrents = currents(start:last);
 slicedVelocities= velocities(start:last);
 
 plot(1:numel(currents), currents)
-% chirp_identification(times, currents', velocities')
+bode_from_chirp(times, currents', velocities')
 
 

@@ -17,5 +17,5 @@ chirp_f = linspace(0, 50, POINTS);
 u = sin(2 * pi * chirp_f .* t);
 y = lsim(sys, u, t)';
 
-chirp_identification(t, u, y)
+bode_from_chirp(t, u, y)
 
