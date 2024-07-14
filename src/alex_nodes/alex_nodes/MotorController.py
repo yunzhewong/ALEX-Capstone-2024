@@ -5,7 +5,7 @@ sys.path.append(package_dir)
 
 from PID import PIDController
 from commands import CommandType, CommandObject
-from constants import MOTOR_TORQUE_CONSTANT, POSITION_GAIN, VEL_GAIN, VEL_INTEGRATOR_GAIN
+from constants import EPSILON, FRICTION_ADJUSTMENT, MOTOR_TORQUE_CONSTANT, POSITION_GAIN, VEL_GAIN, VEL_INTEGRATOR_GAIN
 
 class MotorController():
     def __init__(self, ip):
@@ -13,6 +13,7 @@ class MotorController():
         self.positionPID = PIDController(POSITION_GAIN, 0, 0)
         self.velocityPID = PIDController(0.5 * VEL_GAIN / VEL_GAIN, VEL_INTEGRATOR_GAIN, 0)
         self.commandObject = None
+        self.velocity = 0
 
     def updateCommand(self, commandObject: CommandObject):
         if self.commandObject:
@@ -35,8 +36,9 @@ class MotorController():
     def updateState(self, time, position, velocity):
         self.positionPID.update(time, position)
         self.velocityPID.update(time, velocity)
+        self.velocity = velocity
 
-    def calculateTorque(self):
+    def calculateMotorTorque(self):
         if not self.commandObject:
             return 0
         
@@ -48,3 +50,10 @@ class MotorController():
             return self.velocityPID.getControlValue()
         raise Exception("No Command")
 
+    def calculateFrictionAdjustment(self):
+        if abs(self.velocity) < EPSILON:
+            return 0
+
+        if self.velocity > 0:
+            return FRICTION_ADJUSTMENT 
+        return -FRICTION_ADJUSTMENT

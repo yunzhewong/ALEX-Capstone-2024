@@ -48,7 +48,7 @@
     <origin xyz="0 0 ${(inner_length + 0.02)/ 2}" />
     <limit lower="${-100 * pi}" upper="${100 * pi}" effort="100000" velocity="1000000" />
     <axis xyz="0 0 -1" />
-    <dynamics damping="0.0" friction="0.0"/>
+    <dynamics damping="0.0" friction="0.05"/>
   </joint>
 
   <gazebo reference="top_motor_link">
@@ -63,12 +63,12 @@
       <xacro:common.cylinder-geom length="0.1" radius="0.01" rpy="0 0 0" xyz="0.05 0 0.05"/>
     </visual>
     <visual>
-      <xacro:common.cylinder-geom length="${inner_length}" radius="${inner_length / 2}" rpy="0 ${pi / 2} 0"/>
+      <xacro:common.cylinder-geom length="${inner_length}" radius="${inner_diameter / 2}" rpy="0 ${pi / 2} 0"/>
     </visual>
     <collision>
-      <xacro:common.cylinder-geom length="${inner_length}" radius="${inner_length / 2}" rpy="0 ${pi / 2} 0"/>
+      <xacro:common.cylinder-geom length="${inner_length}" radius="${inner_diameter / 2}" rpy="0 ${pi / 2} 0"/>
     </collision>
-    <xacro:common.cylinder-inertia length="${inner_length}" radius="${inner_length / 2}" density="${steeldensity}" rpy="0 ${pi / 2} 0" />
+    <xacro:common.cylinder-inertia length="${inner_length}" radius="${inner_diameter / 2}" density="${steeldensity}" rpy="0 ${pi / 2} 0" />
   </link>
 
   <joint name="top_motor" type="revolute">
@@ -77,7 +77,7 @@
     <origin xyz="${-motor_offset} 0 ${inner_length + attachment_height}" />
     <limit lower="${-1000 * pi}" upper="${1000 * pi}" effort="10000" velocity="10000" />
     <axis xyz="1 0 0" />
-    <dynamics damping="0.001" friction="0.0"/>
+    <dynamics damping="0.01" friction="0.0999"/>
   </joint>
 
   <ros2_control name="GazeboSystem" type="system">
