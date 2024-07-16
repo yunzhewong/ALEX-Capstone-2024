@@ -83,7 +83,7 @@ class CommandGenerator(Node):
         
         remainder = t % 10
 
-        self.types = [CommandType.Position.value, CommandType.Current.value] 
+        self.types = [CommandType.Position.value, CommandType.Position.value] 
 
         if remainder < 5:
             self.values = [0.0, 0.0]
