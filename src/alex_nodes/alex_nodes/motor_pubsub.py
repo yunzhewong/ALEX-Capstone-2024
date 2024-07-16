@@ -64,7 +64,7 @@ class MotorControllerNode(Node):
             torque = controller.calculateMotorTorque()
             current = torque / MOTOR_TORQUE_CONSTANT
             currents.append(current)
-            torque += controller.calculateFrictionAdjustment()
+            # torque += controller.calculateFrictionAdjustment()
             publisher.publish([float(torque)])
         self.current_publisher.publish(currents)
 
