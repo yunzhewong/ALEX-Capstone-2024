@@ -42,7 +42,6 @@ class BulkDataBatcher():
             return
         
         position = cvp.position
-        print(self.state)
 
         if self.state == State.Collecting:
             if not self.initialised:
