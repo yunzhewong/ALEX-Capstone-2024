@@ -1,4 +1,4 @@
-import physical_motor.aiosv2.aios as aios
+import aios_alter as aios
 import time
 import threading
 import numpy as np
@@ -20,7 +20,7 @@ dt = 0.02
 positions = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 feedback = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 encoderIsReady = True
-NO_ROBOT = False
+NO_ROBOT = True
 
 # Add Actuators
 joints_names = ["L-Abd", "R-Abd", "L-Ext", "R-Ext", "L-Knee", "R-Knee"]

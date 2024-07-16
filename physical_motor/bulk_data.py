@@ -11,12 +11,12 @@ class State(Enum):
     Paused = 2,
     Resetting = 3
 
-MAX_ANGLE = 5 * math.pi
+MAX_ANGLE = 10 * math.pi
 MAX_TIME = 10
-STARTING_ANGLE = -5 * math.pi
+STARTING_ANGLE = -10 * math.pi
 RESET_TIME = 10
 PAUSE_TIME = 1
-START_MAGNITUDE = 0.2
+START_MAGNITUDE = 1
 INCREMENT_MAGNITUDE = 0.02
 
 
@@ -59,7 +59,7 @@ class BulkDataBatcher():
             should_stop = exceeded_max_angle or exceeded_max_time
 
             if should_stop:
-                self.log.download(f"step{round(current, 2)}A.csv")
+                self.log.download(f"step{format(round(current, 2), '.2f')}A.csv")
                 self.state = State.Paused
                 self.post_pause_state = State.Resetting
                 self.collect_index += 1
