@@ -6,6 +6,7 @@ from rclpy.node import Node
 from alex_interfaces.msg import Command
 from sensor_msgs.msg import JointState
 
+
 import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
@@ -13,6 +14,8 @@ sys.path.append(package_dir)
 from constants import SEND_PERIOD
 from twinmotor import IPS
 from commands import CommandType
+from qos import BestEffortQoS
+
 
 class State(Enum):
     Collecting = 1,
@@ -24,10 +27,10 @@ class CommandGenerator(Node):
     def __init__(self):
         super().__init__("command_generator")
 
-        self.publisher = self.create_publisher(Command, "/commands", 10)
+        self.publisher = self.create_publisher(Command, "/commands", BestEffortQoS)
         self.publish_timer = self.create_timer(SEND_PERIOD, self.send_command)
 
-        self.subscriber = self.create_subscription(JointState, "/joint_states", self.read_time, 10)
+        self.subscriber = self.create_subscription(JointState, "/joint_states", self.read_time, BestEffortQoS)
         self.time = -1
 
         self.types = [CommandType.Current.value, CommandType.Current.value]

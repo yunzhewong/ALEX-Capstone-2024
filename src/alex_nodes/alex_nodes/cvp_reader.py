@@ -8,11 +8,14 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
+from qos import BestEffortQoS
+
+
 class CVPReader(Node):
     def __init__(self):
         super().__init__("cvp_reader")
-        self.joints_sub = self.create_subscription(JointState, "/joint_states", self.read_joints, 10)
-        self.current_sub = self.create_subscription(Float64MultiArray, "/currents", self.read_currents, 10)
+        self.joints_sub = self.create_subscription(JointState, "/joint_states", self.read_joints, BestEffortQoS)
+        self.current_sub = self.create_subscription(Float64MultiArray, "/currents", self.read_currents, BestEffortQoS)
 
         self.time = 0
         self.currents = []

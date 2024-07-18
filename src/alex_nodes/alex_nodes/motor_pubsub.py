@@ -12,6 +12,7 @@ sys.path.append(package_dir)
 
 from commands import CommandObject
 from constants import MOTOR_TORQUE_CONSTANT, SEND_PERIOD
+from qos import BestEffortQoS
 from MotorController import MotorController
 
 
@@ -38,22 +39,22 @@ class MotorControllerNode(Node):
         self.motor_pairs: List[tuple[Float64MultiArrayPublisher, MotorController]] = []
 
         self.reader = self.create_subscription(
-            JointState, "/joint_states", self.read_encoder, 10
+            JointState, "/joint_states", self.read_encoder, BestEffortQoS
         )
         self.get_logger().info("Reader Initialised")
         
         for ip in EXPECTED_IPS:
             publisher = Float64MultiArrayPublisher(self.create_publisher(
-                Float64MultiArray, f"/{IP_MAP[ip]}_controller/commands", 10
+                Float64MultiArray, f"/{IP_MAP[ip]}_controller/commands", BestEffortQoS
             ))
             controller = MotorController(ip)
             self.motor_pairs.append((publisher, controller))
 
-        self.current_publisher = Float64MultiArrayPublisher(self.create_publisher(Float64MultiArray, f"/currents", 10))
+        self.current_publisher = Float64MultiArrayPublisher(self.create_publisher(Float64MultiArray, f"/currents", BestEffortQoS))
         self.timer = self.create_timer(SEND_PERIOD, self.sendCommands)
         self.get_logger().info("Publisher Initialised")
 
-        self.command_receiver = self.create_subscription(Command, '/commands', self.receive_command, 10)
+        self.command_receiver = self.create_subscription(Command, '/commands', self.receive_command, BestEffortQoS)
         self.get_logger().info("Command Receiver Initialised")
         self.index = 0
 
