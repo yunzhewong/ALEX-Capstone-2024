@@ -39,13 +39,8 @@ def generate_launch_description():
         output='screen'
     )
 
-    load_motor1 = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'bottom_motor_controller'],
-        output='screen'
-    )
-    
-    load_motor2 = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'top_motor_controller'],
+    load_motors = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'motor_controller'],
         output='screen'
     )
 
@@ -72,7 +67,7 @@ def generate_launch_description():
             RegisterEventHandler(
                 event_handler=OnProcessExit(
                     target_action=spawn_entity,
-                    on_exit=[load_joint_state_broadcaster, load_motor1, load_motor2],
+                    on_exit=[load_joint_state_broadcaster, load_motors],
                 )
             ),
             robot_state_publisher,

@@ -74,7 +74,7 @@ class CommandGenerator(Node):
         STARTING_ANGLE = -3 * math.pi
         RESET_TIME = 5
         PAUSE_TIME = 1
-        START_CURRENT = 0.5
+        START_CURRENT = 0.2
         INCREMENT = 0.02
 
         if self.time < 0:

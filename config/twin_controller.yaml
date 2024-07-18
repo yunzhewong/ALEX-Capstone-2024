@@ -4,22 +4,12 @@ controller_manager:
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
-      
-    bottom_motor_controller:
+
+    motor_controller:
       type: effort_controllers/JointGroupEffortController
 
-    top_motor_controller:
-      type: effort_controllers/JointGroupEffortController
-
-    
-
-bottom_motor_controller:
+motor_controller:
   ros__parameters:
     joints:
       - bottom_motor
-
-top_motor_controller:
-  ros__parameters:
-    joints:
       - top_motor
-
