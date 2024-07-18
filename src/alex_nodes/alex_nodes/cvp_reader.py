@@ -9,11 +9,15 @@ package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
 from qos import BestEffortQoS
+from configreader import read_config
 
 
 class CVPReader(Node):
     def __init__(self):
         super().__init__("cvp_reader")
+
+        _, self.motor_configs = read_config()
+        self.names = [config.name for config in self.motor_configs]
         self.joints_sub = self.create_subscription(JointState, "/joint_states", self.read_joints, BestEffortQoS)
         self.current_sub = self.create_subscription(Float64MultiArray, "/currents", self.read_currents, BestEffortQoS)
 
@@ -23,27 +27,23 @@ class CVPReader(Node):
         self.positions = []
 
         self.f = open("data.csv", "w")
-        self.written = False
+        self.f.write("Time")
+        for name in self.names:
+            self.f.write(f", {name} Current, {name} Velocity, {name} Position")
+        self.f.write("\n")
+        self.written = True
 
     def read_joints(self, msg: JointState):
         timestamp = msg.header.stamp
         self.time = timestamp.sec + timestamp.nanosec / 1e9
-        names = msg.name
         self.positions = msg.position
         self.velocities = msg.velocity
 
         if len(self.currents) == 0 or len(self.currents) != len(self.positions):
             return
         
-        if not self.written:
-            self.f.write("Time")
-            for name in names:
-                self.f.write(f", {name} Current, {name} Velocity, {name} Position")
-            self.f.write("\n")
-            self.written = True
-
         self.f.write(f"{self.time}")
-        for i in range(len(names)):
+        for i in range(len(self.positions)):
             self.f.write(f", {self.currents[i]}, {self.velocities[i]}, {self.positions[i]}")
         self.f.write("\n")
 

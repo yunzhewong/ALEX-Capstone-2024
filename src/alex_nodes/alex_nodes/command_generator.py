@@ -12,9 +12,10 @@ package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
 from constants import SEND_PERIOD
-from twinmotor import IPS
 from commands import CommandType
 from qos import BestEffortQoS
+from configreader import read_config
+
 
 
 class State(Enum):
@@ -26,21 +27,22 @@ class State(Enum):
 class CommandGenerator(Node):
     def __init__(self):
         super().__init__("command_generator")
+        
+        self.motor_count, self.motor_configs = read_config()
+        self.ips = [config.ip for config in self.motor_configs]
 
         self.publisher = self.create_publisher(Command, "/commands", BestEffortQoS)
         self.publish_timer = self.create_timer(SEND_PERIOD, self.send_command)
 
         self.subscriber = self.create_subscription(JointState, "/joint_states", self.read_time, BestEffortQoS)
         self.time = -1
-
-        self.types = [CommandType.Current.value, CommandType.Current.value]
-        self.values = [0.0, 0.0]
-
-        self.positions = [0.0, 0.0]
-        self.velocities = [0.0, 0.0]
-
+        self.types = []
+        self.values = []
+        self.positions = []
+        self.velocities = []
         self.initialised = False
 
+        self.state_initialised = False
         self.state = State.Resetting
         self.post_pause_state = State.Paused
         self.collecting_start = -1
@@ -54,10 +56,12 @@ class CommandGenerator(Node):
 
 
     def send_command(self):
+        if not self.initialised:
+            return
         self.commands(self.time)
         
         msg = Command()
-        msg.ips = IPS
+        msg.ips = self.ips
         msg.types = self.types
         msg.values = self.values
         self.publisher.publish(msg)
@@ -67,8 +71,13 @@ class CommandGenerator(Node):
         self.time = timestamp.sec + timestamp.nanosec / 1e9
         self.positions = msg.position
         self.velocities = msg.velocity
+        self.initialised = True
 
     def commands(self, t):
+        if len(self.positions) < self.motor_count:
+            raise Exception("Too few motors")
+
+    
         MAX_ANGLE = 3 * math.pi
         MAX_TIME = 10
         STARTING_ANGLE = -3 * math.pi
@@ -77,12 +86,7 @@ class CommandGenerator(Node):
         START_CURRENT = 0.2
         INCREMENT = 0.02
 
-        if self.time < 0:
-            return
         
-        if len(self.positions) < 2:
-            return
-
         remainder = t % 10
 
         self.types = [CommandType.Position.value, CommandType.Position.value]
@@ -96,9 +100,9 @@ class CommandGenerator(Node):
 
         if self.state == State.Collecting:
             command = START_CURRENT + INCREMENT * self.collect_index
-            if not self.initialised:
+            if not self.state_initialised:
                 self.collecting_start = t
-                self.initialised = True
+                self.state_initialised = True
                 self.log.open(f"step{format(round(command, 2), '.2f')}A.csv")
                 print(command)
 
@@ -114,34 +118,34 @@ class CommandGenerator(Node):
                 self.post_pause_state = State.Resetting
                 self.collect_index += 1
                 self.log.close()
-                self.initialised = False
+                self.state_initialised = False
 
             self.types = [CommandType.Position.value, CommandType.Current.value] 
             self.values = [0.0, command]
         elif self.state == State.Paused:
-            if not self.initialised:
+            if not self.state_initialised:
                 self.pause_end_time = t + PAUSE_TIME
-                self.initialised = True
+                self.state_initialised = True
 
             if t > self.pause_end_time:
                 self.state = self.post_pause_state
-                self.initialised = False
+                self.state_initialised = False
 
             self.types = [CommandType.Position.value, CommandType.Current.value] 
             self.values = [0.0, 0.0]
         elif self.state == State.Resetting:
-            if not self.initialised:
+            if not self.state_initialised:
                 self.reset_start = t
                 self.reset_end = t + RESET_TIME
                 self.reset_angle = self.positions[1]
-                self.initialised = True
+                self.state_initialised = True
 
             expected_pos = self.reset_angle - ((self.reset_angle - STARTING_ANGLE) / RESET_TIME) * (t - self.reset_start)
 
             if t > self.reset_end:
                 self.post_pause_state = State.Collecting
                 self.state = State.Paused
-                self.initialised = False
+                self.state_initialised = False
             
             self.types = [CommandType.Position.value, CommandType.Position.value] 
             self.values = [0.0, float(expected_pos)]

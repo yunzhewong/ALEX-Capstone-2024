@@ -47,19 +47,23 @@ def generate_launch_description():
     motor_controller = Node(
         package='alex_nodes',
         executable='motor_pubsub',
-        name="motor_pubsub"
+        name="motor_pubsub",
+        arguments=["../config/twinmotor.txt"]
     )
 
     cvp_reader = Node(
         package='alex_nodes',
         executable='cvp_reader',
-        name="cvp_reader"
+        name="cvp_reader",
+        arguments=["../config/twinmotor.txt"]
+
     )
 
     # command_generator = Node(
     #     package="alex_nodes",
     #     executable='command_generator',
-    #     name="command_generator"
+    #     name="command_generator",
+    #     arguments=["../config/twinmotor.txt"]
     # )
 
     return LaunchDescription(

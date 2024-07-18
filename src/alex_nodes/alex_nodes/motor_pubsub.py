@@ -11,10 +11,11 @@ package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
 from commands import CommandObject
-from constants import MOTOR_TORQUE_CONSTANT, SEND_PERIOD
+from constants import SEND_PERIOD
 from qos import BestEffortQoS
 from MotorController import MotorController
-from twinmotor import IPS
+from configreader import read_config
+
 
 class Float64MultiArrayPublisher():
     def __init__(self, ros_publisher):
@@ -36,8 +37,9 @@ class MotorControllerNode(Node):
         self.get_logger().info("Reader Initialised")
 
         self.controllers: List[MotorController] = []
-        for ip in IPS:
-            self.controllers.append(MotorController(ip))
+        counts, configs = read_config()
+        for i in range(counts):
+            self.controllers.append(MotorController(configs[i]))
         self.torque_publisher = Float64MultiArrayPublisher(self.create_publisher(
                 Float64MultiArray, "/motor_controller/commands", BestEffortQoS
             ))
@@ -57,8 +59,9 @@ class MotorControllerNode(Node):
         torques = []
         for controller in self.controllers:
             torque = controller.calculateMotorTorque()
-            current = torque / MOTOR_TORQUE_CONSTANT
-            currents.append(current)
+            
+            currents.append(controller.calculateCurrent(torque))
+
             torque += controller.calculateFrictionAdjustment()
             torques.append(float(torque))
         self.current_publisher.publish(currents)
@@ -76,7 +79,7 @@ class MotorControllerNode(Node):
             ip = msg.ips[i]
             value = msg.values[i]
             command = msg.types[i]
-            if controller.ip != ip:
+            if controller.getIP() != ip:
                 raise Exception("Invalid ip")
             controller.updateCommand(CommandObject(command, value))
 

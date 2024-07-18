@@ -1,19 +1,24 @@
 import os
 import sys
+
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
 from PID import PIDController
 from commands import CommandType, CommandObject
-from constants import EPSILON, FRICTION_ADJUSTMENT, MOTOR_TORQUE_CONSTANT, POSITION_GAIN, VEL_GAIN, VEL_INTEGRATOR_GAIN
+from configreader import MotorConfiguration
+from constants import EPSILON
 
 class MotorController():
-    def __init__(self, ip):
-        self.ip = ip
-        self.positionPID = PIDController(POSITION_GAIN, 0, 0)
-        self.velocityPID = PIDController(0.5 * VEL_GAIN / VEL_GAIN, VEL_INTEGRATOR_GAIN, 0)
+    def __init__(self, config: MotorConfiguration):
+        self.config = config
+        self.positionPID = PIDController(config.position_p, 0, 0)
+        self.velocityPID = PIDController(config.vel_p, config.vel_i, 0)
         self.commandObject = None
         self.velocity = 0
+
+    def getIP(self):
+        return self.config.ip
 
     def updateCommand(self, commandObject: CommandObject):
         if self.commandObject:
@@ -43,17 +48,20 @@ class MotorController():
             return 0
         
         if (self.commandObject.command == CommandType.Current):
-            return MOTOR_TORQUE_CONSTANT * self.commandObject.value
+            return self.config.motor_constant * self.commandObject.value
         if (self.commandObject.command == CommandType.Position):
             return self.positionPID.getControlValue()
         if (self.commandObject.command == CommandType.Velocity):
             return self.velocityPID.getControlValue()
         raise Exception("No Command")
+    
+    def calculateCurrent(self, torque):
+        return torque / self.config.motor_constant
 
     def calculateFrictionAdjustment(self):
         if abs(self.velocity) < EPSILON:
             return 0
 
         if self.velocity > 0:
-            return FRICTION_ADJUSTMENT 
-        return -FRICTION_ADJUSTMENT
+            return self.config.friction_adjustment 
+        return -self.config.friction_adjustment
