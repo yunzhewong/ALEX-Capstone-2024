@@ -83,6 +83,17 @@ class CommandGenerator(Node):
         if len(self.positions) < 2:
             return
 
+        remainder = t % 10
+
+        self.types = [CommandType.Position.value, CommandType.Position.value]
+        if remainder < 5:
+            self.values = [0.0, math.pi]
+        else:
+            self.values = [math.pi, 0.0]
+            
+
+        return
+
         if self.state == State.Collecting:
             command = START_CURRENT + INCREMENT * self.collect_index
             if not self.initialised:

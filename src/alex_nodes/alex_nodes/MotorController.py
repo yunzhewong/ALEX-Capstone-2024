@@ -10,7 +10,7 @@ from constants import EPSILON, FRICTION_ADJUSTMENT, MOTOR_TORQUE_CONSTANT, POSIT
 class MotorController():
     def __init__(self, ip):
         self.ip = ip
-        self.positionPID = PIDController(1, 0, 0)
+        self.positionPID = PIDController(POSITION_GAIN, 0, 0)
         self.velocityPID = PIDController(0.5 * VEL_GAIN / VEL_GAIN, VEL_INTEGRATOR_GAIN, 0)
         self.commandObject = None
         self.velocity = 0
