@@ -1,6 +1,6 @@
 close all
 
-amperage = 0.46:0.02:1;
+amperage = 0.52:0.02:1.2;
 iters = 0.02;
 
 count = numel(amperage);
@@ -9,7 +9,7 @@ J_bs = zeros(1, count);
 
 for i=1:count
     current = amperage(i);
-    fullname = "./data/step" + compose("%1.2f", current) + "A.csv";
+    fullname = "./data/sim1/step" + compose("%1.2f", current) + "A.csv";
 
     data = readmatrix(fullname);
 
@@ -24,15 +24,13 @@ for i=1:count
     
     steadyStateTime = finalTime / 5;
 
-    [~, halfFinalIndex] = closest(corrected_times, steadyStateTime);
+    [~, steadyStateIndex] = closest(corrected_times, steadyStateTime);
 
-    steadyState = velocities(halfFinalIndex:numel(corrected_times));
+    steadyState = velocities(steadyStateIndex:numel(velocities));
 
     expectedSteadyState = mean(steadyState);
-    % = K / b
+    % = K / b, K = K_ti - F
     K_bs(i) = expectedSteadyState;
-
-    expectedB = averageCurrent / expectedSteadyState;
 
     outputAfterOneTau = (1 - exp(-1)) * expectedSteadyState;
 
@@ -43,6 +41,11 @@ for i=1:count
 
     J_bs(i) = time;
     
+    % figure
+    % plot(corrected_times, velocities)
+    % hold on
+    % xline(time)
+    % yline(expectedSteadyState)
 end
 
 Kt_bs = zeros(1, count - 1);
@@ -64,9 +67,26 @@ Kt_bs
 Fc_bs
 J_bs
 
+figure
+plot(amperage, K_bs)
+hold on
+
+p = polyfit(amperage, K_bs, 2)
+
+quadratic_fit = p(1) * (amperage .* amperage) + p(2) * amperage + p(3)
+plot(amperage, quadratic_fit)
+
+% figure
+% plot(amperage, Kt_bs)
+
+figure
+plot(amperage, Fc_bs)
+
+figure
+plot(amperage, J_bs)
 
 %assumption
-K_t = 0.124;
+K_t = 0.1;
 b = K_t / average_Kt_b
 Fc = average_Fc_b * b
 J = average_J_b * b
