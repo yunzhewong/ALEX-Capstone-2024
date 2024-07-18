@@ -47,6 +47,7 @@ class CommandGenerator(Node):
         self.reset_end = -1
         self.reset_angle = -1
         self.start_time = -1
+        self.log = DataLog()
 
 
     def send_command(self):
@@ -65,10 +66,10 @@ class CommandGenerator(Node):
         self.velocities = msg.velocity
 
     def commands(self, t):
-        MAX_ANGLE = math.pi
+        MAX_ANGLE = 3 * math.pi
         MAX_TIME = 10
-        STARTING_ANGLE = -math.pi
-        RESET_TIME = 20
+        STARTING_ANGLE = -3 * math.pi
+        RESET_TIME = 5
         PAUSE_TIME = 1
         START_CURRENT = 0.5
         INCREMENT = 0.02
@@ -79,27 +80,15 @@ class CommandGenerator(Node):
         if len(self.positions) < 2:
             return
 
-
-        
-        remainder = t % 10
-
-        self.types = [CommandType.Position.value, CommandType.Position.value] 
-
-        if remainder < 5:
-            self.values = [0.0, 0.0]
-        else:
-            self.values = [0.0, math.pi / 2]
-
-        
-        return
-        
-
         if self.state == State.Collecting:
             command = START_CURRENT + INCREMENT * self.collect_index
             if not self.initialised:
                 self.collecting_start = t
                 self.initialised = True
+                self.log.open(f"step{format(round(command, 2), '.2f')}A.csv")
                 print(command)
+
+            self.log.write(t, command, self.velocities[1], self.positions[1])
 
             exceeded_max_angle = self.positions[1] >= MAX_ANGLE
             exceeded_max_time = (t - self.collecting_start) >= MAX_TIME
@@ -110,6 +99,7 @@ class CommandGenerator(Node):
                 self.state = State.Paused
                 self.post_pause_state = State.Resetting
                 self.collect_index += 1
+                self.log.close()
                 self.initialised = False
 
             self.types = [CommandType.Position.value, CommandType.Current.value] 
@@ -133,7 +123,6 @@ class CommandGenerator(Node):
                 self.initialised = True
 
             expected_pos = self.reset_angle - ((self.reset_angle - STARTING_ANGLE) / RESET_TIME) * (t - self.reset_start)
-            print(expected_pos)
 
             if t > self.reset_end:
                 self.post_pause_state = State.Collecting
@@ -143,7 +132,18 @@ class CommandGenerator(Node):
             self.types = [CommandType.Position.value, CommandType.Position.value] 
             self.values = [0.0, float(expected_pos)]
 
-        
+
+class DataLog():
+    def open(self, name: str):
+        self.f = open(name, "w")
+        self.f.write("Time, Current, Velocity, Position\n")
+
+    def write(self, t: float, c: float, v: float, p: float):
+        self.f.write(f"{t}, {c}, {v}, {p}\n")
+
+    def close(self):
+        self.f.close()
+    
   
 
 def main(args=None):
