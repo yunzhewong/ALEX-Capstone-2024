@@ -11,7 +11,7 @@ package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
 from commands import CommandObject
-from constants import MOTOR_TORQUE_CONSTANT, SIMULATION_PERIOD
+from constants import MOTOR_TORQUE_CONSTANT, SEND_PERIOD
 from MotorController import MotorController
 
 
@@ -50,7 +50,7 @@ class MotorControllerNode(Node):
             self.motor_pairs.append((publisher, controller))
 
         self.current_publisher = Float64MultiArrayPublisher(self.create_publisher(Float64MultiArray, f"/currents", 10))
-        self.timer = self.create_timer(SIMULATION_PERIOD, self.sendCommands)
+        self.timer = self.create_timer(SEND_PERIOD, self.sendCommands)
         self.get_logger().info("Publisher Initialised")
 
         self.command_receiver = self.create_subscription(Command, '/commands', self.receive_command, 10)

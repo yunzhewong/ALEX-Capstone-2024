@@ -89,5 +89,6 @@
     "variant": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled",
-  "python.analysis.typeCheckingMode": "off"
+  "python.analysis.typeCheckingMode": "off",
+  "cmake.sourceDirectory": "/home/yunzhewong/ALEX-Capstone-2024/src/alex_interfaces"
 }
