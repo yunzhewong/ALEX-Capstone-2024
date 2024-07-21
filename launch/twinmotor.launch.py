@@ -48,14 +48,14 @@ def generate_launch_description():
         package='alex_nodes',
         executable='motor_pubsub',
         name="motor_pubsub",
-        arguments=["../config/twinmotor.txt"]
+        arguments=["../config/twinmotor.json"]
     )
 
     cvp_reader = Node(
         package='alex_nodes',
         executable='cvp_reader',
         name="cvp_reader",
-        arguments=["../config/twinmotor.txt"]
+        arguments=["../config/twinmotor.json"]
     )
 
     # command_generator = Node(
