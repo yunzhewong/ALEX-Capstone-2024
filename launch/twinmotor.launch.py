@@ -56,7 +56,6 @@ def generate_launch_description():
         executable='cvp_reader',
         name="cvp_reader",
         arguments=["../config/twinmotor.txt"]
-
     )
 
     # command_generator = Node(
