@@ -1,0 +1,19 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    motor_controller:
+      type: effort_controllers/JointGroupEffortController
+
+motor_controller:
+  ros__parameters:
+    joints:
+      - left_abduction
+      - left_hip
+      - left_knee
+      - right_abduction
+      - right_hip
+      - right_knee
