@@ -1,48 +1,55 @@
 import numpy as np
-from functools import reduce
-from math import cos, sin
 
 
-def getTraj(viaPoints, dt, Kv=0.0):
-
-    numVia = len(viaPoints[0, :])
-    numVar = len(viaPoints[:, 0])
+def getTrajectory(via_points, time_delta, Kv=0.0):
+    number_of_joints = len(via_points[:, 0])
+    number_of_via_points = len(via_points[0, :])
 
     # Set trajectory initial conditions
-    viaPointVelInit = np.zeros([numVar, 1])
-    viaPointVel = np.zeros([numVar, 1])
-    posTraj = np.zeros([numVia, 1])
-    velTraj = np.zeros([numVia, 1])
+    trajectory_positions = np.zeros([number_of_via_points, 1])
+    trajector_velocities = np.zeros([number_of_via_points, 1])
+    via_point_initial_velocity = np.zeros([number_of_joints, 1])
+    via_point_final_velocity = np.zeros([number_of_joints, 1])
 
     # Double final point to ensure processing
-    viaLast = viaPoints[:, len(viaPoints[0]) - 1].copy().T
-    viaLast[0] = viaLast[0] + 0.1  # Arbitrarily increase time to allow matrix inversion
+    final_via_point_copy = via_points[:, len(via_points[0]) - 1].copy()
+    final_via_point_copy[0] = (
+        final_via_point_copy[0] + 0.1
+    )  # Arbitrarily increase time to allow matrix inversion
 
-    viaPoints = np.concatenate((viaPoints, viaLast.reshape(numVar, 1)), axis=1)
+    via_points = np.concatenate(
+        (via_points, final_via_point_copy.reshape(number_of_joints, 1)), axis=1
+    )
 
-    for i in range(len(viaPoints[0]) - 1):
-        t = viaPoints[0, i + 1] - viaPoints[0, i]
+    for i in range(number_of_via_points):
+        t = via_points[0, i + 1] - via_points[0, i]
 
-        for j in range(len(viaPoints[:, i])):
-            viaPointVel[j, 0] = np.array(
-                [[(viaPoints[j, i + 1] - viaPoints[j, i]) / t]]
+        for j in range(len(via_points[:, i])):
+            via_point_final_velocity[j, 0] = Kv * np.array(
+                [[(via_points[j, i + 1] - via_points[j, i]) / t]]
             )
 
-        [posSeg, velSeg] = getSegment(
-            viaPoints[:, [i, i + 1]], dt, Kv * viaPointVelInit, Kv * viaPointVel
+        segment_positions, segment_velocities = getSegment(
+            via_points[:, [i, i + 1]],
+            time_delta,
+            via_point_initial_velocity,
+            via_point_final_velocity,
         )
         if i == 0:
-            posTraj = posSeg
-            velTraj = velSeg
+            trajectory_positions = segment_positions
+            trajector_velocities = segment_velocities
         else:
-
             ## NOTE: Check axis
-            posTraj = np.concatenate((posTraj, posSeg), axis=1)
-            velTraj = np.concatenate((velTraj, velSeg), axis=1)
+            trajectory_positions = np.concatenate(
+                (trajectory_positions, segment_positions), axis=1
+            )
+            trajector_velocities = np.concatenate(
+                (trajector_velocities, segment_velocities), axis=1
+            )
 
-        viaPointVelInit = viaPointVel
+        via_point_initial_velocity = via_point_final_velocity
 
-    return [posTraj, velTraj]
+    return trajectory_positions, trajector_velocities
 
 
 def getSegment(viaPoints, time_delta, viaPointVelInit, viaPointVel):
@@ -74,7 +81,7 @@ def getSegment(viaPoints, time_delta, viaPointVelInit, viaPointVel):
                 coefficients[i, :], t
             )
 
-    return [positions, velocities]
+    return (positions, velocities)
 
 
 def findCubicSplineCoefficients(t0, tf, x0, xf, xdot0, xdotf):

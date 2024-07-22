@@ -232,14 +232,14 @@ viaPoints.append(
 vp = np.zeros([len(viaPoints), len(viaPoints[0])])
 for i in range(len(viaPoints)):
     vp[i] = viaPoints[i]
-[posTraj, velTraj] = tg.getTraj(vp.T, dt, Kv=0.75)
+trajectory_positions, trajectory_velocities = tg.getTrajectory(vp.T, dt, Kv=0.75)
 
 if NO_ROBOT:
-    tt = np.arange(0, len(posTraj[0, :]) * dt, dt)
+    tt = np.arange(0, len(trajectory_positions[0, :]) * dt, dt)
     fig, ax = plt.subplots(2, sharex=True)
-    for j in range(0, len(posTraj[:, 0])):
-        ax[0].plot(tt, posTraj[j, :], label=joints_names[j])
-        ax[1].plot(tt, velTraj[j, :], label=joints_names[j])
+    for j in range(0, len(trajectory_positions[:, 0])):
+        ax[0].plot(tt, trajectory_positions[j, :], label=joints_names[j])
+        ax[1].plot(tt, trajectory_velocities[j, :], label=joints_names[j])
     plt.legend(loc="upper right")
     plt.show(block=True)
 
@@ -288,7 +288,7 @@ def main():
     torque_ff = 1.0
 
     init_time = time.time()
-    for n in range(len(posTraj[0, :])):
+    for n in range(len(trajectory_positions[0, :])):
 
         # Start Loop Timer
         start = time.time()
@@ -299,12 +299,12 @@ def main():
         for i in range(len(joints)):
             if NO_ROBOT:
                 #    print("[EXO22 NO_ROBOT] ", "ID:", joints[i]['ID'], ", Pos: ", posTraj[joints[i]['ID'], n])
-                print(f"{posTraj[joints[i]['ID'], n]:.4}", "\t", end="")
+                print(f"{trajectory_positions[joints[i]['ID'], n]:.4}", "\t", end="")
             else:
                 # aios.setInputPosition_pt(joints[i]['IP'], deg_to_aios(posTraj[joints[i]['ID'], n]), deg_to_aios(velTraj[joints[i]['ID'], n]), torque_ff)
                 aios.setInputPosition_pt(
                     joints[i]["IP"],
-                    deg_to_aios(posTraj[joints[i]["ID"], n]),
+                    deg_to_aios(trajectory_positions[joints[i]["ID"], n]),
                     velocity_ff,
                     torque_ff,
                 )
