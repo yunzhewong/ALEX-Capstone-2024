@@ -1,11 +1,9 @@
-import aios_alter as aios
+import aios
 import time
-import threading
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-import json
-import Trajectory_Generator as tg
+import trajectoryGenerator as tg
 
 
 def deg_to_aios(deg_val):
@@ -235,7 +233,6 @@ vp = np.zeros([len(viaPoints), len(viaPoints[0])])
 for i in range(len(viaPoints)):
     vp[i] = viaPoints[i]
 [posTraj, velTraj] = tg.getTraj(vp.T, dt, Kv=0.75)
-
 
 if NO_ROBOT:
     tt = np.arange(0, len(posTraj[0, :]) * dt, dt)
