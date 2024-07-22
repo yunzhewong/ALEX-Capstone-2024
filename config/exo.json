@@ -4,8 +4,8 @@
     {
       "name": "left_abduction",
       "ip": "UNKNOWN",
-      "motor_constant": 10,
-      "position_p": 1,
+      "motor_constant": 15,
+      "position_p": 1000,
       "vel_p": 0.0002,
       "vel_i": 0.001,
       "friction_adjustment": 0.00
@@ -13,8 +13,8 @@
     {
       "name": "left_hip",
       "ip": "UNKNOWN",
-      "motor_constant": 10,
-      "position_p": 1,
+      "motor_constant": 15,
+      "position_p": 1000,
       "vel_p": 0.0002,
       "vel_i": 0.001,
       "friction_adjustment": 0.00
@@ -22,8 +22,8 @@
     {
       "name": "left_knee",
       "ip": "UNKNOWN",
-      "motor_constant": 10,
-      "position_p": 1,
+      "motor_constant": 15,
+      "position_p": 1000,
       "vel_p": 0.0002,
       "vel_i": 0.001,
       "friction_adjustment": 0.00
@@ -31,8 +31,8 @@
     {
       "name": "right_abduction",
       "ip": "UNKNOWN",
-      "motor_constant": 10,
-      "position_p": 1,
+      "motor_constant": 15,
+      "position_p": 1000,
       "vel_p": 0.0002,
       "vel_i": 0.001,
       "friction_adjustment": 0.00
@@ -40,8 +40,8 @@
     {
       "name": "right_hip",
       "ip": "UNKNOWN",
-      "motor_constant": 10,
-      "position_p": 1,
+      "motor_constant": 15,
+      "position_p": 1000,
       "vel_p": 0.0002,
       "vel_i": 0.001,
       "friction_adjustment": 0.00
@@ -49,8 +49,8 @@
     {
       "name": "right_knee",
       "ip": "UNKNOWN",
-      "motor_constant": 10,
-      "position_p": 1,
+      "motor_constant": 15,
+      "position_p": 60,
       "vel_p": 0.0002,
       "vel_i": 0.001,
       "friction_adjustment": 0.00

@@ -4,8 +4,8 @@ from commands import CommandType
 
 
 def stable_exo(state, t: float):
-  state.types = [CommandType.Position.value for i in range(6)]
-  state.values = [0.0 for i in range(6)]
+  state.types = [CommandType.Position.value, CommandType.Position.value, CommandType.Position.value, CommandType.Position.value, CommandType.Position.value, CommandType.Position.value]
+  state.values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 class State(Enum):
     Collecting = 1,
