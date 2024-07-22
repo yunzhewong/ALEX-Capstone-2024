@@ -45,16 +45,16 @@ def getTraj(viaPoints, dt, Kv=0.0):
     return [posTraj, velTraj]
 
 
-def getSegment(viaPoints, dt, viaPointVelInit, viaPointVel):
-    number_of_via_points = len(viaPoints[:, 0])
+def getSegment(viaPoints, time_delta, viaPointVelInit, viaPointVel):
+    number_of_joints = len(viaPoints[:, 0])
 
-    coefficients = np.zeros([number_of_via_points - 1, 4])
-    time_step = viaPoints[0, 1] - viaPoints[0, 0]
+    coefficients = np.zeros([number_of_joints - 1, 4])
+    time_between_points = viaPoints[0, 1] - viaPoints[0, 0]
 
-    for i in range(1, number_of_via_points):
-        trajectory_coefficients = cubicSplineCoefficients(
+    for i in range(1, number_of_joints):
+        trajectory_coefficients = findCubicSplineCoefficients(
             0,
-            time_step,
+            time_between_points,
             viaPoints[i, 0],
             viaPoints[i, 1],
             viaPointVelInit[i, 0],
@@ -63,34 +63,21 @@ def getSegment(viaPoints, dt, viaPointVelInit, viaPointVel):
         coefficients[i - 1, :] = trajectory_coefficients.T
 
         # Pre-Allocate Matrix Size
-    t_size = int(time_step / dt)
-    posSeg = np.zeros([number_of_via_points - 1, t_size], dtype=float)
-    velSeg = np.zeros([number_of_via_points - 1, t_size], dtype=float)
+    total_points = int(time_between_points / time_delta)
+    positions = np.zeros([number_of_joints - 1, total_points], dtype=float)
+    velocities = np.zeros([number_of_joints - 1, total_points], dtype=float)
 
-    j = 0
-    t_tmp = 0
-
-    while j < t_size:
+    for j in range(total_points):
+        t = j * time_delta
         for i in range(len(coefficients[:, 0])):
-            posSeg[i, j] = (
-                t_tmp**3 * coefficients[i, 0]
-                + t_tmp**2 * coefficients[i, 1]
-                + t_tmp * coefficients[i, 2]
-                + coefficients[i, 3]
-            )
-            velSeg[i, j] = (
-                3 * t_tmp**2 * coefficients[i, 0]
-                + 2 * t_tmp * coefficients[i, 1]
-                + coefficients[i, 2]
+            positions[i, j], velocities[i, j] = evaluteCubicSpline(
+                coefficients[i, :], t
             )
 
-        j = j + 1
-        t_tmp = t_tmp + dt
-
-    return [posSeg, velSeg]
+    return [positions, velocities]
 
 
-def cubicSplineCoefficients(t0, tf, x0, xf, xdot0, xdotf):
+def findCubicSplineCoefficients(t0, tf, x0, xf, xdot0, xdotf):
     # Ax = b , x = A^(-1)b
     A = np.array(
         [
@@ -103,3 +90,16 @@ def cubicSplineCoefficients(t0, tf, x0, xf, xdot0, xdotf):
     b = np.array([[x0], [xdot0], [xf], [xdotf]])
 
     return np.dot(np.linalg.inv(A), b)
+
+
+def evaluteCubicSpline(coefficients, time):
+    position = (
+        time**3 * coefficients[0]
+        + time**2 * coefficients[1]
+        + time * coefficients[2]
+        + coefficients[3]
+    )
+    velocity = (
+        3 * time**2 * coefficients[0] + 2 * time * coefficients[1] + coefficients[2]
+    )
+    return position, velocity
