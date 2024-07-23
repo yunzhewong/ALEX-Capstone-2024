@@ -273,4 +273,4 @@ def follow_demo_trajectory(state, t: float):
     array = state.trajectories[:, index]
 
     state.types = [CommandType.Position.value for _ in range(6)]
-    state.values = [float(array[i]) for i in range(6)]
+    state.values = [float(array[i] * math.pi / 180) for i in range(6)]

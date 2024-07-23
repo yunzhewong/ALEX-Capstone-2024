@@ -12,8 +12,8 @@ motor_controller:
   ros__parameters:
     joints:
       - left_abduction
-      - left_hip
-      - left_knee
       - right_abduction
+      - left_hip
       - right_hip
+      - left_knee
       - right_knee
