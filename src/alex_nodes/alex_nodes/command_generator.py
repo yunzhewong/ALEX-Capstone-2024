@@ -8,6 +8,7 @@ from sensor_msgs.msg import JointState
 
 
 import sys
+
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
@@ -18,21 +19,19 @@ from configreader import read_config
 import command_list
 
 
-
-
-    
-
 class CommandGenerator(Node):
     def __init__(self):
         super().__init__("command_generator")
-        
+
         self.motor_count, self.motor_configs = read_config()
         self.ips = [config.ip for config in self.motor_configs]
 
         self.publisher = self.create_publisher(Command, "/commands", BestEffortQoS)
         self.publish_timer = self.create_timer(SEND_PERIOD, self.send_command)
 
-        self.subscriber = self.create_subscription(JointState, "/joint_states", self.read_time, BestEffortQoS)
+        self.subscriber = self.create_subscription(
+            JointState, "/joint_states", self.read_time, BestEffortQoS
+        )
         self.time = -1
         self.types = []
         self.values = []
@@ -44,7 +43,7 @@ class CommandGenerator(Node):
         if not self.initialised:
             return
         self.commands(self.time)
-        
+
         msg = Command()
         msg.ips = self.ips
         msg.types = self.types
@@ -61,13 +60,12 @@ class CommandGenerator(Node):
     def commands(self, t):
         if len(self.positions) < self.motor_count:
             raise Exception("Too few motors")
-        
-        command_list.stable_exo(self, t)
 
-        
+        command_list.position_test(self, t)
+        # command_list.stable_exo(self, t)
 
 
-class DataLog():
+class DataLog:
     def open(self, name: str):
         self.f = open(name, "w")
         self.f.write("Time, Current, Velocity, Position\n")
@@ -77,8 +75,7 @@ class DataLog():
 
     def close(self):
         self.f.close()
-    
-  
+
 
 def main(args=None):
     rclpy.init(args=args)

@@ -1,3 +1,3 @@
-from rclpy.qos import QoSReliabilityPolicy, QoSProfile
+from rclpy.qos import QoSReliabilityPolicy, QoSProfile, QoSPresetProfiles
 
-BestEffortQoS = QoSProfile(depth=5, reliability=QoSReliabilityPolicy.BEST_EFFORT)
+BestEffortQoS = QoSPresetProfiles.SENSOR_DATA.value
