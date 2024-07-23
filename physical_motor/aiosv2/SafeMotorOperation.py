@@ -67,6 +67,7 @@ class SafeMotor:
     def setCVP(self, cvp):
         with self.cvp_lock:
             self.current_CVP = cvp
+        #print(cvp)
         self.check_within_limits(cvp)
 
     def encoderIsReady(self):
