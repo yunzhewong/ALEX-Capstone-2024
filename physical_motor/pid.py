@@ -11,8 +11,8 @@ if __name__ == "__main__":
 
     time.sleep(1)
 
-    topPID = twinMotor.topMotor.raw_motor.getPIDConfig()
-    bottomPID = twinMotor.bottomMotor.raw_motor.getPIDConfig()
+    topPID = twinMotor.topMotor.raw_motor.requestPIDConfig()
+    bottomPID = twinMotor.bottomMotor.raw_motor.requestPIDConfig()
     print("Top Motor:", topPID)
     print("Bottom Motor:", bottomPID)
     twinMotor.bottomMotor.disable()

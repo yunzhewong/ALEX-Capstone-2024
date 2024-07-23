@@ -1,4 +1,5 @@
 from enum import Enum
+import math
 
 
 PORT_rt = 2333  # Real-time control data port, ie. speed, position, current and other real-time data
@@ -23,3 +24,14 @@ class AxisState(Enum):
     AXIS_STATE_MOTOR_CALIBRATION = 4
     AXIS_STATE_ENCODER_OFFSET_CALIBRATION = 7
     AXIS_STATE_ENABLE = 8
+
+
+CONVERSION_RATIO = 100000 / math.pi
+
+
+def convertToMotorCommand(value):
+    return value * CONVERSION_RATIO
+
+
+def convertFromMotorCommand(value):
+    return value / CONVERSION_RATIO

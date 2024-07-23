@@ -1,36 +1,50 @@
 from enum import Enum
 import threading
-import time
 from typing import List
 from aiosv2.AiosSocket import AiosSocket
 from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.ConnectedMotor import CVPConverter
 from aiosv2.CVP import CVP
+from constants import convertFromMotorCommand
 
 
 class DataType(Enum):
-    CVP = "CVP",
+    CVP = ("CVP",)
     ERROR = "ERROR"
     ENCODER = "ENCODER"
+    MOTION_CONFIG = "MOTION_CONFIG"
 
 
-class ErrorParser():
+class PIDConfig:
+    def __init__(self, response):
+        self.positionP = response.get("pos_gain")
+        self.velocityP = response.get("vel_gain")
+        self.velocityI = response.get("vel_integrator_gain")
+        self.velocityLimit = convertFromMotorCommand(response.get("vel_limit"))
+        self.limitTolerance = response.get("vel_limit_tolerance")
+
+    def __str__(self):
+        return f"Position Gain: {self.positionP}, Velocity Gain: {self.velocityP}, Velocity Int: {self.velocityI}, Velocity Limit: {self.velocityLimit}, Limit Tolerance: {self.limitTolerance}"
+
+
+class ErrorParser:
     NO_ERROR = "ERROR_NONE"
 
     def check_for_error(self, json_obj):
-        axisError = json_obj.get("axis") 
-        motorError = json_obj.get("motor") 
+        axisError = json_obj.get("axis")
+        motorError = json_obj.get("motor")
         encoderError = json_obj.get("encoder")
 
         if axisError != self.NO_ERROR:
-            raise Exception(f"Error with the motor axis: {axisError}") 
-        
+            raise Exception(f"Error with the motor axis: {axisError}")
+
         if motorError != self.NO_ERROR:
             raise Exception(f"Error with the motor: {motorError}")
-        
+
         if encoderError != self.NO_ERROR:
             raise Exception(f"Error with the encoder: {encoderError}")
-        
+
+
 class DataStream:
     def __init__(self, socket: AiosSocket, motors: List[SafeMotor]):
         self.socket = socket
@@ -49,7 +63,7 @@ class DataStream:
     def disable(self):
         self.stop = True
         self.readThread.join()
-        
+
     def errored(self):
         return self.error
 
@@ -62,9 +76,8 @@ class DataStream:
             if result is None:
                 continue
 
-            try: 
+            try:
                 json_obj, ip, datatype = result
-
 
                 if datatype == DataType.CVP:
                     for motor in self.motors:
@@ -77,10 +90,13 @@ class DataStream:
                     ready = json_obj.get("property", None)
                     if ready is None or not ready:
                         return
-                    
+
                     for motor in self.motors:
                         if motor.getIP() == ip:
                             motor.confirmEncoderReady()
+                elif datatype == DataType.MOTION_CONFIG:
+                    data = PIDConfig(json_obj)
+                    print(ip, data)
                 else:
                     raise Exception("This should not happen")
             except Exception as err:
@@ -90,13 +106,15 @@ class DataStream:
     def check_for_data(self):
         try:
             json_obj, ip = self.socket.readJSON()
-            target = json_obj.get('reqTarget')
-            if target in ["/m1/setPosition", "/m1/setVelocity","/m1/setCurrent"]:
+            target = json_obj.get("reqTarget")
+            if target in ["/m1/setPosition", "/m1/setVelocity", "/m1/setCurrent"]:
                 return json_obj, ip, DataType.CVP
             if target in ["/m1/error"]:
                 return json_obj, ip, DataType.ERROR
             if target == "/m1/encoder/is_ready":
                 return json_obj, ip, DataType.ENCODER
+            if target == "/m1/controller/config":
+                return json_obj, ip, DataType.MOTION_CONFIG
             return None
         except:
             return None

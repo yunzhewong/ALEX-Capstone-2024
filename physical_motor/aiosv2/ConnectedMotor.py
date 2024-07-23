@@ -1,34 +1,18 @@
-import math
 import socket
 import struct
-import time
-from typing import Optional
-from aiosv2.constants import ControlMode, AxisState, PORT_rt, PORT_pt, PORT_srv
+from aiosv2.constants import (
+    ControlMode,
+    AxisState,
+    PORT_rt,
+    PORT_srv,
+    convertFromMotorCommand,
+    convertToMotorCommand,
+)
 from aiosv2.CVP import CVP
 from aiosv2.AiosSocket import AiosSocket
 
 
-class PIDConfig:
-    def __init__(self, response):
-        self.positionP = response.get("pos_gain")
-        self.velocityP = response.get("vel_gain")
-        self.velocityI = response.get("vel_integrator_gain")
-        self.velocityLimit = response.get("vel_limit")
-        self.limitTolerance = response.get("vel_limit_tolerance")
-
-    def __str__(self):
-        return f"Position Gain: {self.positionP}, Velocity Gain: {self.velocityP}, Velocity Int: {self. velocityI}"
-
-
 class CVPConverter:
-    CONVERSION_RATIO = 100000 / math.pi
-
-    def convertToMotorCommand(self, value):
-        return value * self.CONVERSION_RATIO
-
-    def convertFromMotorCommand(self, value):
-        return value / self.CONVERSION_RATIO
-
     def parseCVP(self, json_obj):
         readStatus = json_obj.get("status")
         readPosition = json_obj.get("position")
@@ -48,8 +32,8 @@ class CVPConverter:
         ):
             raise Exception("Invalid CVP")
 
-        position = self.convertFromMotorCommand(readPosition)
-        velocity = self.convertFromMotorCommand(readVelocity)
+        position = convertFromMotorCommand(readPosition)
+        velocity = convertFromMotorCommand(readVelocity)
         current = readCurrent
         return CVP(current, velocity, position)
 
@@ -78,7 +62,7 @@ class ConnectedMotor:
                 "reqTarget": "/m1/CVP",
             },
         )
-    
+
     def requestEncoderCheck(self):
         self.socket.sendJSON(
             self.ip,
@@ -86,7 +70,7 @@ class ConnectedMotor:
             {
                 "method": "GET",
                 "reqTarget": "/m1/encoder/is_ready",
-            }
+            },
         )
 
     def requestErrorCheck(self):
@@ -112,7 +96,7 @@ class ConnectedMotor:
         )
 
     def setPosition(self, position: float, velocity_ff=0, current_ff=0):
-        positionCommand = self.converter.convertToMotorCommand(position)
+        positionCommand = convertToMotorCommand(position)
         self.socket.sendJSON(
             self.ip,
             PORT_rt,
@@ -126,7 +110,7 @@ class ConnectedMotor:
         )
 
     def setVelocity(self, velocity: float, current_ff=0):
-        velocityCommand = self.converter.convertToMotorCommand(velocity)
+        velocityCommand = convertToMotorCommand(velocity)
         self.socket.sendJSON(
             self.ip,
             PORT_rt,
@@ -149,7 +133,7 @@ class ConnectedMotor:
             },
         )
 
-    def getPIDConfig(self):
+    def requestPIDConfig(self):
         self.socket.sendJSON(
             self.ip,
             PORT_srv,
@@ -159,9 +143,28 @@ class ConnectedMotor:
             },
         )
 
-        response, _ = self.socket.readJSON()
-
-        return PIDConfig(response)
+    def setPIDConfig(
+        self,
+        positionP: float,
+        velocityP: float,
+        velocityI: float,
+        velocityLimit: float,
+        limitTolerance: float,
+    ):
+        velocityLimitCommand = convertToMotorCommand(velocityLimit)
+        self.socket.sendJSON(
+            self.ip,
+            PORT_srv,
+            {
+                "method": "SET",
+                "reqTarget": "/m0/controller/config",
+                "pos_gain": positionP,
+                "vel_gain": velocityP,
+                "vel_integrator_gain": velocityI,
+                "vel_limit": velocityLimitCommand,
+                "vel_limit_tolerance": limitTolerance,
+            },
+        )
 
     def getCVP_pt(self):
         tx_messages = struct.pack("<B", 0x1A)
