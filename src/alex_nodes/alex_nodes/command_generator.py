@@ -38,11 +38,16 @@ class CommandGenerator(Node):
         self.positions = []
         self.velocities = []
         self.initialised = False
+        self.init_time = -1
+
+        self.dt = 0.02
+        positions, velocities = command_list.exo_demo_trajectory(self.dt)
+        self.trajectories = positions
 
     def send_command(self):
         if not self.initialised:
             return
-        self.commands(self.time)
+        self.commands(self.time - self.init_time)
 
         msg = Command()
         msg.ips = self.ips
@@ -55,14 +60,16 @@ class CommandGenerator(Node):
         self.time = timestamp.sec + timestamp.nanosec / 1e9
         self.positions = msg.position
         self.velocities = msg.velocity
-        self.initialised = True
+        if not self.initialised:
+            self.init_time = self.time
+            self.initialised = True
 
     def commands(self, t):
         if len(self.positions) < self.motor_count:
             raise Exception("Too few motors")
+        print(t)
 
-        command_list.position_test(self, t)
-        # command_list.stable_exo(self, t)
+        command_list.follow_demo_trajectory(self, t)
 
 
 class DataLog:
