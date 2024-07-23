@@ -11,15 +11,11 @@ package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
 from commands import CommandObject
-from constants import MOTOR_TORQUE_CONSTANT, SIMULATION_PERIOD
+from constants import SEND_PERIOD
+from qos import BestEffortQoS
 from MotorController import MotorController
+from configreader import read_config
 
-
-EXPECTED_IPS = ["10.10.10.17", "10.10.10.16"]
-IP_MAP = {
-    "10.10.10.17": "bottom_motor",
-    "10.10.10.16": "top_motor"
-}
 
 class Float64MultiArrayPublisher():
     def __init__(self, ros_publisher):
@@ -35,53 +31,57 @@ class MotorControllerNode(Node):
     def __init__(self):
         super().__init__("motor_controller")
 
-        self.motor_pairs: List[tuple[Float64MultiArrayPublisher, MotorController]] = []
-
         self.reader = self.create_subscription(
-            JointState, "/joint_states", self.read_encoder, 10
+            JointState, "/joint_states", self.read_encoder, BestEffortQoS
         )
         self.get_logger().info("Reader Initialised")
-        
-        for ip in EXPECTED_IPS:
-            publisher = Float64MultiArrayPublisher(self.create_publisher(
-                Float64MultiArray, f"/{IP_MAP[ip]}_controller/commands", 10
+
+        self.controllers: List[MotorController] = []
+        counts, configs = read_config()
+        for i in range(counts):
+            self.controllers.append(MotorController(configs[i]))
+        self.torque_publisher = Float64MultiArrayPublisher(self.create_publisher(
+                Float64MultiArray, "/motor_controller/commands", BestEffortQoS
             ))
-            controller = MotorController(ip)
-            self.motor_pairs.append((publisher, controller))
+        self.get_logger().info("Torque Publisher Initialised")
 
-        self.current_publisher = Float64MultiArrayPublisher(self.create_publisher(Float64MultiArray, f"/currents", 10))
-        self.timer = self.create_timer(SIMULATION_PERIOD, self.sendCommands)
-        self.get_logger().info("Publisher Initialised")
+        self.current_publisher = Float64MultiArrayPublisher(self.create_publisher(Float64MultiArray, f"/currents", BestEffortQoS))
+        self.timer = self.create_timer(SEND_PERIOD, self.sendCommands)
+        self.get_logger().info("Current Publisher Initialised")
 
-        self.command_receiver = self.create_subscription(Command, '/commands', self.receive_command, 10)
+        self.command_receiver = self.create_subscription(Command, '/commands', self.receive_command, BestEffortQoS)
         self.get_logger().info("Command Receiver Initialised")
         self.index = 0
 
 
     def sendCommands(self):
         currents = []
-        for (publisher, controller) in self.motor_pairs:
+        torques = []
+        for controller in self.controllers:
             torque = controller.calculateMotorTorque()
-            current = torque / MOTOR_TORQUE_CONSTANT
-            currents.append(current)
+            
+            currents.append(controller.calculateCurrent(torque))
+
             torque += controller.calculateFrictionAdjustment()
-            publisher.publish([float(torque)])
+            torques.append(float(torque))
         self.current_publisher.publish(currents)
+        self.torque_publisher.publish(torques)
 
     def read_encoder(self, msg: JointState):
-        for i, (_, controller) in enumerate(self.motor_pairs):
+        for i, controller in enumerate(self.controllers):
             new_position = msg.position[i]
             new_velocity = msg.velocity[i]
             controller.updateState(self.index, new_position, new_velocity)
         self.index += 1
 
     def receive_command(self, msg: Command):
-        for i, ip in enumerate(msg.ips):
-            for (_, controller) in self.motor_pairs:
-                if controller.ip == ip:
-                    command = msg.types[i] 
-                    value = msg.values[i]
-                    controller.updateCommand(CommandObject(command, value))
+        for i, controller in enumerate(self.controllers):
+            ip = msg.ips[i]
+            value = msg.values[i]
+            command = msg.types[i]
+            if controller.getIP() != ip:
+                raise Exception("Invalid ip")
+            controller.updateCommand(CommandObject(command, value))
 
 def main(args=None):
     rclpy.init(args=args)

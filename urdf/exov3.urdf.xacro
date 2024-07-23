@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<robot name="ALEX_Model_v2" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="motor.xacro" ns="motor" />
+  <xacro:include filename="common.xacro" ns="common" />
+  <xacro:include filename="materials.xacro" />
+
+  <xacro:property name="steeldensity" value="7850" />
+
+  <xacro:macro name="motor_dynamics">
+      <dynamics damping="20" friction="0.5" />
+  </xacro:macro>
+
+  <link name="world"></link>
+  <link name="base">
+    <xacro:common.box width="0.3" depth="0.05" height="0.5" density="${steeldensity}" />
+  </link>
+
+  <joint name="fix" type="fixed">
+    <parent link="world" />
+    <child link="base" />
+    <origin xyz="0 0 1.5" rpy="0 0 0" />
+  </joint>
+
+  <xacro:macro name="leg" params="prefix multiplier">
+    <link name="${prefix}_abduction_link">
+      <xacro:common.cylinder radius="0.07" length="0.05" density="${steeldensity}" rpy="${pi / 2} 0 0"/>
+    </link>
+
+    <link name="${prefix}_hip_link">
+      <xacro:common.cylinder radius="0.07" length="0.05" density="${steeldensity}" rpy="0 ${pi / 2} 0"/>
+    </link>
+
+    <joint name="${prefix}_hip" type="revolute">
+      <parent link="${prefix}_abduction_link" />
+      <child link="${prefix}_hip_link" />
+      <origin xyz="${multiplier * 0.2} -0.2 0" rpy="0 0 0" />
+      <limit lower="${-pi}" upper="${pi}" effort="100" velocity="100" />
+      <axis xyz="${multiplier * -1} 0 0" />
+      <xacro:motor_dynamics />
+    </joint>
+
+    <link name="${prefix}_knee_link">
+      <xacro:common.cylinder radius="0.07" length="0.05" density="${steeldensity}" rpy="0 ${pi / 2} 0"/>
+    </link>
+
+    <joint name="${prefix}_knee" type="revolute">
+      <parent link="${prefix}_hip_link" />
+      <child link="${prefix}_knee_link" />
+      <origin xyz="0 0 -0.5" rpy="0 0 0" />
+      <limit lower="${-pi}" upper="${pi}" effort="100" velocity="100" />
+      <axis xyz="${multiplier * -1} 0 0" />
+      <xacro:motor_dynamics />
+    </joint>
+
+    <link name="${prefix}_calf_link">
+      <xacro:common.box width="0.05" depth="0.05" height="0.3" />
+    </link>
+
+    <joint name="${prefix}_calf" type="fixed">
+      <parent link="${prefix}_knee_link" />
+      <child link="${prefix}_calf_link" />
+      <origin xyz="0 0 -0.3" rpy="0 0 0" />
+    </joint>
+  </xacro:macro>
+
+  <xacro:leg prefix="left" multiplier="1" />
+
+  <joint name="left_abduction" type="revolute">
+    <parent link="base" />
+    <child link="left_abduction_link" />
+    <origin xyz="0.15 0.05 -0.25" rpy="0 0 0" />
+    <limit lower="${-pi / 2}" upper="${pi / 2}" effort="100" velocity="100" />
+    <axis xyz="0 -1 0" />
+    <xacro:motor_dynamics />
+  </joint>
+  
+  <xacro:leg prefix="right" multiplier="-1" />
+
+  <joint name="right_abduction" type="revolute">
+    <parent link="base" />
+    <child link="right_abduction_link" />
+    <origin xyz="-0.15 0.05 -0.25" rpy="0 0 0" />
+    <limit lower="${-pi / 2}" upper="${pi / 2}" effort="100" velocity="100" />
+    <axis xyz="0 -1 0" />
+    <xacro:motor_dynamics />
+  </joint>
+
+  <xacro:macro name="ros2control_motor" params="name">
+    <joint name="${name}">
+      <command_interface name="effort">
+        <param name="min">-1000</param>
+        <param name="max">1000</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+  </xacro:macro>
+
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    <xacro:ros2control_motor name="left_abduction"/>
+    <xacro:ros2control_motor name="right_abduction"/>
+    <xacro:ros2control_motor name="left_hip"/>
+    <xacro:ros2control_motor name="right_hip"/>
+    <xacro:ros2control_motor name="left_knee"/>
+    <xacro:ros2control_motor name="right_knee"/>
+  </ros2_control>
+
+  <gazebo>
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+      <parameters>../config/exo_controller.yaml</parameters>
+    </plugin>
+  </gazebo>
+</robot>

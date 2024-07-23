@@ -8,7 +8,8 @@
   "python.analysis.extraPaths": [
     "/home/yunzhewong/ALEX-Capstone-2024/install/alex_nodes/lib/python3.10/site-packages",
     "/opt/ros/humble/lib/python3.10/site-packages",
-    "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    "/opt/ros/humble/local/lib/python3.10/dist-packages",
+    "./physical_motor/aiosv2"
   ],
   "cmake.configureOnOpen": true,
   "files.associations": {
@@ -89,5 +90,6 @@
     "variant": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled",
-  "python.analysis.typeCheckingMode": "off"
+  "python.analysis.typeCheckingMode": "off",
+  "cmake.sourceDirectory": "/home/yunzhewong/ALEX-Capstone-2024/src/alex_interfaces"
 }

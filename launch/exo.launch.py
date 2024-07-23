@@ -9,7 +9,7 @@ import os
 
 
 def generate_launch_description():
-    doc = xacro.process_file("../urdf/twinMotor.urdf.xacro")
+    doc = xacro.process_file("../urdf/exov3.urdf.xacro")
     robot_desc = doc.toxml()
     robot_description = {"robot_description": robot_desc}
 
@@ -48,22 +48,15 @@ def generate_launch_description():
         package='alex_nodes',
         executable='motor_pubsub',
         name="motor_pubsub",
-        arguments=["../config/twinmotor.json"]
+        arguments=["../config/exo.json"]
     )
 
     cvp_reader = Node(
         package='alex_nodes',
         executable='cvp_reader',
         name="cvp_reader",
-        arguments=["../config/twinmotor.json"]
+        arguments=["../config/exo.json"]
     )
-
-    # command_generator = Node(
-    #     package="alex_nodes",
-    #     executable='command_generator',
-    #     name="command_generator",
-    #     arguments=["../config/twinmotor.txt"]
-    # )
 
     return LaunchDescription(
         [
@@ -78,6 +71,5 @@ def generate_launch_description():
             spawn_entity, 
             motor_controller, 
             cvp_reader, 
-            # command_generator
         ]
     )
