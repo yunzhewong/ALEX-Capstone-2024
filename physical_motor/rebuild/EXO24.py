@@ -259,28 +259,31 @@ def main():
     time.sleep(0.5)
 
     # Run Trajectory
-    velocity_ff = 0.0
-    torque_ff = 1.0
+    VELOCITY_FEEDFORWARD = 0.0
+    TORQUE_FEEDFORWARD = 1.0
 
     init_time = time.time()
     for n in range(len(trajectory_positions[0, :])):
 
         # Start Loop Timer
         start = time.time()
+        running_time = start - init_time
 
         # Send Position to Motors
         if NO_ROBOT:
-            print("[EXO22 NO_ROBOT] t=", f"{start-init_time:.4}", "\t", end="")
+            print(f"[EXO22 NO_ROBOT] t={running_time:.4} \t", end="")
 
         for joint in joints:
+            joint_position = trajectory_positions[joint.id, n]
+
             if NO_ROBOT:
-                print(f"{trajectory_positions[joint.id, n]:.4}", "\t", end="")
+                print(f"{joint_position:.4}\t", end="")
             else:
                 aios.setInputPosition_pt(
                     joint.ip,
-                    deg_to_aios(trajectory_positions[joint.id, n]),
-                    velocity_ff,
-                    torque_ff,
+                    deg_to_aios(joint_position),
+                    VELOCITY_FEEDFORWARD,
+                    TORQUE_FEEDFORWARD,
                 )
 
         if NO_ROBOT:
