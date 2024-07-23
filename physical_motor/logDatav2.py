@@ -47,10 +47,10 @@ if __name__ == "__main__":
             if running_time > half_duration:
                 # Reverse the position for the bottom motor after half the duration
                 top_motor.setPosition(calculate_position(DURATION - running_time))
-                bottom_motor.setPosition(calculate_position(DURATION - running_time))
+                bottom_motor.setPosition(calculate_position(running_time))
             else:
                 top_motor.setPosition(calculate_position(running_time))
-                bottom_motor.setPosition(calculate_position(running_time))
+                bottom_motor.setPosition(calculate_position(DURATION - running_time))
         
         # Reset the motor's position to zero
         def command_func1(top_motor: SafeMotor, bottom_motor:SafeMotor, running_time):
