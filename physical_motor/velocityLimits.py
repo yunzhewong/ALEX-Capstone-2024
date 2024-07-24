@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     def func(twinMotor: TwinMotor, runningTime: float):
 
-        twinMotor.topMotor.setVelocity(runningTime)
+        twinMotor.topMotor.setVelocity(-1 * runningTime)
         print(twinMotor.topMotor.getCVP())
 
     setup_teardown_twin_motor(func, 5)

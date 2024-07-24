@@ -15,7 +15,9 @@ DURATION = 10
 
 SAMPLE_PERIOD = 0.04
 POLYNOMIAL_COEFFICIENTS_BOTTOM = [0.0, 0.04, 0.016]  # Coefficients for the bottom position reference
-POLYNOMIAL_COEFFICIENTS_BOTTOM = [0.0, 0.1, 0.016]  # Coefficients for the top position reference
+POLYNOMIAL_COEFFICIENTS_TOP = [0.0, 0.1, 0.016]  # Coefficients for the top position reference
+POLY_COEFFICIENTS_BOTTOM = [0.08, 0.048]  # Coefficients for the bottom position reference
+POLY_COEFFICIENTS_TOP = [0.2, 0.048]  # Coefficients for the top position reference
 
 # POLYNOMIAL_COEFFICIENTS_TOPV = [0.0, 0.2, 0.048]  # Coefficients for the top motor velocity
 # POLYNOMIAL_COEFFICIENTS_BOTTOMV = [0.0, 0.08, 0.048]  # Coefficients for the bottom motor velocity
@@ -61,6 +63,12 @@ def calculate_refPosition_Bottom(running_time: float):
     return sum(coef * (running_time ** i) for i, coef in enumerate(POLYNOMIAL_COEFFICIENTS_BOTTOM))
 def calculate_refPosition_Top(running_time: float):
     return sum(coef * (running_time ** i) for i, coef in enumerate(POLYNOMIAL_COEFFICIENTS_TOP))
+
+def calculate_refVelocity_Bottom(running_time: float):
+    return sum(coef * (running_time ** i) for i, coef in enumerate(POLY_COEFFICIENTS_BOTTOM))
+def calculate_refVelocity_Top(running_time: float):
+    return sum(coef * (running_time ** i) for i, coef in enumerate(POLY_COEFFICIENTS_TOP))
+
 
 def pid_controller(error, integral_error, previous_error, dt):
     P = Kp * error
@@ -116,8 +124,8 @@ if __name__ == "__main__":
         integral_error_bottom += error_bottom * SAMPLE_PERIOD
 
         # Calculate control outputs
-        velocity_top = pid_controller(error_top, integral_error_top, previous_error_top, SAMPLE_PERIOD)
-        velocity_bottom = pid_controller(error_bottom, integral_error_bottom, previous_error_bottom, SAMPLE_PERIOD)
+        velocity_top = pid_controller(error_top, integral_error_top, previous_error_top, SAMPLE_PERIOD) + calculate_refVelocity_Top(running_time)
+        velocity_bottom = pid_controller(error_bottom, integral_error_bottom, previous_error_bottom, SAMPLE_PERIOD) + calculate_refVelocity_Bottom(running_time)
 
         # Update motors' velocity
         top_motor.setVelocity(velocity_top)
