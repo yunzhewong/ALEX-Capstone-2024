@@ -143,6 +143,30 @@ class ConnectedMotor:
             },
         )
 
+    def requestRoot(self):
+        self.socket.sendJSON(
+            self.ip,
+            PORT_srv,
+            {
+                "method": "GET",
+                "reqTarget": "/",
+            },
+        )
+    
+    def requestRestart(self):
+        print("Rebooting...")
+        self.socket.sendJSON(
+            self.ip, 
+            PORT_srv, 
+            {
+                "method": "SET", 
+                "reqTarget": "/", 
+                "property": "reboot"
+            }        
+        )
+        
+
+
     def setPIDConfig(
         self,
         positionP: float,
@@ -157,7 +181,7 @@ class ConnectedMotor:
             PORT_srv,
             {
                 "method": "SET",
-                "reqTarget": "/m0/controller/config",
+                "reqTarget": "/m1/controller/config",
                 "pos_gain": positionP,
                 "vel_gain": velocityP,
                 "vel_integrator_gain": velocityI,
@@ -175,3 +199,4 @@ class ConnectedMotor:
             return feedback
         except socket.timeout:  # fail after 1 second of no activity
             print("Didn't receive anymore data! [Timeout]")
+
