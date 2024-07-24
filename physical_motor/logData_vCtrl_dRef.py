@@ -14,10 +14,24 @@ SAVE_NAME = "polynomial_position_motor.csv"
 DURATION = 10
 
 SAMPLE_PERIOD = 0.04
-POLYNOMIAL_COEFFICIENTS_BOTTOM = [0.0, 0.04, 0.016]  # Coefficients for the bottom position reference
-POLYNOMIAL_COEFFICIENTS_TOP = [0.0, 0.1, 0.016]  # Coefficients for the top position reference
-POLY_COEFFICIENTS_BOTTOM = [0.08, 0.048]  # Coefficients for the bottom position reference
+POLYNOMIAL_COEFFICIENTS_BOTTOM = [
+    0.0,
+    0.04,
+    0.016,
+]  # Coefficients for the bottom position reference
+POLYNOMIAL_COEFFICIENTS_TOP = [
+    0.0,
+    0.1,
+    0.016,
+]  # Coefficients for the top position reference
+POLY_COEFFICIENTS_BOTTOM = [
+    0.08,
+    0.048,
+]  # Coefficients for the bottom position reference
 POLY_COEFFICIENTS_TOP = [0.2, 0.048]  # Coefficients for the top position reference
+
+DESIRED_TRAJECTORY = [0.0, 0.0, (3 * math.pi / 200), (-1 * math.pi / 1000)]
+
 
 # POLYNOMIAL_COEFFICIENTS_TOPV = [0.0, 0.2, 0.048]  # Coefficients for the top motor velocity
 # POLYNOMIAL_COEFFICIENTS_BOTTOMV = [0.0, 0.08, 0.048]  # Coefficients for the bottom motor velocity
@@ -34,7 +48,7 @@ integral_error_bottom = 0.0
 previous_error_bottom = 0.0
 
 # def get_poly_time(runningTime: float):
-#     CYCLE_DURATION = 5.0 
+#     CYCLE_DURATION = 5.0
 #     cycle_time = runningTime % CYCLE_DURATION
 
 #     if cycle_time > CYCLE_DURATION / 2:
@@ -59,15 +73,28 @@ previous_error_bottom = 0.0
 # def reset_position(running_time: float, start_position):
 #     return max(0, start_position - running_time * (start_position / 5))
 
+
 def calculate_refPosition_Bottom(running_time: float):
-    return sum(coef * (running_time ** i) for i, coef in enumerate(POLYNOMIAL_COEFFICIENTS_BOTTOM))
+    return sum(
+        coef * (running_time**i)
+        for i, coef in enumerate(POLYNOMIAL_COEFFICIENTS_BOTTOM)
+    )
+
+
 def calculate_refPosition_Top(running_time: float):
-    return sum(coef * (running_time ** i) for i, coef in enumerate(POLYNOMIAL_COEFFICIENTS_TOP))
+    return sum(
+        coef * (running_time**i) for i, coef in enumerate(POLYNOMIAL_COEFFICIENTS_TOP)
+    )
+
 
 def calculate_refVelocity_Bottom(running_time: float):
-    return sum(coef * (running_time ** i) for i, coef in enumerate(POLY_COEFFICIENTS_BOTTOM))
+    return sum(
+        coef * (running_time**i) for i, coef in enumerate(POLY_COEFFICIENTS_BOTTOM)
+    )
+
+
 def calculate_refVelocity_Top(running_time: float):
-    return sum(coef * (running_time ** i) for i, coef in enumerate(POLY_COEFFICIENTS_TOP))
+    return sum(coef * (running_time**i) for i, coef in enumerate(POLY_COEFFICIENTS_TOP))
 
 
 def pid_controller(error, integral_error, previous_error, dt):
@@ -75,6 +102,7 @@ def pid_controller(error, integral_error, previous_error, dt):
     I = Ki * integral_error
     D = Kd * (error - previous_error) / dt
     return P + I + D
+
 
 if __name__ == "__main__":
 
@@ -110,10 +138,14 @@ if __name__ == "__main__":
 
         # Calculate reference position top
         ref_position_top = calculate_refPosition_Top(running_time)
-        
+
         # Get current positions
-        current_position_top = top_motor.getCVP().position if top_motor.getCVP() is not None else 0.0
-        current_position_bottom = bottom_motor.getCVP().position if bottom_motor.getCVP() is not None else 0.0
+        current_position_top = (
+            top_motor.getCVP().position if top_motor.getCVP() is not None else 0.0
+        )
+        current_position_bottom = (
+            bottom_motor.getCVP().position if bottom_motor.getCVP() is not None else 0.0
+        )
 
         # Calculate errors
         error_top = ref_position_top - current_position_top
@@ -124,8 +156,12 @@ if __name__ == "__main__":
         integral_error_bottom += error_bottom * SAMPLE_PERIOD
 
         # Calculate control outputs
-        velocity_top = pid_controller(error_top, integral_error_top, previous_error_top, SAMPLE_PERIOD) + calculate_refVelocity_Top(running_time)
-        velocity_bottom = pid_controller(error_bottom, integral_error_bottom, previous_error_bottom, SAMPLE_PERIOD) + calculate_refVelocity_Bottom(running_time)
+        velocity_top = pid_controller(
+            error_top, integral_error_top, previous_error_top, SAMPLE_PERIOD
+        ) + calculate_refVelocity_Top(running_time)
+        velocity_bottom = pid_controller(
+            error_bottom, integral_error_bottom, previous_error_bottom, SAMPLE_PERIOD
+        ) + calculate_refVelocity_Bottom(running_time)
 
         # Update motors' velocity
         top_motor.setVelocity(velocity_top)
