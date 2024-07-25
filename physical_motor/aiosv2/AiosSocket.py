@@ -17,21 +17,29 @@ class AiosSocket:
         newSocket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.communicationSocket = newSocket
 
-    def assertConnectedAddresses(self, expectedIPs):
+
+    def readConnectedAddresses(self):
         self.communicationSocket.sendto(
             "Is any AIOS server here?".encode("utf-8"), (self.NETWORK, PORT_srv)
         )
 
         foundIPs = []
+
         while True:
             try:
                 _, address = self.communicationSocket.recvfrom(1024)
                 foundIPs.append(address[0])
-            except socket.timeout:  # fail after 1 second of no activity
-                for ip in expectedIPs:
-                    if ip not in foundIPs:
-                        raise Exception(f"Missing IP: {ip}")
-                return
+            except socket.timeout:
+                return foundIPs
+
+
+    def assertConnectedAddresses(self, expectedIPs):
+        foundIPs = self.readConnectedAddresses(0)
+        for ip in expectedIPs:
+            if ip not in foundIPs:
+                raise Exception(f"Missing IP: {ip}")
+       
+                
 
     def sendJSON(self, ip: str, port: int, data: dict):
         json_str = json.dumps(data)
