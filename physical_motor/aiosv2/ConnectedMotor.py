@@ -100,7 +100,6 @@ class ConnectedMotor:
 
     def setPosition(self, position: float, velocity_ff=0, current_ff=0):
         positionCommand = self.motorConverter.convertToMotorCommand(position)
-        print(positionCommand)
         self.socket.sendJSON(
             self.ip,
             PORT_rt,

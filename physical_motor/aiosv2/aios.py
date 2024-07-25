@@ -430,6 +430,7 @@ def inputMode(inputMode, server_ip, motor_number):
         data, address = s.recvfrom(1024)
         print("Server received from {}:{}".format(address, data.decode("utf-8")))
         json_obj = json.loads(data.decode("utf-8"))
+        print(json_obj)
     except socket.timeout:  # fail after 1 second of no activity
         print("Didn't receive anymore data! [Timeout]")
 
@@ -993,7 +994,8 @@ def setInputPosition_pt(server_ip, position, velocity, torque):
     try:
         data, address = s.recvfrom(1024)
         print("Server received from {}:{}".format(address, data))
-        # feedback = struct.unpack("<fffi", data[1:17])
+        feedback = struct.unpack("<fffi", data[1:17])
+        print(feedback)
         # return feedback
     except socket.timeout:  # fail after 1 second of no activity
         print("Didn't receive anymore data! [Timeout]")
@@ -1026,6 +1028,7 @@ def setInputTorque_pt(server_ip, torque):
         data, address = s.recvfrom(1024)
         print("Server received from {}:{}".format(address, data))
         feedback = struct.unpack("<fffi", data[1:17])
+        print(feedback)
         return feedback
     except socket.timeout:  # fail after 1 second of no activity
         print("Didn't receive anymore data! [Timeout]")
