@@ -5,14 +5,16 @@ from aiosv2.constants import (
     AxisState,
     PORT_rt,
     PORT_srv,
-    convertFromMotorCommand,
-    convertToMotorCommand,
 )
 from aiosv2.CVP import CVP
 from aiosv2.AiosSocket import AiosSocket
+from aiosv2.constants import Converter
 
 
 class CVPConverter:
+    def __init__(self, motorConverter: Converter):
+        self.motorConverter = motorConverter
+
     def parseCVP(self, json_obj):
         readStatus = json_obj.get("status")
         readPosition = json_obj.get("position")
@@ -32,8 +34,8 @@ class CVPConverter:
         ):
             raise Exception("Invalid CVP")
 
-        position = convertFromMotorCommand(readPosition)
-        velocity = convertFromMotorCommand(readVelocity)
+        position = self.motorConverter.convertFromMotorCommand(readPosition)
+        velocity = self.motorConverter.convertFromMotorCommand(readVelocity)
         current = readCurrent
         return CVP(current, velocity, position)
 
@@ -41,11 +43,12 @@ class CVPConverter:
 # Represents a motor connected to the system
 # Has methods to request and get the Current, Velocity and Position of the motor
 class ConnectedMotor:
-    def __init__(self, ip: str, socket: AiosSocket):
+    def __init__(self, ip: str, socket: AiosSocket, motorConverter: Converter):
         self.ip = ip
         self.socket = socket
         self.controlMode = ControlMode.Current
-        self.converter = CVPConverter()
+        self.cvpConverter = CVPConverter(motorConverter)
+        self.motorConverter = motorConverter
 
     def enable(self):
         self.socket.changeState(self.ip, AxisState.AXIS_STATE_ENABLE.value)
@@ -96,7 +99,8 @@ class ConnectedMotor:
         )
 
     def setPosition(self, position: float, velocity_ff=0, current_ff=0):
-        positionCommand = convertToMotorCommand(position)
+        positionCommand = self.motorConverter.convertToMotorCommand(position)
+        print(positionCommand)
         self.socket.sendJSON(
             self.ip,
             PORT_rt,
@@ -110,7 +114,7 @@ class ConnectedMotor:
         )
 
     def setVelocity(self, velocity: float, current_ff=0):
-        velocityCommand = convertToMotorCommand(velocity)
+        velocityCommand = self.motorConverter.convertToMotorCommand(velocity)
         self.socket.sendJSON(
             self.ip,
             PORT_rt,
@@ -175,7 +179,7 @@ class ConnectedMotor:
         velocityLimit: float,
         limitTolerance: float,
     ):
-        velocityLimitCommand = convertToMotorCommand(velocityLimit)
+        velocityLimitCommand = self.motorConverter.convertToMotorCommand(velocityLimit)
         self.socket.sendJSON(
             self.ip,
             PORT_srv,

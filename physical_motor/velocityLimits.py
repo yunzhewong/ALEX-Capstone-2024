@@ -1,6 +1,5 @@
 import math
 from aiosv2.TwinMotor import TwinMotor, setup_teardown_twin_motor
-from aiosv2.constants import convertToMotorCommand
 
 # 10.10.10.16 Position Gain: 50, Velocity Gain: 0.0002, Velocity Int: 0.0002, Velocity Limit: 400000 (12.566370614359172), Limit Tolerance: 1.2
 

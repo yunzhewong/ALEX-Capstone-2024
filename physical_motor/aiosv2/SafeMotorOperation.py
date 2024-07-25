@@ -1,6 +1,6 @@
 import threading
 from aiosv2.AiosSocket import AiosSocket
-from aiosv2.constants import ControlMode
+from aiosv2.constants import ControlMode, Converter
 from aiosv2.ConnectedMotor import ConnectedMotor
 from aiosv2.CVP import CVP
 
@@ -33,12 +33,8 @@ class SafetyConfiguration:
 
 
 class SafeMotor:
-    def __init__(self, ip: str, socket, config: SafetyConfiguration):
-        from aiosv2.ConnectedMotor import ConnectedMotor
-        from aiosv2.CVP import CVP
-        from aiosv2.constants import ControlMode
-        
-        self.raw_motor = ConnectedMotor(ip, socket)
+    def __init__(self, ip: str, socket, config: SafetyConfiguration, motorConverter: Converter):        
+        self.raw_motor = ConnectedMotor(ip, socket, motorConverter)
         self.valid = True
         self.config = config
         self.control_mode = None

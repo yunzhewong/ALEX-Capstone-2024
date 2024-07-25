@@ -26,12 +26,28 @@ class AxisState(Enum):
     AXIS_STATE_ENABLE = 8
 
 
-CONVERSION_RATIO = 100000 / math.pi
+class Converter():
+    def convertToMotorCommand(self, value):
+        raise Exception("Not implemented")
+        
+    def convertFromMotorCommand(self, value):
+        raise Exception("Not implemented")
 
 
-def convertToMotorCommand(value):
-    return value * CONVERSION_RATIO
+class TwinMotorConverter(Converter):
+    CONVERSION_RATIO = 100000 / math.pi
 
+    def convertToMotorCommand(self, value):
+        return value * self.CONVERSION_RATIO
+    
+    def convertFromMotorCommand(self, value):
+        return value / self.CONVERSION_RATIO
+    
+class ExoskeletonMotorConverter(Converter):
+    CONVERSION_RATIO = 180 / math.pi / 3
 
-def convertFromMotorCommand(value):
-    return value / CONVERSION_RATIO
+    def convertToMotorCommand(self, value):
+        return value * self.CONVERSION_RATIO
+    
+    def convertFromMotorCommand(self, value):
+        return value / self.CONVERSION_RATIO

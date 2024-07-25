@@ -34,7 +34,7 @@ class AiosSocket:
 
 
     def assertConnectedAddresses(self, expectedIPs):
-        foundIPs = self.readConnectedAddresses(0)
+        foundIPs = self.readConnectedAddresses()
         for ip in expectedIPs:
             if ip not in foundIPs:
                 raise Exception(f"Missing IP: {ip}")

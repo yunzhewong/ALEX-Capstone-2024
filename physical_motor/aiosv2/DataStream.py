@@ -5,7 +5,7 @@ from aiosv2.AiosSocket import AiosSocket
 from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.ConnectedMotor import CVPConverter
 from aiosv2.CVP import CVP
-from aiosv2.constants import convertFromMotorCommand
+from aiosv2.constants import Converter
 
 
 class DataType(Enum):
@@ -16,17 +16,18 @@ class DataType(Enum):
 
 
 class PIDConfig:
-    def __init__(self, response):
+    def __init__(self, response, converter: Converter):
         self.positionP = response.get("pos_gain")
         self.velocityP = response.get("vel_gain")
         self.velocityI = response.get("vel_integrator_gain")
         self.velocityLimit =response.get("vel_limit")
         self.limitTolerance = response.get("vel_limit_tolerance")
+        self.motorConverter = converter
 
     def __str__(self):
         if self.velocityLimit is None:
             return "Motion Control Config Set"
-        return f"Position Gain: {self.positionP}, Velocity Gain: {self.velocityP}, Velocity Int: {self.velocityI}, Velocity Limit: {self.velocityLimit} ({convertFromMotorCommand(self.velocityLimit)}), Limit Tolerance: {self.limitTolerance}"
+        return f"Position Gain: {self.positionP}, Velocity Gain: {self.velocityP}, Velocity Int: {self.velocityI}, Velocity Limit: {self.velocityLimit} ({self.motorConverter.convertFromMotorCommand(self.velocityLimit)}), Limit Tolerance: {self.limitTolerance}"
 
 
 class ErrorParser:
@@ -48,14 +49,15 @@ class ErrorParser:
 
 
 class DataStream:
-    def __init__(self, socket: AiosSocket, motors: List[SafeMotor]):
+    def __init__(self, socket: AiosSocket, motors: List[SafeMotor], motorConverter: Converter):
         self.socket = socket
         self.motors = motors
         self.stop = False
         self.error = None
         self.readThread = None
         self.requestThread = None
-        self.cvpConverter = CVPConverter()
+        self.cvpConverter = CVPConverter(motorConverter)
+        self.motorConverter = motorConverter
         self.errorParser = ErrorParser()
 
     def enable(self):
@@ -81,6 +83,8 @@ class DataStream:
             try:
                 json_obj, ip, datatype = result
 
+
+
                 if datatype == DataType.CVP:
                     for motor in self.motors:
                         if motor.getIP() == ip:
@@ -92,12 +96,12 @@ class DataStream:
                     ready = json_obj.get("property", None)
                     if ready is None or not ready:
                         return
-
+                    
                     for motor in self.motors:
                         if motor.getIP() == ip:
                             motor.confirmEncoderReady()
                 elif datatype == DataType.MOTION_CONFIG:
-                    data = PIDConfig(json_obj)
+                    data = PIDConfig(json_obj, self.motorConverter)
                     print(ip, data)
                 else:
                     raise Exception("This should not happen")
@@ -108,7 +112,6 @@ class DataStream:
     def check_for_data(self):
         try:
             json_obj, ip = self.socket.readJSON()
-            # print(json_obj)
             target = json_obj.get("reqTarget")
             if target in ["/m1/setPosition", "/m1/setVelocity", "/m1/setCurrent"]:
                 return json_obj, ip, DataType.CVP
