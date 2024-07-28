@@ -54,7 +54,7 @@ for i = 1:count - 1
 end
 
 average_Kt_b = mean(Kt_bs);
-Fc_bs = K_bs - average_Kt_b * amperage;
+Fc_bs = K_bs - Kt_bs .* amperage;
 
 average_Fc_b = mean(Fc_bs);
 average_J_b = mean(J_bs);
@@ -86,12 +86,9 @@ figure
 plot(amperage, J_bs)
 
 %assumption
-K_t = 3.563;
-min_amperage = 0.48;
-
+K_t = 0.1;
 b = K_t / average_Kt_b
-F_c = average_Fc_b * b
-F_stat = K_t * min_amperage
+Fc = average_Fc_b * b
 J = average_J_b * b
 function [match, index] = closest(values, searchValue) 
     [match, index] = min(abs(values - searchValue));

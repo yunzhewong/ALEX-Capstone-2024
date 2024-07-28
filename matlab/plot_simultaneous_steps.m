@@ -1,7 +1,7 @@
 close all
 
 
-batch_names = ["batch 1", "batch 2", "batch 3", "batch 4", "sim1"];
+batch_names = ["batch 6"];
 
 for b = 1:numel(batch_names)
     batch_name = batch_names(b);
