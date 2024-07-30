@@ -7,7 +7,14 @@ from aiosv2.CVP import CVP
 
 
 class SafetyConfiguration:
-    def __init__(self, margin, maximum_current, maximum_velocity, minimum_position, maximum_position):
+    def __init__(
+        self,
+        margin,
+        maximum_current,
+        maximum_velocity,
+        minimum_position,
+        maximum_position,
+    ):
         self.margin = margin
         self.maximum_current = maximum_current * (1 - margin)
         self.maximum_velocity = maximum_velocity * (1 - margin)
@@ -15,31 +22,45 @@ class SafetyConfiguration:
         self.minimum_position = minimum_position + (margin * position_range)
         self.maximum_position = maximum_position - (margin * position_range)
 
-    def check_within_limits(self, cvp):
+    def check_within_limits(self, cvp: CVP):
         pos = cvp.position
         abs_velocity = abs(cvp.velocity)
         abs_current = abs(cvp.current)
 
         if abs_current >= self.maximum_current:
-            raise Exception(f"Within Current Limit Margin: (current: {abs_current:.2f} A, limit: {self.maximum_current:.2f} A)")
+            raise Exception(
+                f"Within Current Limit Margin: (current: {abs_current:.2f} A, limit: {self.maximum_current:.2f} A)"
+            )
 
         if abs_velocity >= self.maximum_velocity:
-            raise Exception(f"Within Velocity Limit Margin: (velocity: {abs_velocity:.2f} rad/s, limit: {self.maximum_velocity:.2f} rad/s)")
+            raise Exception(
+                f"Within Velocity Limit Margin: (velocity: {abs_velocity:.2f} rad/s, limit: {self.maximum_velocity:.2f} rad/s)"
+            )
 
         if pos <= self.minimum_position:
-            raise Exception(f"Within Minimum Position Margin: (position: {pos:.2f} rad, limit: {self.minimum_position:.2f} rad)")
+            raise Exception(
+                f"Within Minimum Position Margin: (position: {pos:.2f} rad, limit: {self.minimum_position:.2f} rad)"
+            )
 
         if pos >= self.maximum_position:
-            raise Exception(f"Within Maximum Position Margin: (position: {pos:.2f} rad, limit: {self.maximum_position:.2f} rad)")
+            raise Exception(
+                f"Within Maximum Position Margin: (position: {pos:.2f} rad, limit: {self.maximum_position:.2f} rad)"
+            )
 
 
 class SafeMotor:
-    def __init__(self, ip: str, socket, config: SafetyConfiguration, motorConverter: Converter, passthrough: bool = False):        
+    def __init__(
+        self,
+        ip: str,
+        socket,
+        config: SafetyConfiguration,
+        motorConverter: Converter,
+    ):
         self.raw_motor = ConnectedMotor(ip, socket, motorConverter)
-        self.valid = True
-        self.passthrough = passthrough
+        self.valid: bool = True
         self.config = config
-        self.control_mode: ControlMode | None = None
+        self.control_mode: ControlMode = ControlMode.Position
+        self.raw_motor.setControlMode(ControlMode.Position)
 
         self.current_CVP: CVP | None = None
         self.cvp_lock = threading.Lock()
@@ -47,7 +68,6 @@ class SafeMotor:
         self.encoder_lock = threading.Lock()
         self.config_ready = True
         self.config_lock = threading.Lock()
-
 
     def getIP(self):
         return self.raw_motor.ip
@@ -75,16 +95,12 @@ class SafeMotor:
         with self.encoder_lock:
             return self.encoder_ready
 
+    def requestEncoderReady(self):
+        self.raw_motor.requestEncoderCheck()
+
     def confirmEncoderReady(self):
         with self.encoder_lock:
             self.encoder_ready = True
-
-    def confirmConfigReady(self):
-        with self.config_lock:
-            self.config_ready = True
-
-    def requestEncoderReady(self):
-        self.raw_motor.requestEncoderCheck()
 
     def setPosition(self, position: float):
         with self.config_lock:
@@ -110,22 +126,11 @@ class SafeMotor:
         self.modeChangeIfNecessary(ControlMode.Current)
         self.raw_motor.setCurrent(current)
 
-    def modeChangeIfNecessary(self, desired_control_mode: ControlMode):        
-        if self.control_mode is not None and self.control_mode.value == desired_control_mode.value:
+    def modeChangeIfNecessary(self, desired_control_mode: ControlMode):
+        if self.control_mode.value == desired_control_mode.value:
             return
-        if self.passthrough:
-            # self.raw_motor.setControlMode(ControlMode.Current)
-            # self.raw_motor.setCurrent(0)
-            self.raw_motor.setControlMode(desired_control_mode)
-            # self.raw_motor.setInputMode(desired_control_mode)
-            # with self.config_lock:
-            # self.config_ready = False
-        else:
-            self.raw_motor.setControlMode(desired_control_mode)
-
+        self.raw_motor.setControlMode(desired_control_mode)
         self.control_mode = desired_control_mode
-        
-        
 
     def check_operatable(self):
         if not self.valid:

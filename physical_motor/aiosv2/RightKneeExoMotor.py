@@ -18,12 +18,18 @@ class RightKneeExoMotor:
 
     def __init__(self, socket: AiosSocket):
         self.socket = socket
-        
+
         self.socket.assertConnectedAddresses(self.EXPECTED_IPS)
         motorConverter = ExoskeletonMotorConverter()
 
-        config = SafetyConfiguration(margin=0.05, maximum_current=15, maximum_velocity=4 * math.pi, minimum_position=-15 * math.pi, maximum_position=15 * math.pi)
-        self.motor = SafeMotor(self.MOTOR_IP, socket, config, motorConverter, True) 
+        config = SafetyConfiguration(
+            margin=0.05,
+            maximum_current=15,
+            maximum_velocity=4 * math.pi,
+            minimum_position=-15 * math.pi,
+            maximum_position=15 * math.pi,
+        )
+        self.motor = SafeMotor(self.MOTOR_IP, socket, config, motorConverter)
 
         self.dataStream = DataStream(socket, [self.motor], motorConverter)
 
@@ -36,7 +42,10 @@ class RightKneeExoMotor:
         self.motor.disable()
         self.dataStream.disable()
 
-def setup_teardown_rightknee_exomotor(actions: Callable[[RightKneeExoMotor, float], None], totalRunningTime: float):
+
+def setup_teardown_rightknee_exomotor(
+    actions: Callable[[RightKneeExoMotor, float], None], totalRunningTime: float
+):
     try:
         socket = AiosSocket()
         exoMotor = RightKneeExoMotor(socket)
@@ -56,13 +65,13 @@ def setup_teardown_rightknee_exomotor(actions: Callable[[RightKneeExoMotor, floa
         try:
             while currentTime < endTime:
                 currentTime = time.perf_counter()
-                error = exoMotor.dataStream.errored() 
+                error = exoMotor.dataStream.errored()
                 if error:
                     raise Exception(error)
-                
+
                 runningTime = currentTime - startTime
                 actions(exoMotor, runningTime)
-                
+
                 time.sleep(SAMPLING_PERIOD)
         except Exception as e:
             print(e)
