@@ -3,7 +3,7 @@ import time
 from typing import Callable
 from aiosv2 import AiosSocket
 from aiosv2.constants import TwinMotorConverter
-from aiosv2.SafeMotorOperation import SafeMotor, SafetyConfiguration
+from aiosv2.SafeMotorOperation import SafeMotor, SafetyConfiguration, SafetyLimit
 from aiosv2.DataStream import DataStream
 
 # experimentally, a sampling time of 300Hz yields consistent results
@@ -18,16 +18,28 @@ class TwinMotor:
 
     def __init__(self, socket: AiosSocket):
         self.socket = socket
-        
+
         self.socket.assertConnectedAddresses(self.EXPECTED_IPS)
         motorConverter = TwinMotorConverter()
 
-        topConfig = SafetyConfiguration(margin=0.05, maximum_current=15, maximum_velocity=4 * math.pi, minimum_position=-15 * math.pi, maximum_position=15 * math.pi)
-        self.topMotor = SafeMotor(self.MOTORS["top"], socket, topConfig, motorConverter) 
+        topConfig = SafetyConfiguration(
+            current_limit=SafetyLimit("Current", -15, 15),
+            velocity_limit=SafetyLimit("Velocity", -4 * math.pi, 4 * math.pi),
+            position_limit=SafetyLimit("Position", -15 * math.pi, 15 * math.pi),
+        )
+        self.topMotor = SafeMotor(self.MOTORS["top"], socket, topConfig, motorConverter)
 
-        bottomConfig = SafetyConfiguration(margin=0.05, maximum_current=15, maximum_velocity=4*math.pi, minimum_position=-2 * math.pi / 3, maximum_position=2 * math.pi / 3) 
-        self.bottomMotor = SafeMotor(self.MOTORS["bottom"], socket, bottomConfig, motorConverter)
-        self.dataStream = DataStream(socket, [self.topMotor, self.bottomMotor], motorConverter)
+        bottomConfig = SafetyConfiguration(
+            current_limit=SafetyLimit("Current", -15, 15),
+            velocity_limit=SafetyLimit("Velocity", -4 * math.pi, 4 * math.pi),
+            position_limit=SafetyLimit("Position", -2 * math.pi / 3, 2 * math.pi / 3),
+        )
+        self.bottomMotor = SafeMotor(
+            self.MOTORS["bottom"], socket, bottomConfig, motorConverter
+        )
+        self.dataStream = DataStream(
+            socket, [self.topMotor, self.bottomMotor], motorConverter
+        )
 
     def enable(self):
         self.topMotor.enable()  # Enable the top motor
@@ -35,13 +47,16 @@ class TwinMotor:
         self.dataStream.enable()
 
     def disable(self):
-        self.topMotor.setCurrent(0) # Stop the top motor
-        self.bottomMotor.setCurrent(0) # Stop the bottom motor
+        self.topMotor.setCurrent(0)  # Stop the top motor
+        self.bottomMotor.setCurrent(0)  # Stop the bottom motor
         self.topMotor.disable()  # Disable the top motor
         self.bottomMotor.disable()  # Disable the bottom motor
         self.dataStream.disable()
 
-def setup_teardown_twin_motor(actions: Callable[[TwinMotor, float], None], totalRunningTime: float):
+
+def setup_teardown_twin_motor(
+    actions: Callable[[TwinMotor, float], None], totalRunningTime: float
+):
     try:
         socket = AiosSocket()
         twinMotor = TwinMotor(socket)
@@ -50,7 +65,10 @@ def setup_teardown_twin_motor(actions: Callable[[TwinMotor, float], None], total
         twinMotor.bottomMotor.requestEncoderReady()
         twinMotor.topMotor.requestEncoderReady()
 
-        while not twinMotor.topMotor.encoderIsReady() or not twinMotor.bottomMotor.encoderIsReady():
+        while (
+            not twinMotor.topMotor.encoderIsReady()
+            or not twinMotor.bottomMotor.encoderIsReady()
+        ):
             print("Checking Encoder Status...")
             time.sleep(0.1)
         print("Encoder Ready")
@@ -62,13 +80,13 @@ def setup_teardown_twin_motor(actions: Callable[[TwinMotor, float], None], total
         try:
             while currentTime < endTime:
                 currentTime = time.perf_counter()
-                error = twinMotor.dataStream.errored() 
+                error = twinMotor.dataStream.errored()
                 if error:
                     raise Exception(error)
-                
+
                 runningTime = currentTime - startTime
                 actions(twinMotor, runningTime)
-                
+
                 time.sleep(SAMPLING_PERIOD)
         except Exception as e:
             print(e)

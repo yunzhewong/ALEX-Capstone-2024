@@ -2,7 +2,7 @@ import math
 import time
 from typing import Callable
 from aiosv2 import AiosSocket
-from aiosv2.SafeMotorOperation import SafeMotor, SafetyConfiguration
+from aiosv2.SafeMotorOperation import SafeMotor, SafetyConfiguration, SafetyLimit
 from aiosv2.DataStream import DataStream
 from aiosv2.constants import ExoskeletonMotorConverter
 
@@ -23,11 +23,9 @@ class RightKneeExoMotor:
         motorConverter = ExoskeletonMotorConverter()
 
         config = SafetyConfiguration(
-            margin=0.05,
-            maximum_current=15,
-            maximum_velocity=4 * math.pi,
-            minimum_position=-15 * math.pi,
-            maximum_position=15 * math.pi,
+            current_limit=SafetyLimit("Current", -15, 15),
+            velocity_limit=SafetyLimit("Velocity", -4 * math.pi, 4 * math.pi),
+            position_limit=SafetyLimit("Position", -15 * math.pi, 15 * math.pi),
         )
         self.motor = SafeMotor(self.MOTOR_IP, socket, config, motorConverter)
 
