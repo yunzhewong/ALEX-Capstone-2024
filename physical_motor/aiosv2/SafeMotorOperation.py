@@ -1,3 +1,4 @@
+from enum import Enum
 import threading
 import time
 from aiosv2.AiosSocket import AiosSocket
@@ -6,46 +7,110 @@ from aiosv2.ConnectedMotor import ConnectedMotor
 from aiosv2.CVP import CVP
 
 
+class ExceedRange(Enum):
+    BelowLowerLimit = "Below Lower Limit"
+    AboveUpperLimit = "Above Upper Limit"
+
+
+class SafetyValueRange:
+    def __init__(self, low: float, high: float):
+        self.low = low
+        self.high = high
+
+    def get_value_limit(self, value):
+        if value < self.low:
+            return ExceedRange.BelowLowerLimit, self.low
+
+        if value > self.high:
+            return ExceedRange.AboveUpperLimit, self.high
+
+        return None
+
+
+class SafetyLimit:
+    def __init__(
+        self, name: str, soft_range: SafetyValueRange, hard_range: SafetyValueRange
+    ):
+        self.name = name
+        self.soft_range = soft_range
+        self.hard_range = hard_range
+
+    def check_value(self, value):
+        hard_exceed = self.hard_range.get_value_limit(self, value)
+
+        if hard_exceed is not None:
+            raise Exception(
+                f"Exceeded {self.name} Hard Limit - ({self.name} value: {value}, expected range: [{self.hard_range.low}, {self.hard_range.high}])"
+            )
+
+        return self.soft_range.get_value_limit(self, value)
+
+
 class SafetyConfiguration:
     def __init__(
         self,
-        margin,
-        maximum_current,
-        maximum_velocity,
-        minimum_position,
-        maximum_position,
+        current_limit: SafetyLimit,
+        velocity_limit: SafetyLimit,
+        position_limit: SafetyLimit,
     ):
-        self.margin = margin
-        self.maximum_current = maximum_current * (1 - margin)
-        self.maximum_velocity = maximum_velocity * (1 - margin)
-        position_range = maximum_position - minimum_position
-        self.minimum_position = minimum_position + (margin * position_range)
-        self.maximum_position = maximum_position - (margin * position_range)
+        self.current_limit: SafetyLimit = current_limit
+        self.velocity_limit: SafetyLimit = velocity_limit
+        self.position_limit: SafetyLimit = position_limit
 
     def check_within_limits(self, cvp: CVP):
-        pos = cvp.position
-        abs_velocity = abs(cvp.velocity)
-        abs_current = abs(cvp.current)
+        self.position_limit.check_value(cvp.position)
+        self.velocity_limit.check_value(cvp.velocity)
+        self.current_limit.check_value(cvp.current)
 
-        if abs_current >= self.maximum_current:
-            raise Exception(
-                f"Within Current Limit Margin: (current: {abs_current:.2f} A, limit: {self.maximum_current:.2f} A)"
-            )
+    def override_if_unsafe(self, cvp: CVP, controlMode: ControlMode, value: float):
+        position_constraint = self.position_limit.check_value(cvp.position)
 
-        if abs_velocity >= self.maximum_velocity:
-            raise Exception(
-                f"Within Velocity Limit Margin: (velocity: {abs_velocity:.2f} rad/s, limit: {self.maximum_velocity:.2f} rad/s)"
-            )
+        if position_constraint is not None:
+            limit_type, limit_value = position_constraint
+            if controlMode == ControlMode.Position:
+                return limit_value
+            else:
+                # force control to point in other direction of limit
+                if limit_type == ExceedRange.AboveUpperLimit:
+                    return max(value, 0)
+                else:
+                    return min(value, 0)
 
-        if pos <= self.minimum_position:
-            raise Exception(
-                f"Within Minimum Position Margin: (position: {pos:.2f} rad, limit: {self.minimum_position:.2f} rad)"
-            )
+        velocity_constraint = self.velocity_limit.check_value(cvp.position)
 
-        if pos >= self.maximum_position:
-            raise Exception(
-                f"Within Maximum Position Margin: (position: {pos:.2f} rad, limit: {self.maximum_position:.2f} rad)"
-            )
+        if velocity_constraint is not None:
+            limit_type, limit_value = velocity_constraint
+            if controlMode == ControlMode.Position:
+                return cvp.position
+            if controlMode == ControlMode.Velocity:
+                if limit_type == ExceedRange.AboveUpperLimit:
+                    return max(value, limit_value)
+                else:
+                    return min(value, limit_value)
+            if controlMode == ControlMode.Current:
+                if limit_type == ExceedRange.AboveUpperLimit:
+                    return max(value, 0)
+                else:
+                    return min(value, 0)
+
+        current_constraint = self.current_limit.check_value(cvp.current)
+
+        if current_constraint is not None:
+            limit_type, limit_value = current_constraint
+            if controlMode == ControlMode.Position:
+                return cvp.position
+            if controlMode == ControlMode.Velocity:
+                if limit_type == ExceedRange.AboveUpperLimit:
+                    return max(value, 0)
+                else:
+                    return min(value, 0)
+            if controlMode == ControlMode.Current:
+                if limit_type == ExceedRange.AboveUpperLimit:
+                    return max(value, limit_value)
+                else:
+                    return min(value, limit_value)
+
+        return value
 
 
 class SafeMotor:
@@ -108,7 +173,12 @@ class SafeMotor:
                 return
         self.check_operatable()
         self.modeChangeIfNecessary(ControlMode.Position)
-        self.raw_motor.setPosition(position)
+
+        cvp = self.getCVP()
+        override_value = self.config.override_if_unsafe(
+            cvp, ControlMode.Position, position
+        )
+        self.raw_motor.setPosition(override_value)
 
     def setVelocity(self, velocity: float):
         with self.config_lock:
@@ -116,7 +186,12 @@ class SafeMotor:
                 return
         self.check_operatable()
         self.modeChangeIfNecessary(ControlMode.Velocity)
-        self.raw_motor.setVelocity(velocity)
+
+        cvp = self.getCVP()
+        override_value = self.config.override_if_unsafe(
+            cvp, ControlMode.Velocity, velocity
+        )
+        self.raw_motor.setVelocity(override_value)
 
     def setCurrent(self, current: float):
         with self.config_lock:
@@ -124,7 +199,11 @@ class SafeMotor:
                 return
         self.check_operatable()
         self.modeChangeIfNecessary(ControlMode.Current)
-        self.raw_motor.setCurrent(current)
+        cvp = self.getCVP()
+        override_value = self.config.override_if_unsafe(
+            cvp, ControlMode.Current, current
+        )
+        self.raw_motor.setCurrent(override_value)
 
     def modeChangeIfNecessary(self, desired_control_mode: ControlMode):
         if self.control_mode.value == desired_control_mode.value:
