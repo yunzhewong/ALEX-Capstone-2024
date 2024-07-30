@@ -1,17 +1,26 @@
 from enum import Enum
 from typing import List
+import aiosv2.CSVWriter
+from aiosv2.SafeMotorOperation import SafeMotor
 import aiosv2.aios as aios
 from aiosv2.RightKneeExoMotor import setup_teardown_rightknee_exomotor, RightKneeExoMotor
 import time
 import math
 from aiosv2.constants import ControlMode
+import matplotlib.pyplot as plt
+import numpy as np
 
-def func(exoMotor: RightKneeExoMotor, runningTime: float):
-    exoMotor.motor.modeChangeIfNecessary(ControlMode.Position)
-    aios.getEncoderInfo(exoMotor.motor.getIP())
-    aios.setInputPosition_pt(exoMotor.motor.getIP(), 9, 0, 0)
-    print(exoMotor.motor.getCVP())
+        
+class State():
+    def __init__(self):
+        pass
+
     
 if __name__ == "__main__":
-    setup_teardown_rightknee_exomotor(func, 10)
+
+    state = State()
+    def func(exoMotor: RightKneeExoMotor, runningTime: float):
+        exoMotor.motor.raw_motor.requestPIDConfig()
+
+    setup_teardown_rightknee_exomotor(func, 5)
     

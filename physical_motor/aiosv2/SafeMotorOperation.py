@@ -1,4 +1,5 @@
 import threading
+import time
 from aiosv2.AiosSocket import AiosSocket
 from aiosv2.constants import ControlMode, Converter
 from aiosv2.ConnectedMotor import ConnectedMotor
@@ -113,16 +114,18 @@ class SafeMotor:
         if self.control_mode is not None and self.control_mode.value == desired_control_mode.value:
             return
         if self.passthrough:
+            # self.raw_motor.setControlMode(ControlMode.Current)
+            # self.raw_motor.setCurrent(0)
             self.raw_motor.setControlMode(desired_control_mode)
-            self.raw_motor.setCurrent(0)
-            self.raw_motor.setInputMode(desired_control_mode)
+            # self.raw_motor.setInputMode(desired_control_mode)
+            # with self.config_lock:
+            # self.config_ready = False
         else:
             self.raw_motor.setControlMode(desired_control_mode)
 
         self.control_mode = desired_control_mode
         
-        with self.config_lock:
-            self.config_ready = False
+        
 
     def check_operatable(self):
         if not self.valid:

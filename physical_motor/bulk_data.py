@@ -1,8 +1,10 @@
 
 from enum import Enum
 import math
+from aiosv2.CSVWriter import CSVWriter
 import aiosv2
 from classes.DataLog import DataLog
+from aiosv2.RightKneeExoMotor import RightKneeExoMotor, setup_teardown_rightknee_exomotor
 from aiosv2.TwinMotor import setup_teardown_twin_motor
 from aiosv2 import CVP
 
@@ -16,14 +18,13 @@ MAX_TIME = 10
 STARTING_ANGLE = -10 * math.pi
 RESET_TIME = 10
 PAUSE_TIME = 1
-START_MAGNITUDE = 0.4
-INCREMENT_MAGNITUDE = 0.02
+START_MAGNITUDE = 1
+INCREMENT_MAGNITUDE = 0.2
 
 
 class BulkDataBatcher():
-
     def __init__(self):
-        self.log = DataLog()
+        self.log: CSVWriter | None = None
 
         self.state = State.Resetting
         self.post_pause_state = State.Paused
@@ -42,23 +43,25 @@ class BulkDataBatcher():
             return
         
         position = cvp.position
+        print(position)
 
         if self.state == State.Collecting:
+            current = START_MAGNITUDE + self.collect_index * INCREMENT_MAGNITUDE 
+
             if not self.initialised:
                 self.collecting_start = t
                 self.initialised = True
-                self.log = DataLog()
+                self.log = CSVWriter(f"step{format(round(current, 2), '.2f')}A.csv", [connection])
 
-            current = START_MAGNITUDE + self.collect_index * INCREMENT_MAGNITUDE 
 
-            self.log.addCVP(t, cvp, CVP(0,0,0))
+            self.log.addCVP(t, [connection])
 
             exceeded_max_angle = position > MAX_ANGLE
             exceeded_max_time = (t - self.collecting_start) >= MAX_TIME
             should_stop = exceeded_max_angle or exceeded_max_time
 
             if should_stop:
-                self.log.download(f"step{format(round(current, 2), '.2f')}A.csv")
+                self.log.close()
                 self.state = State.Paused
                 self.post_pause_state = State.Resetting
                 self.collect_index += 1
@@ -91,14 +94,16 @@ class BulkDataBatcher():
             
             connection.setPosition(expected_pos)
 
+
+
 if __name__ == "__main__":
     dataBatcher = BulkDataBatcher()
 
-    def func(twinMotor: aiosv2.TwinMotor, runningTime: float):
-        dataBatcher.at_time(runningTime, twinMotor.topMotor)
+    def func(exoMotor: RightKneeExoMotor, runningTime: float):
+        dataBatcher.at_time(runningTime, exoMotor.motor)
 
-    setup_teardown_twin_motor(func, 1000)
+    setup_teardown_rightknee_exomotor(func, 1000)
 
-    
+
         
        
