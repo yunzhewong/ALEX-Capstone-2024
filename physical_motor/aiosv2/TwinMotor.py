@@ -3,7 +3,12 @@ import time
 from typing import Callable
 from aiosv2 import AiosSocket
 from aiosv2.constants import TwinMotorConverter
-from aiosv2.SafeMotorOperation import SafeMotor, SafetyConfiguration, SafetyLimit
+from aiosv2.SafeMotorOperation import (
+    SafeMotor,
+    SafetyConfiguration,
+    SafetyLimit,
+    SafetyValueRange,
+)
 from aiosv2.DataStream import DataStream
 
 # experimentally, a sampling time of 300Hz yields consistent results
@@ -23,16 +28,36 @@ class TwinMotor:
         motorConverter = TwinMotorConverter()
 
         topConfig = SafetyConfiguration(
-            current_limit=SafetyLimit("Current", -15, 15),
-            velocity_limit=SafetyLimit("Velocity", -4 * math.pi, 4 * math.pi),
-            position_limit=SafetyLimit("Position", -15 * math.pi, 15 * math.pi),
+            current_limit=SafetyLimit(
+                "Current", SafetyValueRange(-100, 100), SafetyValueRange(-15, 15)
+            ),
+            velocity_limit=SafetyLimit(
+                "Velocity",
+                SafetyValueRange(-3.5 * math.pi, 3.5 * math.pi),
+                SafetyValueRange(-4 * math.pi, 4 * math.pi),
+            ),
+            position_limit=SafetyLimit(
+                "Position",
+                SafetyValueRange(-15 * math.pi, 15 * math.pi),
+                SafetyValueRange(-20 * math.pi, 20 * math.pi),
+            ),
         )
         self.topMotor = SafeMotor(self.MOTORS["top"], socket, topConfig, motorConverter)
 
         bottomConfig = SafetyConfiguration(
-            current_limit=SafetyLimit("Current", -15, 15),
-            velocity_limit=SafetyLimit("Velocity", -4 * math.pi, 4 * math.pi),
-            position_limit=SafetyLimit("Position", -2 * math.pi / 3, 2 * math.pi / 3),
+            current_limit=SafetyLimit(
+                "Current", SafetyValueRange(-100, 100), SafetyValueRange(-15, 15)
+            ),
+            velocity_limit=SafetyLimit(
+                "Velocity",
+                SafetyValueRange(-3.5 * math.pi, 3.5 * math.pi),
+                SafetyValueRange(-4 * math.pi, 4 * math.pi),
+            ),
+            position_limit=SafetyLimit(
+                "Position",
+                SafetyValueRange(-math.pi / 2, math.pi / 2),
+                SafetyValueRange(-2 * math.pi / 3, 2 * math.pi / 3),
+            ),
         )
         self.bottomMotor = SafeMotor(
             self.MOTORS["bottom"], socket, bottomConfig, motorConverter
