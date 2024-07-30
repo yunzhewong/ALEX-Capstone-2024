@@ -1,5 +1,6 @@
 import socket
 import struct
+from aiosv2 import aios
 from aiosv2.constants import (
     ControlMode,
     AxisState,
@@ -96,6 +97,18 @@ class ConnectedMotor:
                 "control_mode": mode.value,
                 "reply_enable": False,
             },
+        )
+
+    def setInputMode(self, mode: ControlMode):
+        self.socket.sendJSON(
+            self.ip, 
+            PORT_srv,
+            {
+                "method": "SET", 
+                "reqTarget": "/m1/controller/config", 
+                "input_mode": mode.value,
+                "reply_enable": False
+            }
         )
 
     def setPosition(self, position: float, velocity_ff=0, current_ff=0):

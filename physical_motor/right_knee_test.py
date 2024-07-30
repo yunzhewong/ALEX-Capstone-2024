@@ -6,20 +6,12 @@ import time
 import math
 from aiosv2.constants import ControlMode
 
-
-class InputMode(Enum):
-    Current = 1
-    Velocity = 2
-    Position = 3
-
 def func(exoMotor: RightKneeExoMotor, runningTime: float):
-    aios.inputMode(2, exoMotor.motor.getIP(), 1)
-    exoMotor.motor.setVelocity(1)
+    exoMotor.motor.modeChangeIfNecessary(ControlMode.Position)
+    aios.getEncoderInfo(exoMotor.motor.getIP())
+    aios.setInputPosition_pt(exoMotor.motor.getIP(), 9, 0, 0)
     print(exoMotor.motor.getCVP())
     
-
-
-
 if __name__ == "__main__":
     setup_teardown_rightknee_exomotor(func, 10)
     

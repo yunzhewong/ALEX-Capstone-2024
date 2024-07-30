@@ -23,7 +23,7 @@ class RightKneeExoMotor:
         motorConverter = ExoskeletonMotorConverter()
 
         config = SafetyConfiguration(margin=0.05, maximum_current=15, maximum_velocity=4 * math.pi, minimum_position=-15 * math.pi, maximum_position=15 * math.pi)
-        self.motor = SafeMotor(self.MOTOR_IP, socket, config, motorConverter) 
+        self.motor = SafeMotor(self.MOTOR_IP, socket, config, motorConverter, True) 
 
         self.dataStream = DataStream(socket, [self.motor], motorConverter)
 

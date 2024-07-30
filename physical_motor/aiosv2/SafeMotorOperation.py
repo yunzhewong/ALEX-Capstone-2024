@@ -33,15 +33,20 @@ class SafetyConfiguration:
 
 
 class SafeMotor:
-    def __init__(self, ip: str, socket, config: SafetyConfiguration, motorConverter: Converter):        
+    def __init__(self, ip: str, socket, config: SafetyConfiguration, motorConverter: Converter, passthrough: bool = False):        
         self.raw_motor = ConnectedMotor(ip, socket, motorConverter)
         self.valid = True
+        self.passthrough = passthrough
         self.config = config
-        self.control_mode = None
+        self.control_mode: ControlMode | None = None
+
         self.current_CVP: CVP | None = None
         self.cvp_lock = threading.Lock()
         self.encoder_ready = False
         self.encoder_lock = threading.Lock()
+        self.config_ready = True
+        self.config_lock = threading.Lock()
+
 
     def getIP(self):
         return self.raw_motor.ip
@@ -63,8 +68,7 @@ class SafeMotor:
     def setCVP(self, cvp):
         with self.cvp_lock:
             self.current_CVP = cvp
-        #print(cvp)
-        self.check_within_limits(cvp)
+        self.config.check_within_limits(cvp)
 
     def encoderIsReady(self):
         with self.encoder_lock:
@@ -74,37 +78,51 @@ class SafeMotor:
         with self.encoder_lock:
             self.encoder_ready = True
 
+    def confirmConfigReady(self):
+        with self.config_lock:
+            self.config_ready = True
+
     def requestEncoderReady(self):
         self.raw_motor.requestEncoderCheck()
 
     def setPosition(self, position: float):
+        with self.config_lock:
+            if not self.config_ready:
+                return
         self.check_operatable()
         self.modeChangeIfNecessary(ControlMode.Position)
         self.raw_motor.setPosition(position)
 
     def setVelocity(self, velocity: float):
+        with self.config_lock:
+            if not self.config_ready:
+                return
         self.check_operatable()
         self.modeChangeIfNecessary(ControlMode.Velocity)
         self.raw_motor.setVelocity(velocity)
 
     def setCurrent(self, current: float):
+        with self.config_lock:
+            if not self.config_ready:
+                return
         self.check_operatable()
         self.modeChangeIfNecessary(ControlMode.Current)
         self.raw_motor.setCurrent(current)
 
-    def get_position(self):
-        return self.raw_motor.getPosition()
-
-    def modeChangeIfNecessary(self, desired_control_mode):
-        from aiosv2.constants import ControlMode
-        
+    def modeChangeIfNecessary(self, desired_control_mode: ControlMode):        
         if self.control_mode is not None and self.control_mode.value == desired_control_mode.value:
             return
-        self.raw_motor.setControlMode(desired_control_mode)
-        self.control_mode = desired_control_mode
+        if self.passthrough:
+            self.raw_motor.setControlMode(desired_control_mode)
+            self.raw_motor.setCurrent(0)
+            self.raw_motor.setInputMode(desired_control_mode)
+        else:
+            self.raw_motor.setControlMode(desired_control_mode)
 
-    def check_within_limits(self, cvp):
-        self.config.check_within_limits(cvp)
+        self.control_mode = desired_control_mode
+        
+        with self.config_lock:
+            self.config_ready = False
 
     def check_operatable(self):
         if not self.valid:

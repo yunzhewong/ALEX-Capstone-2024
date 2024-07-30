@@ -102,7 +102,10 @@ class DataStream:
                             motor.confirmEncoderReady()
                 elif datatype == DataType.MOTION_CONFIG:
                     data = PIDConfig(json_obj, self.motorConverter)
-                    print(ip, data)
+                    for motor in self.motors:
+                        if motor.getIP() == ip:
+                            motor.confirmConfigReady()
+                            print("Configuration Received")
                 else:
                     raise Exception("This should not happen")
             except Exception as err:
@@ -112,6 +115,7 @@ class DataStream:
     def check_for_data(self):
         try:
             json_obj, ip = self.socket.readJSON()
+            print(json_obj)
             target = json_obj.get("reqTarget")
             if target in ["/m1/setPosition", "/m1/setVelocity", "/m1/setCurrent"]:
                 return json_obj, ip, DataType.CVP
