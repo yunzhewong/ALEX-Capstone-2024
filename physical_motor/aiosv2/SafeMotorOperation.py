@@ -1,5 +1,6 @@
 from enum import Enum
 import threading
+import time
 from aiosv2.constants import ControlMode, Converter
 from aiosv2.ConnectedMotor import ConnectedMotor
 from aiosv2.CVP import CVP
@@ -125,7 +126,7 @@ class SafeMotor:
         self.valid: bool = True
         self.config = config
 
-        control_type = ControlMode.Current
+        control_type = ControlMode.Position
         self.control_mode: ControlMode = control_type
         self.raw_motor.setControlMode(control_type)
         self.raw_motor.setInputMode(control_type)
