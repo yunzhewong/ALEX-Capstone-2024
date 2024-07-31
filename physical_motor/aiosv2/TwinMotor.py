@@ -1,4 +1,4 @@
-import math
+import os
 import time
 from typing import Callable
 from aiosv2 import AiosSocket
@@ -6,8 +6,6 @@ from aiosv2.constants import TwinMotorConverter
 from aiosv2.SafeMotorOperation import (
     SafeMotor,
     SafetyConfiguration,
-    SafetyLimit,
-    SafetyValueRange,
 )
 import json
 from aiosv2.DataStream import DataStream
@@ -21,9 +19,10 @@ class TwinMotor:
     def __init__(self, socket: AiosSocket):
         self.socket = socket
 
-        config_file = open("./config/TwinMotor.json")
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        config_path = os.path.join(script_dir, "config", "TwinMotor.json")
+        config_file = open(config_path)
         configuration = json.loads(config_file.read())
-        print(configuration)
 
         control_box_ip = configuration["control_box_ip"]
         motors = configuration["motors"]
@@ -33,38 +32,10 @@ class TwinMotor:
         self.socket.assertConnectedAddresses(expected_ips)
         motorConverter = TwinMotorConverter()
 
-        topConfig = SafetyConfiguration(
-            current_limit=SafetyLimit(
-                "Current", SafetyValueRange(-100, 100), SafetyValueRange(-15, 15)
-            ),
-            velocity_limit=SafetyLimit(
-                "Velocity",
-                SafetyValueRange(-3.5 * math.pi, 3.5 * math.pi),
-                SafetyValueRange(-4 * math.pi, 4 * math.pi),
-            ),
-            position_limit=SafetyLimit(
-                "Position",
-                SafetyValueRange(-15 * math.pi, 15 * math.pi),
-                SafetyValueRange(-20 * math.pi, 20 * math.pi),
-            ),
-        )
+        topConfig = SafetyConfiguration(motors[0]["safetyConfiguration"])
         self.topMotor = SafeMotor(motors[0]["ip"], socket, topConfig, motorConverter)
 
-        bottomConfig = SafetyConfiguration(
-            current_limit=SafetyLimit(
-                "Current", SafetyValueRange(-100, 100), SafetyValueRange(-15, 15)
-            ),
-            velocity_limit=SafetyLimit(
-                "Velocity",
-                SafetyValueRange(-3.5 * math.pi, 3.5 * math.pi),
-                SafetyValueRange(-4 * math.pi, 4 * math.pi),
-            ),
-            position_limit=SafetyLimit(
-                "Position",
-                SafetyValueRange(-math.pi / 2, math.pi / 2),
-                SafetyValueRange(-2 * math.pi / 3, 2 * math.pi / 3),
-            ),
-        )
+        bottomConfig = SafetyConfiguration(motors[1]["safetyConfiguration"])
         self.bottomMotor = SafeMotor(
             motors[1]["ip"], socket, bottomConfig, motorConverter
         )
