@@ -14,12 +14,8 @@ if __name__ == "__main__":
 
     state = State()
     def func(exoMotor: RightKneeExoMotor, runningTime: float):
-        exoMotor.motor.setVelocity(1.5)
-        cvp = exoMotor.motor.getCVP()
-
-        if cvp is None:
-            return
-        state.log.addCVP(runningTime, cvp, CVP(0, 0, 0))
+        exoMotor.motor.setPosition(1.5)
+        state.log.addCVP(runningTime, exoMotor.motor.getCVP(), CVP(0, 0, 0))
 
     setup_teardown_rightknee_exomotor(func, 20)
     state.log.plot()

@@ -31,16 +31,16 @@ class RightKneeExoMotor:
             current_limit=SafetyLimit(
                 "Current", SafetyValueRange(-100, 100), SafetyValueRange(-30, 30)
             ),
-            velocity_limit=SafetyLimit(
-                "Velocity",
-                SafetyValueRange(-1, 1),
-                SafetyValueRange(-4, 4),
-            ),
             # velocity_limit=SafetyLimit(
             #     "Velocity",
-            #     SafetyValueRange(-3.5 * math.pi, 3.5 * math.pi),
-            #     SafetyValueRange(-4 * math.pi, 4 * math.pi),
+            #     SafetyValueRange(-1, 1),
+            #     SafetyValueRange(-4, 4),
             # ),
+            velocity_limit=SafetyLimit(
+                "Velocity",
+                SafetyValueRange(-3.5 * math.pi, 3.5 * math.pi),
+                SafetyValueRange(-4 * math.pi, 4 * math.pi),
+            ),
             # position_limit=SafetyLimit(
             #     "Position",
             #     SafetyValueRange(-math.pi, math.pi),
@@ -48,8 +48,8 @@ class RightKneeExoMotor:
             # ),
             position_limit=SafetyLimit(
                 "Position",
-                SafetyValueRange(-10 * math.pi, 10 * math.pi),
                 SafetyValueRange(-15 * math.pi, 15 * math.pi),
+                SafetyValueRange(-20 * math.pi, 20 * math.pi),
             ),
         )
         self.motor = SafeMotor(self.MOTOR_IP, socket, config, motorConverter)
@@ -74,9 +74,10 @@ def setup_teardown_rightknee_exomotor(
         exoMotor.enable()
 
         exoMotor.motor.requestEncoderReady()
+        exoMotor.motor.requestCVP()
 
-        while not exoMotor.motor.encoderIsReady():
-            print("Checking Encoder Status...")
+        while not exoMotor.motor.isReady():
+            print("Checking Encoder Status and Reading CVP...")
             time.sleep(0.1)
         print("Encoder Ready")
 

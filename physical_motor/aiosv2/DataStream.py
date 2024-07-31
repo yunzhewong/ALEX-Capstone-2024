@@ -112,9 +112,9 @@ class DataStream:
     def check_for_data(self):
         try:
             json_obj, ip = self.socket.readJSON()
-            print(json_obj)
+            # print(json_obj)
             target = json_obj.get("reqTarget")
-            if target in ["/m1/setPosition", "/m1/setVelocity", "/m1/setCurrent"]:
+            if target in ["/m1/setPosition", "/m1/setVelocity", "/m1/setCurrent", "/m1/CVP"]:
                 return json_obj, ip, DataType.CVP
             if target in ["/m1/error"]:
                 return json_obj, ip, DataType.ERROR

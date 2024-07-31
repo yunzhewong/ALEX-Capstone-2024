@@ -18,8 +18,9 @@ MAX_TIME = 10
 STARTING_ANGLE = -10 * math.pi
 RESET_TIME = 10
 PAUSE_TIME = 1
-START_MAGNITUDE = 1
-INCREMENT_MAGNITUDE = 0.2
+START_MAGNITUDE = 0.6
+END_MAGNITUDE = 3
+INCREMENT_MAGNITUDE = 0.02
 
 
 class BulkDataBatcher():
@@ -39,16 +40,15 @@ class BulkDataBatcher():
 
     def at_time(self, t, connection: aiosv2.SafeMotor):
         cvp = connection.getCVP()
-        if cvp is None:
-            return
-        
         position = cvp.position
-        print(position)
 
         if self.state == State.Collecting:
             current = START_MAGNITUDE + self.collect_index * INCREMENT_MAGNITUDE 
+            if current > END_MAGNITUDE:
+                raise Exception("Exit")
 
             if not self.initialised:
+                print(current)
                 self.collecting_start = t
                 self.initialised = True
                 self.log = CSVWriter(f"step{format(round(current, 2), '.2f')}A.csv", [connection])
