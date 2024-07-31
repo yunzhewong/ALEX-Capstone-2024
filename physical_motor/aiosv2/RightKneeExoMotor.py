@@ -31,6 +31,11 @@ class RightKneeExoMotor:
             current_limit=SafetyLimit(
                 "Current", SafetyValueRange(-100, 100), SafetyValueRange(-15, 15)
             ),
+            # velocity_limit=SafetyLimit(
+            #     "Velocity",
+            #     SafetyValueRange(-1, 1),
+            #     SafetyValueRange(-4, 4),
+            # ),
             velocity_limit=SafetyLimit(
                 "Velocity",
                 SafetyValueRange(-3.5 * math.pi, 3.5 * math.pi),
@@ -38,9 +43,14 @@ class RightKneeExoMotor:
             ),
             position_limit=SafetyLimit(
                 "Position",
-                SafetyValueRange(-math.pi / 2, math.pi / 2),
-                SafetyValueRange(-2 * math.pi / 3, 2 * math.pi / 3),
+                SafetyValueRange(-math.pi, math.pi),
+                SafetyValueRange(-2 * math.pi, 2 * math.pi),
             ),
+            # position_limit=SafetyLimit(
+            #     "Position",
+            #     SafetyValueRange(-10 * math.pi, 10 * math.pi),
+            #     SafetyValueRange(-15 * math.pi, 15 * math.pi),
+            # ),
         )
         self.motor = SafeMotor(self.MOTOR_IP, socket, config, motorConverter)
 
@@ -51,7 +61,6 @@ class RightKneeExoMotor:
         self.dataStream.enable()
 
     def disable(self):
-        self.motor.setCurrent(0)
         self.motor.disable()
         self.dataStream.disable()
 

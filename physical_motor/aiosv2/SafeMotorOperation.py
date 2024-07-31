@@ -34,14 +34,14 @@ class SafetyLimit:
         self.hard_range = hard_range
 
     def check_value(self, value):
-        hard_exceed = self.hard_range.get_value_limit(self, value)
+        hard_exceed = self.hard_range.get_value_limit(value)
 
         if hard_exceed is not None:
             raise Exception(
                 f"Exceeded {self.name} Hard Limit - ({self.name} value: {value}, expected range: [{self.hard_range.low}, {self.hard_range.high}])"
             )
 
-        return self.soft_range.get_value_limit(self, value)
+        return self.soft_range.get_value_limit(value)
 
 
 class SafetyConfiguration:
@@ -60,7 +60,9 @@ class SafetyConfiguration:
         self.velocity_limit.check_value(cvp.velocity)
         self.current_limit.check_value(cvp.current)
 
-    def override_if_unsafe(self, cvp: CVP, controlMode: ControlMode, value: float):
+    def override_if_unsafe(self, cvp: CVP | None, controlMode: ControlMode, value: float):
+        if cvp is None:
+            return value
         position_constraint = self.position_limit.check_value(cvp.position)
 
         if position_constraint is not None:
@@ -70,11 +72,11 @@ class SafetyConfiguration:
             else:
                 # force control to point in other direction of limit
                 if limit_type == ExceedRange.AboveUpperLimit:
-                    return max(value, 0)
+                    return min(value, -5)
                 else:
-                    return min(value, 0)
+                    return max(value, 5)
 
-        velocity_constraint = self.velocity_limit.check_value(cvp.position)
+        velocity_constraint = self.velocity_limit.check_value(cvp.velocity)
 
         if velocity_constraint is not None:
             limit_type, limit_value = velocity_constraint
@@ -82,14 +84,14 @@ class SafetyConfiguration:
                 return cvp.position
             if controlMode == ControlMode.Velocity:
                 if limit_type == ExceedRange.AboveUpperLimit:
-                    return max(value, limit_value)
-                else:
                     return min(value, limit_value)
+                else:
+                    return max(value, limit_value)
             if controlMode == ControlMode.Current:
                 if limit_type == ExceedRange.AboveUpperLimit:
-                    return max(value, 0)
-                else:
                     return min(value, 0)
+                else:
+                    return max(value, 0)
 
         current_constraint = self.current_limit.check_value(cvp.current)
 
@@ -99,14 +101,14 @@ class SafetyConfiguration:
                 return cvp.position
             if controlMode == ControlMode.Velocity:
                 if limit_type == ExceedRange.AboveUpperLimit:
-                    return max(value, 0)
-                else:
                     return min(value, 0)
+                else:
+                    return max(value, 0)
             if controlMode == ControlMode.Current:
                 if limit_type == ExceedRange.AboveUpperLimit:
-                    return max(value, limit_value)
-                else:
                     return min(value, limit_value)
+                else:
+                    return max(value, limit_value)
 
         return value
 
@@ -122,8 +124,11 @@ class SafeMotor:
         self.raw_motor = ConnectedMotor(ip, socket, motorConverter)
         self.valid: bool = True
         self.config = config
-        self.control_mode: ControlMode = ControlMode.Position
-        self.raw_motor.setControlMode(ControlMode.Position)
+
+        control_type = ControlMode.Current
+        self.control_mode: ControlMode = control_type
+        self.raw_motor.setControlMode(control_type)
+        self.raw_motor.setInputMode(control_type)
 
         self.current_CVP: CVP | None = None
         self.cvp_lock = threading.Lock()
@@ -139,12 +144,12 @@ class SafeMotor:
         self.raw_motor.enable()
 
     def disable(self):
+        self.raw_motor.setCurrent(0)
         self.valid = False
         self.raw_motor.disable()
 
     def getCVP(self):
         if self.current_CVP is None:
-            self.setCurrent(0)
             return None
         with self.cvp_lock:
             return self.current_CVP

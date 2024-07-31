@@ -20,7 +20,8 @@ if __name__ == "__main__":
 
     state = State()
     def func(exoMotor: RightKneeExoMotor, runningTime: float):
-        exoMotor.motor.raw_motor.requestPIDConfig()
+        exoMotor.motor.setCurrent(2)
+        print(exoMotor.motor.getCVP())
 
-    setup_teardown_rightknee_exomotor(func, 5)
+    setup_teardown_rightknee_exomotor(func, 20)
     
