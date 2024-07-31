@@ -45,7 +45,7 @@ class SafetyLimit:
 
 
 class SafetyConfiguration:
-    def __init__(self, safetyConfiguration: dict ):
+    def __init__(self, safetyConfiguration: dict):
         self.current_limit = SafetyLimit("Current", safetyConfiguration["current"])
         self.velocity_limit = SafetyLimit("Velocity", safetyConfiguration["velocity"])
         self.position_limit = SafetyLimit("Position", safetyConfiguration["position"])
@@ -55,7 +55,9 @@ class SafetyConfiguration:
         self.velocity_limit.check_value(cvp.velocity)
         self.current_limit.check_value(cvp.current)
 
-    def override_if_unsafe(self, cvp: CVP | None, controlMode: ControlMode, value: float):
+    def override_if_unsafe(
+        self, cvp: CVP | None, controlMode: ControlMode, value: float
+    ):
         if cvp is None:
             return value
         position_constraint = self.position_limit.check_value(cvp.position)
@@ -114,10 +116,10 @@ class SafetyConfiguration:
 class SafeMotor:
     def __init__(
         self,
-        ip: str, 
-        socket: AiosSocket, 
+        ip: str,
+        socket: AiosSocket,
         config: SafetyConfiguration,
-        motorConverter: Converter,        
+        motorConverter: Converter,
     ):
         self.raw_motor = ConnectedMotor(ip, socket, motorConverter)
         self.valid: bool = True
@@ -132,7 +134,9 @@ class SafeMotor:
         control_type = ControlMode.Current
         self.control_mode: ControlMode = control_type
         self.raw_motor.setControlMode(control_type)
-        self.raw_motor.setInputMode(control_type) # input mode of current allows for all control types
+        self.raw_motor.setInputMode(
+            control_type
+        )  # input mode of current allows for all control types
 
     def getIP(self):
         return self.raw_motor.ip
@@ -145,7 +149,7 @@ class SafeMotor:
         self.valid = False
         self.raw_motor.disable()
 
-    def getCVP(self) -> CVP:            
+    def getCVP(self) -> CVP:
         with self.cvp_lock:
             if self.current_CVP is None:
                 raise Exception("CVP not ready")
@@ -159,11 +163,11 @@ class SafeMotor:
     def requestReadyCheck(self):
         self.raw_motor.requestCVP()
         self.raw_motor.requestEncoderCheck()
-    
+
     def cvpIsReady(self):
         with self.cvp_lock:
             return self.current_CVP is not None
-        
+
     def confirmEncoderReady(self):
         with self.encoder_lock:
             self.encoder_ready = True
@@ -171,9 +175,9 @@ class SafeMotor:
     def encoderIsReady(self):
         with self.encoder_lock:
             return self.encoder_ready
-        
+
     def isReady(self):
-        return self.encoderIsReady() and self.cvpIsReady()    
+        return self.encoderIsReady() and self.cvpIsReady()
 
     def setPosition(self, position: float):
         with self.config_lock:

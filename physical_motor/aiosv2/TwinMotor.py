@@ -21,7 +21,7 @@ class TwinMotor:
     def __init__(self, socket: AiosSocket):
         self.socket = socket
 
-        config_file = open('./config/TwinMotor.json')
+        config_file = open("./config/TwinMotor.json")
         configuration = json.loads(config_file.read())
         print(configuration)
 
@@ -94,10 +94,7 @@ def setup_teardown_twin_motor(
         twinMotor.bottomMotor.requestReadyCheck()
         twinMotor.topMotor.requestReadyCheck()
 
-        while (
-            not twinMotor.topMotor.isReady()
-            or not twinMotor.bottomMotor.isReady()
-        ):
+        while not twinMotor.topMotor.isReady() or not twinMotor.bottomMotor.isReady():
             print("Checking Encoder Status...")
             time.sleep(0.1)
         print("Encoder Ready")

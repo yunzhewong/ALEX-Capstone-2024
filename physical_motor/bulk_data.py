@@ -1,17 +1,21 @@
-
 from enum import Enum
 import math
 from aiosv2.CSVWriter import CSVWriter
 import aiosv2
 from classes.DataLog import DataLog
-from aiosv2.RightKneeExoMotor import RightKneeExoMotor, setup_teardown_rightknee_exomotor
+from aiosv2.RightKneeExoMotor import (
+    RightKneeExoMotor,
+    setup_teardown_rightknee_exomotor,
+)
 from aiosv2.TwinMotor import setup_teardown_twin_motor
 from aiosv2 import CVP
 
+
 class State(Enum):
-    Collecting = 1,
-    Paused = 2,
+    Collecting = (1,)
+    Paused = (2,)
     Resetting = 3
+
 
 MAX_ANGLE = 10 * math.pi
 MAX_TIME = 10
@@ -23,7 +27,7 @@ END_MAGNITUDE = 3
 INCREMENT_MAGNITUDE = 0.02
 
 
-class BulkDataBatcher():
+class BulkDataBatcher:
     def __init__(self):
         self.log: CSVWriter | None = None
 
@@ -37,13 +41,12 @@ class BulkDataBatcher():
         self.reset_end = -1
         self.reset_angle = -1
 
-
     def at_time(self, t, connection: aiosv2.SafeMotor):
         cvp = connection.getCVP()
         position = cvp.position
 
         if self.state == State.Collecting:
-            current = START_MAGNITUDE + self.collect_index * INCREMENT_MAGNITUDE 
+            current = START_MAGNITUDE + self.collect_index * INCREMENT_MAGNITUDE
             if current > END_MAGNITUDE:
                 raise Exception("Exit")
 
@@ -51,8 +54,9 @@ class BulkDataBatcher():
                 print(current)
                 self.collecting_start = t
                 self.initialised = True
-                self.log = CSVWriter(f"step{format(round(current, 2), '.2f')}A.csv", [connection])
-
+                self.log = CSVWriter(
+                    f"step{format(round(current, 2), '.2f')}A.csv", [connection]
+                )
 
             self.log.addCVP(t, [connection])
 
@@ -85,15 +89,16 @@ class BulkDataBatcher():
                 self.reset_angle = position
                 self.initialised = True
 
-            expected_pos = self.reset_angle - ((self.reset_angle - STARTING_ANGLE) / RESET_TIME) * (t - self.reset_start)
+            expected_pos = self.reset_angle - (
+                (self.reset_angle - STARTING_ANGLE) / RESET_TIME
+            ) * (t - self.reset_start)
 
             if t > self.reset_end:
                 self.post_pause_state = State.Collecting
                 self.state = State.Paused
                 self.initialised = False
-            
-            connection.setPosition(expected_pos)
 
+            connection.setPosition(expected_pos)
 
 
 if __name__ == "__main__":
@@ -103,7 +108,3 @@ if __name__ == "__main__":
         dataBatcher.at_time(runningTime, exoMotor.motor)
 
     setup_teardown_rightknee_exomotor(func, 1000)
-
-
-        
-       
