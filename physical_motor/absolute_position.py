@@ -1,16 +1,30 @@
-from aiosv2.TwinMotor import setup_teardown_twin_motor, TwinMotor
+import time
+from aiosv2.RightKneeExoMotor import setup_teardown_rightknee_exomotor, RightKneeExoMotor
 from aiosv2 import aios
 
 
 
-def func(twinmotor: TwinMotor, runningTime: float):
-    cvp = twinmotor.bottomMotor.getCVP()
-
-    if cvp is None:
-        return
-    
-    aios.getAbsEncoder(twinmotor.bottomMotor.getIP())
+CONTROL_BOX = "10.10.10.12"
+IP = "10.10.10.30"
 
 if __name__ == "__main__":
-    setup_teardown_twin_motor(func, 15)
-    
+    # aios.getAbsEncoder(IP)
+    # aios.getEncoderInfo(IP)
+    # aios.getRoot(IP)
+    # aios.controlMode(3, IP, 1)
+    # aios.inputMode(3, IP, 1)
+    # time.sleep(3)
+    # aios.encoderIsReady(IP, 1)
+    aios.enable(IP, 1)
+    aios.controlMode(3, IP, 1)
+    aios.inputMode(3, IP, 1)
+    aios.getRoot(IP)
+    aios.setInputPosition_pt(IP, 0, 0, 1)
+    time.sleep(3)
+    aios.getAbsEncoder(IP)
+    aios.getCVP_pt(IP)
+    aios.setInputPosition_pt(IP, 7.5, 0, 1)
+    time.sleep(3)
+    aios.getAbsEncoder(IP)
+    aios.getCVP_pt(IP)
+    aios.disable(IP, 1)
