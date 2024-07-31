@@ -9,6 +9,7 @@ from aiosv2.SafeMotorOperation import (
     SafetyLimit,
     SafetyValueRange,
 )
+import json
 from aiosv2.DataStream import DataStream
 
 # experimentally, a sampling time of 300Hz yields consistent results
@@ -17,14 +18,19 @@ SAMPLING_PERIOD = 1 / SAMPLING_FREQUENCY
 
 
 class TwinMotor:
-    CONTROL_BOX = "10.10.10.12"
-    MOTORS = {"top": "10.10.10.16", "bottom": "10.10.10.17"}
-    EXPECTED_IPS = [CONTROL_BOX] + list(MOTORS.values())
-
     def __init__(self, socket: AiosSocket):
         self.socket = socket
 
-        self.socket.assertConnectedAddresses(self.EXPECTED_IPS)
+        config_file = open('./config/TwinMotor.json')
+        configuration = json.loads(config_file.read())
+        print(configuration)
+
+        control_box_ip = configuration["control_box_ip"]
+        motors = configuration["motors"]
+
+        expected_ips = [control_box_ip] + [motor["ip"] for motor in motors]
+
+        self.socket.assertConnectedAddresses(expected_ips)
         motorConverter = TwinMotorConverter()
 
         topConfig = SafetyConfiguration(
@@ -42,7 +48,7 @@ class TwinMotor:
                 SafetyValueRange(-20 * math.pi, 20 * math.pi),
             ),
         )
-        self.topMotor = SafeMotor(self.MOTORS["top"], socket, topConfig, motorConverter)
+        self.topMotor = SafeMotor(motors[0]["ip"], socket, topConfig, motorConverter)
 
         bottomConfig = SafetyConfiguration(
             current_limit=SafetyLimit(
@@ -60,7 +66,7 @@ class TwinMotor:
             ),
         )
         self.bottomMotor = SafeMotor(
-            self.MOTORS["bottom"], socket, bottomConfig, motorConverter
+            motors[1]["ip"], socket, bottomConfig, motorConverter
         )
         self.dataStream = DataStream(
             socket, [self.topMotor, self.bottomMotor], motorConverter
@@ -72,8 +78,6 @@ class TwinMotor:
         self.dataStream.enable()
 
     def disable(self):
-        self.topMotor.setCurrent(0)  # Stop the top motor
-        self.bottomMotor.setCurrent(0)  # Stop the bottom motor
         self.topMotor.disable()  # Disable the top motor
         self.bottomMotor.disable()  # Disable the bottom motor
         self.dataStream.disable()
@@ -87,12 +91,12 @@ def setup_teardown_twin_motor(
         twinMotor = TwinMotor(socket)
         twinMotor.enable()
 
-        twinMotor.bottomMotor.requestEncoderReady()
-        twinMotor.topMotor.requestEncoderReady()
+        twinMotor.bottomMotor.requestReadyCheck()
+        twinMotor.topMotor.requestReadyCheck()
 
         while (
-            not twinMotor.topMotor.encoderIsReady()
-            or not twinMotor.bottomMotor.encoderIsReady()
+            not twinMotor.topMotor.isReady()
+            or not twinMotor.bottomMotor.isReady()
         ):
             print("Checking Encoder Status...")
             time.sleep(0.1)

@@ -13,9 +13,9 @@ class ExceedRange(Enum):
 
 
 class SafetyValueRange:
-    def __init__(self, low: float, high: float):
-        self.low = low
-        self.high = high
+    def __init__(self, configuration: dict):
+        self.low = configuration["low"]
+        self.high = configuration["high"]
 
     def get_value_limit(self, value):
         if value < self.low:
@@ -28,12 +28,10 @@ class SafetyValueRange:
 
 
 class SafetyLimit:
-    def __init__(
-        self, name: str, soft_range: SafetyValueRange, hard_range: SafetyValueRange
-    ):
+    def __init__(self, name: str, configuration: dict):
         self.name = name
-        self.soft_range = soft_range
-        self.hard_range = hard_range
+        self.soft_range = SafetyValueRange(configuration["soft"])
+        self.hard_range = SafetyValueRange(configuration["hard"])
 
     def check_value(self, value):
         hard_exceed = self.hard_range.get_value_limit(value)
@@ -47,15 +45,10 @@ class SafetyLimit:
 
 
 class SafetyConfiguration:
-    def __init__(
-        self,
-        current_limit: SafetyLimit,
-        velocity_limit: SafetyLimit,
-        position_limit: SafetyLimit,
-    ):
-        self.current_limit: SafetyLimit = current_limit
-        self.velocity_limit: SafetyLimit = velocity_limit
-        self.position_limit: SafetyLimit = position_limit
+    def __init__(self, safetyConfiguration: dict ):
+        self.current_limit = SafetyLimit("Current", safetyConfiguration["current"])
+        self.velocity_limit = SafetyLimit("Velocity", safetyConfiguration["velocity"])
+        self.position_limit = SafetyLimit("Position", safetyConfiguration["position"])
 
     def check_within_limits(self, cvp: CVP):
         self.position_limit.check_value(cvp.position)
@@ -163,8 +156,9 @@ class SafeMotor:
             self.current_CVP = cvp
         self.config.check_within_limits(cvp)
 
-    def requestCVP(self):
+    def requestReadyCheck(self):
         self.raw_motor.requestCVP()
+        self.raw_motor.requestEncoderCheck()
     
     def cvpIsReady(self):
         with self.cvp_lock:
@@ -174,19 +168,12 @@ class SafeMotor:
         with self.encoder_lock:
             self.encoder_ready = True
 
-    def requestEncoderReady(self):
-        self.raw_motor.requestEncoderCheck()
-
     def encoderIsReady(self):
         with self.encoder_lock:
             return self.encoder_ready
         
     def isReady(self):
-        return self.encoderIsReady() and self.cvpIsReady()
-
-    
-
-    
+        return self.encoderIsReady() and self.cvpIsReady()    
 
     def setPosition(self, position: float):
         with self.config_lock:

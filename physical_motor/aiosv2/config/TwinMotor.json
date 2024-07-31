@@ -1,0 +1,83 @@
+{
+    "control_box_ip": "10.10.10.12",
+    "motors": [
+        {
+            "ip": "10.10.10.16",
+            "name": "top",
+            "safetyConfiguration": {
+                "current": {
+                    "$comment": "we only want a hard limit, make soft limit further away",
+                    "soft": {
+                        "low": -100,
+                        "high": 100
+                    },
+                    "hard": {
+                        "low": -15,
+                        "high": 15
+                    }
+                },
+                "velocity": {
+                    "$comment": "10.99 = 3.5 * pi, 12.56 = 4 * pi",
+                    "soft": {
+                        "low": -10.99,
+                        "high": 10.99
+                    },
+                    "hard": {
+                        "low": -12.56,
+                        "high": 12.56
+                    }
+                } ,
+                "position": {
+                    "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
+                    "soft": {
+                        "low": -47.12,
+                        "high": 47.12
+                    },
+                    "hard": {
+                        "low": -62.83,
+                        "high": 62.83
+                    }
+                }
+            }
+        },
+        {
+            "ip": "10.10.10.16",
+            "name": "bottom",
+            "safetyConfiguration": {
+                "current": {
+                    "$comment": "we only want a hard limit, make soft limit further away",
+                    "soft": {
+                        "low": -100,
+                        "high": 100
+                    },
+                    "hard": {
+                        "low": -15,
+                        "high": 15
+                    }
+                },
+                "velocity": {
+                    "$comment": "10.99 = 3.5 * pi, 12.56 = 4 * pi",
+                    "soft": {
+                        "low": -10.99,
+                        "high": 10.99
+                    },
+                    "hard": {
+                        "low": -12.56,
+                        "high": 12.56
+                    }
+                } ,
+                "position": {
+                    "$comment": "1.57 = pi / 2, 2.09 = 2 * pi / 3",
+                    "soft": {
+                        "low": -1.57,
+                        "high": 1.57
+                    },
+                    "hard": {
+                        "low": -2.09,
+                        "high": 2.09
+                    }
+                }
+            }
+        }
+    ]
+}

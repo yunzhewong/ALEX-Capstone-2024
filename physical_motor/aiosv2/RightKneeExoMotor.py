@@ -73,8 +73,7 @@ def setup_teardown_rightknee_exomotor(
         exoMotor = RightKneeExoMotor(socket)
         exoMotor.enable()
 
-        exoMotor.motor.requestEncoderReady()
-        exoMotor.motor.requestCVP()
+        exoMotor.motor.requestReadyCheck()
 
         while not exoMotor.motor.isReady():
             print("Checking Encoder Status and Reading CVP...")
