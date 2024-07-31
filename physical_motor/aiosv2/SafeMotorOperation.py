@@ -68,6 +68,7 @@ class SafetyConfiguration:
 
         if position_constraint is not None:
             limit_type, limit_value = position_constraint
+            print(f"Exceeded Soft Position Limit: {limit_type}")
             if controlMode == ControlMode.Position:
                 return limit_value
             else:
@@ -81,6 +82,7 @@ class SafetyConfiguration:
 
         if velocity_constraint is not None:
             limit_type, limit_value = velocity_constraint
+            print(f"Exceeded Soft Velocity Limit: {limit_type}")
             if controlMode == ControlMode.Position:
                 return cvp.position
             if controlMode == ControlMode.Velocity:
@@ -98,6 +100,7 @@ class SafetyConfiguration:
 
         if current_constraint is not None:
             limit_type, limit_value = current_constraint
+            print(f"Exceeded Soft Velocity Limit: {limit_type}")
             if controlMode == ControlMode.Position:
                 return cvp.position
             if controlMode == ControlMode.Velocity:
@@ -126,7 +129,7 @@ class SafeMotor:
         self.valid: bool = True
         self.config = config
 
-        control_type = ControlMode.Position
+        control_type = ControlMode.Velocity
         self.control_mode: ControlMode = control_type
         self.raw_motor.setControlMode(control_type)
         self.raw_motor.setInputMode(control_type)

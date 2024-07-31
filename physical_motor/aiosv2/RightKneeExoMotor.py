@@ -29,28 +29,28 @@ class RightKneeExoMotor:
 
         config = SafetyConfiguration(
             current_limit=SafetyLimit(
-                "Current", SafetyValueRange(-100, 100), SafetyValueRange(-15, 15)
+                "Current", SafetyValueRange(-100, 100), SafetyValueRange(-30, 30)
+            ),
+            velocity_limit=SafetyLimit(
+                "Velocity",
+                SafetyValueRange(-1, 1),
+                SafetyValueRange(-4, 4),
             ),
             # velocity_limit=SafetyLimit(
             #     "Velocity",
-            #     SafetyValueRange(-1, 1),
-            #     SafetyValueRange(-4, 4),
+            #     SafetyValueRange(-3.5 * math.pi, 3.5 * math.pi),
+            #     SafetyValueRange(-4 * math.pi, 4 * math.pi),
             # ),
-            velocity_limit=SafetyLimit(
-                "Velocity",
-                SafetyValueRange(-3.5 * math.pi, 3.5 * math.pi),
-                SafetyValueRange(-4 * math.pi, 4 * math.pi),
-            ),
-            position_limit=SafetyLimit(
-                "Position",
-                SafetyValueRange(-math.pi, math.pi),
-                SafetyValueRange(-2 * math.pi, 2 * math.pi),
-            ),
             # position_limit=SafetyLimit(
             #     "Position",
-            #     SafetyValueRange(-10 * math.pi, 10 * math.pi),
-            #     SafetyValueRange(-15 * math.pi, 15 * math.pi),
+            #     SafetyValueRange(-math.pi, math.pi),
+            #     SafetyValueRange(-2 * math.pi, 2 * math.pi),
             # ),
+            position_limit=SafetyLimit(
+                "Position",
+                SafetyValueRange(-10 * math.pi, 10 * math.pi),
+                SafetyValueRange(-15 * math.pi, 15 * math.pi),
+            ),
         )
         self.motor = SafeMotor(self.MOTOR_IP, socket, config, motorConverter)
 

@@ -18,7 +18,7 @@ class HexaMotor:
         "hipRollLeft": "10.10.10.18",
         "hipRollRight": "10.10.10.19",
         "kneeLeft": "10.10.10.20",
-        "kneeRight": "10.10.10.21"
+        "kneeRight": "10.10.10.30"
     }
     EXPECTED_IPS = [CONTROL_BOX] + list(MOTORS.values())
 

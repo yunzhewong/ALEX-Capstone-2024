@@ -44,7 +44,7 @@ def reset_position(running_time: float, start_position):
 
 if __name__ == "__main__":
 
-    def command_func1(top_motor: SafeMotor, bottom_motor: SafeMotor, running_time):
+    def command_func(top_motor: SafeMotor, bottom_motor: SafeMotor, running_time):
         half_duration = DURATION / 2
         if running_time > half_duration:
             # Reverse the position for the bottom motor after half the duration
@@ -55,7 +55,7 @@ if __name__ == "__main__":
             bottom_motor.setPosition(calculate_position_bottom(running_time))
 
     # Reset the motor's position to zero
-    def command_func(top_motor: SafeMotor, bottom_motor: SafeMotor, running_time):
+    def command_func1(top_motor: SafeMotor, bottom_motor: SafeMotor, running_time):
         if top_motor.getCVP() is None or bottom_motor.getCVP() is None:
             return
         x1 = top_motor.getCVP().position
