@@ -32,13 +32,8 @@ class TwinMotor:
         self.socket.assertConnectedAddresses(expected_ips)
         motorConverter = TwinMotorConverter()
 
-        topConfig = SafetyConfiguration(motors[0]["safetyConfiguration"])
-        self.topMotor = SafeMotor(motors[0]["ip"], socket, topConfig, motorConverter)
-
-        bottomConfig = SafetyConfiguration(motors[1]["safetyConfiguration"])
-        self.bottomMotor = SafeMotor(
-            motors[1]["ip"], socket, bottomConfig, motorConverter
-        )
+        self.topMotor = SafeMotor(motors[0], socket, motorConverter)
+        self.bottomMotor = SafeMotor(motors[1], socket, motorConverter)
         self.dataStream = DataStream(
             socket, [self.topMotor, self.bottomMotor], motorConverter
         )

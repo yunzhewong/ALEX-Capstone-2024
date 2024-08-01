@@ -4,6 +4,9 @@
         {
             "ip": "10.10.10.16",
             "name": "top",
+            "positionP": 50,
+            "velocityP": 0.0002,           
+            "velocityI": 0.0002,           
             "safetyConfiguration": {
                 "current": {
                     "$comment": "we only want a hard limit, make soft limit further away",
@@ -43,6 +46,9 @@
         {
             "ip": "10.10.10.17",
             "name": "bottom",
+            "positionP": 15,
+            "velocityP": 0.0002,           
+            "velocityI": 0.001, 
             "safetyConfiguration": {
                 "current": {
                     "$comment": "we only want a hard limit, make soft limit further away",

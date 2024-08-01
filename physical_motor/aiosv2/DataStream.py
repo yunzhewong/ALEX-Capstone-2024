@@ -102,7 +102,7 @@ class DataStream:
                             motor.confirmEncoderReady()
                 elif datatype == DataType.MOTION_CONFIG:
                     data = PIDConfig(json_obj, self.motorConverter)
-                    print(json_obj)
+                    print(ip, json_obj)
                 else:
                     raise Exception("This should not happen")
             except Exception as err:

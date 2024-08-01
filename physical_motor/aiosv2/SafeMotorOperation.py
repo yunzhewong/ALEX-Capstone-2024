@@ -55,6 +55,24 @@ class SafetyConfiguration:
         self.velocity_limit.check_value(cvp.velocity)
         self.current_limit.check_value(cvp.current)
 
+    def get_velocity_limit_settings(self):
+        soft_low = self.velocity_limit.soft_range.low
+        soft_high = self.velocity_limit.soft_range.high
+        hard_low = self.velocity_limit.hard_range.low
+        hard_high = self.velocity_limit.hard_range.high
+
+        if soft_low != soft_high * -1:
+            print("Non-Symmetrical Soft Limits - using lower value")
+
+        if hard_low != hard_high * -1:
+            print("Non-Symmetrical Hard Limits - using lower value")
+
+        limit_soft = min(abs(soft_low), abs(soft_high))
+        limit_hard = min(abs(hard_low), abs(hard_high))
+
+        tolerance = limit_hard / limit_soft
+        return limit_soft, tolerance
+
     def override_if_unsafe(
         self, cvp: CVP | None, controlMode: ControlMode, value: float
     ):
@@ -116,14 +134,14 @@ class SafetyConfiguration:
 class SafeMotor:
     def __init__(
         self,
-        ip: str,
+        configuration: dict,
         socket: AiosSocket,
-        config: SafetyConfiguration,
         motorConverter: Converter,
     ):
-        self.raw_motor = ConnectedMotor(ip, socket, motorConverter)
+        self.configuration = configuration
+        self.raw_motor = ConnectedMotor(configuration["ip"], socket, motorConverter)
         self.valid: bool = True
-        self.config = config
+        self.safetyConfiguration = SafetyConfiguration(configuration["safetyConfiguration"])
         self.current_CVP: CVP | None = None
         self.cvp_lock = threading.Lock()
         self.encoder_ready = False
@@ -170,10 +188,15 @@ class SafeMotor:
             
             self.current_CVP = cvp
             
-        self.config.check_within_limits(cvp)
+        self.safetyConfiguration.check_within_limits(cvp)
 
 
     def requestReadyCheck(self):
+        limit, margin = self.safetyConfiguration.get_velocity_limit_settings()
+        positionP = self.configuration["positionP"]
+        velocityP = self.configuration["velocityP"]
+        velocityI = self.configuration["velocityI"]
+        self.raw_motor.setPIDConfig(positionP, velocityP, velocityI, limit, margin)
         self.raw_motor.requestCVP()
         self.raw_motor.requestEncoderCheck()
 
@@ -200,7 +223,7 @@ class SafeMotor:
         self.modeChangeIfNecessary(ControlMode.Position)
 
         cvp = self.getCVP()
-        override_value = self.config.override_if_unsafe(
+        override_value = self.safetyConfiguration.override_if_unsafe(
             cvp, ControlMode.Position, position
         )
         self.raw_motor.setPosition(override_value)
@@ -213,7 +236,7 @@ class SafeMotor:
         self.modeChangeIfNecessary(ControlMode.Velocity)
 
         cvp = self.getCVP()
-        override_value = self.config.override_if_unsafe(
+        override_value = self.safetyConfiguration.override_if_unsafe(
             cvp, ControlMode.Velocity, velocity
         )
         self.raw_motor.setVelocity(override_value)
@@ -225,7 +248,7 @@ class SafeMotor:
         self.check_operatable()
         self.modeChangeIfNecessary(ControlMode.Current)
         cvp = self.getCVP()
-        override_value = self.config.override_if_unsafe(
+        override_value = self.safetyConfiguration.override_if_unsafe(
             cvp, ControlMode.Current, current
         )
         self.raw_motor.setCurrent(override_value)
