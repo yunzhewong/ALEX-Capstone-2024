@@ -138,6 +138,8 @@ class SafeMotor:
             control_type
         )  # input mode of current allows for all control types
 
+        self.current_repeats = 0
+
     def getIP(self):
         return self.raw_motor.ip
 
@@ -155,10 +157,21 @@ class SafeMotor:
                 raise Exception("CVP not ready")
             return self.current_CVP
 
-    def setCVP(self, cvp):
+    def setCVP(self, cvp: CVP):
+        print(cvp)
         with self.cvp_lock:
+            if self.current_CVP and self.current_CVP.current == cvp.current:
+                self.current_repeats += 1
+
+                if self.current_repeats > 10:
+                    raise Exception("Error: Current not changing - check motor")
+            else:
+                self.current_repeats = 0
+            
             self.current_CVP = cvp
+            
         self.config.check_within_limits(cvp)
+
 
     def requestReadyCheck(self):
         self.raw_motor.requestCVP()
