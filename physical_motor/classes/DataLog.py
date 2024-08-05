@@ -11,6 +11,11 @@ class DataLog:
         self.positions_bottom = []
         self.times = []
 
+        self.desired_trajectory_bottom = desired_trajectory_bottom
+        self.desired_trajectory_top = desired_trajectory_top
+        self.desired_velocity_bottom = desired_velocity_bottom
+        self.desired_velocity_top = desired_velocity_top
+
     def addCVP(self, current_time, cvp_top, cvp_bottom):
         self.currents_top.append(cvp_top.current)
         self.velocities_top.append(cvp_top.velocity)
@@ -32,11 +37,21 @@ class DataLog:
 
         ax2.plot(x, np.array(self.velocities_top), label="Top Motor Velocity", color="red")
         ax2.plot(x, np.array(self.velocities_bottom), label="Bottom Motor Velocity", color="orange")
+        # Plot the desired velocities if provided
+        if self.desired_velocity_bottom is not None:
+            ax2.plot(x, np.polyval(self.desired_velocity_bottom[::-1], x), label="Desired Velocity Bottom", linestyle='--')
+        if self.desired_velocity_top is not None:
+            ax2.plot(x, np.polyval(self.desired_velocity_top[::-1], x), label="Desired Velocity Top", linestyle='--')
         ax2.set_ylabel("Velocity (rad/s)")
         ax2.legend()
 
         ax3.plot(x, np.array(self.positions_top), label="Top Motor Position (rad)", color="green")
         ax3.plot(x, np.array(self.positions_bottom), label="Bottom Motor Position (rad)", color="magenta")
+        # Plot the desired trajectories if provided
+        if self.desired_trajectory_bottom is not None:
+            ax3.plot(x, np.polyval(self.desired_trajectory_bottom[::-1], x), label="Desired Trajectory Bottom", linestyle='--')
+        if self.desired_trajectory_top is not None:
+            ax3.plot(x, np.polyval(self.desired_trajectory_top[::-1], x), label="Desired Trajectory Top", linestyle='--')
         ax3.set_xlabel("Time (s)")
         ax3.set_ylabel("Position (rad)")
         ax3.legend()
