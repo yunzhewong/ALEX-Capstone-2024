@@ -151,4 +151,12 @@ if __name__ == "__main__":
         previous_error_top = error_top
         previous_error_bottom = error_bottom
 
+        # Plotting and saving data
+        dataLog = DataLog(
+        desired_trajectory_bottom=DESIRED_TRAJECTORY_BOTTOM,
+        desired_trajectory_top=DESIRED_TRAJECTORY_TOP,
+        desired_velocity_bottom=DESIRED_VELOCITY_BOTTOM,
+        desired_velocity_top=DESIRED_VELOCITY_TOP,
+        )
+
     gather_data(command_func, DURATION, SAVE_NAME)
