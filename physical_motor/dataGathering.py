@@ -4,12 +4,13 @@ from aiosv2.TwinMotor import setup_teardown_twin_motor
 from aiosv2.SafeMotorOperation import SafeMotor
 
 
-def gather_data(
-    command_func: Callable[[SafeMotor, SafeMotor, float], None],
-    duration: float,
-    name: str,
-):
-    dataLog = DataLog()
+def gather_data(command_func, duration, save_name, desired_trajectory_bottom=None, desired_trajectory_top=None, desired_velocity_bottom=None, desired_velocity_top=None):
+    dataLog = DataLog(
+        desired_trajectory_bottom=desired_trajectory_bottom,
+        desired_trajectory_top=desired_trajectory_top,
+        desired_velocity_bottom=desired_velocity_bottom,
+        desired_velocity_top=desired_velocity_top
+    )
 
     def func(twinMotor, runningTime: float):
         top_connection = twinMotor.topMotor
@@ -25,5 +26,5 @@ def gather_data(
 
     setup_teardown_twin_motor(func, duration)
 
+    dataLog.download(save_name)
     dataLog.plot()
-    dataLog.download(name)

@@ -3,7 +3,7 @@ import numpy as np
 from aiosv2.CVP import CVP
 
 class DataLog:
-    def __init__(self):
+    def __init__(self, desired_trajectory_bottom=None, desired_trajectory_top=None, desired_velocity_bottom=None, desired_velocity_top=None):
         self.currents_top = []
         self.velocities_top = []
         self.positions_top = []
@@ -38,21 +38,29 @@ class DataLog:
 
         ax2.plot(x, np.array(self.velocities_top), label="Top Motor Velocity", color="red")
         ax2.plot(x, np.array(self.velocities_bottom), label="Bottom Motor Velocity", color="orange")
+        
         # Plot the desired velocities if provided
         if self.desired_velocity_bottom is not None:
-            ax2.plot(x, np.polyval(self.desired_velocity_bottom[::-1], x), label="Desired Velocity Bottom", linestyle='--')
+            desired_vel_bottom = [np.polyval(self.desired_velocity_bottom[::-1], t) for t in x]
+            ax2.plot(x, desired_vel_bottom, label="Desired Velocity Bottom", linestyle='--')
         if self.desired_velocity_top is not None:
-            ax2.plot(x, np.polyval(self.desired_velocity_top[::-1], x), label="Desired Velocity Top", linestyle='--')
+            desired_vel_top = [np.polyval(self.desired_velocity_top[::-1], t) for t in x]
+            ax2.plot(x, desired_vel_top, label="Desired Velocity Top", linestyle='--')
+
         ax2.set_ylabel("Velocity (rad/s)")
         ax2.legend()
 
         ax3.plot(x, np.array(self.positions_top), label="Top Motor Position (rad)", color="green")
         ax3.plot(x, np.array(self.positions_bottom), label="Bottom Motor Position (rad)", color="magenta")
         # Plot the desired trajectories if provided
+        
         if self.desired_trajectory_bottom is not None:
-            ax3.plot(x, np.polyval(self.desired_trajectory_bottom[::-1], x), label="Desired Trajectory Bottom", linestyle='--')
+            desired_traj_bottom = [np.polyval(self.desired_trajectory_bottom[::-1], t) for t in x]
+            ax3.plot(x, desired_traj_bottom, label="Desired Trajectory Bottom", linestyle='--')
         if self.desired_trajectory_top is not None:
-            ax3.plot(x, np.polyval(self.desired_trajectory_top[::-1], x), label="Desired Trajectory Top", linestyle='--')
+            desired_traj_top = [np.polyval(self.desired_trajectory_top[::-1], t) for t in x]
+            ax3.plot(x, desired_traj_top, label="Desired Trajectory Top", linestyle='--')
+
         ax3.set_xlabel("Time (s)")
         ax3.set_ylabel("Position (rad)")
         ax3.legend()
