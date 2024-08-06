@@ -15,11 +15,8 @@ if __name__ == "__main__":
     raw_motor = ConnectedMotor("10.10.10.30", socket, ExoskeletonMotorConverter())
     raw_motor.requestPIDConfig()
 
-    while True:
-        try: 
-            json_obj, ip  =socket.readJSON()
-            print(json_obj)
-        except KeyboardInterrupt:
-            break
+    json_obj, ip = socket.readJSON()
+    print(json_obj)
+
 
 

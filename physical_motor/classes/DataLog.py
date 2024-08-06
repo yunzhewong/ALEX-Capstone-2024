@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from aiosv2.CVP import CVP
 
 class DataLog:
     def __init__(self):
@@ -96,3 +97,37 @@ class DataLog:
             header=header,
             comments="",
         )
+
+class CVPPlot():
+    def __init__(self):
+        self.times = []
+        self.currents = []
+        self.velocities = []
+        self.positions = []
+    
+    def addCVP(self, current_time: float, cvp: CVP):
+        self.currents.append(cvp.current)
+        self.velocities.append(cvp.velocity)
+        self.positions.append(cvp.position)
+        self.times.append(current_time)
+
+    
+    def plot(self):
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
+
+        x = np.array(self.times)
+
+        ax1.plot(x, np.array(self.currents), color="blue")
+        ax1.set_ylabel("Current (A)")
+
+        ax2.plot(x, np.array(self.velocities), color="red")
+        ax2.set_ylabel("Velocity (rad/s)")
+
+        ax3.plot(x, np.array(self.positions), color="green")
+        ax3.set_ylabel("Position (rad)")
+        
+        fig.suptitle("Motor Values")
+
+        plt.tight_layout()
+
+        plt.show()

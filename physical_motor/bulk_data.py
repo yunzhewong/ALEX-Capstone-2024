@@ -22,9 +22,9 @@ MAX_TIME = 10
 STARTING_ANGLE = -10 * math.pi
 RESET_TIME = 10
 PAUSE_TIME = 1
-START_MAGNITUDE = 2.36
-END_MAGNITUDE = 3
-INCREMENT_MAGNITUDE = 0.02
+START_MAGNITUDE = 0.0
+END_MAGNITUDE = 1.8
+INCREMENT_MAGNITUDE = 0.1
 
 
 class BulkDataBatcher:
@@ -46,16 +46,16 @@ class BulkDataBatcher:
         position = cvp.position
 
         if self.state == State.Collecting:
-            current = START_MAGNITUDE + self.collect_index * INCREMENT_MAGNITUDE
-            if current > END_MAGNITUDE:
+            velocity = START_MAGNITUDE + self.collect_index * INCREMENT_MAGNITUDE
+            if velocity > END_MAGNITUDE:
                 raise Exception("Exit")
 
             if not self.initialised:
-                print(current)
+                print(velocity)
                 self.collecting_start = t
                 self.initialised = True
                 self.log = CSVWriter(
-                    f"step{format(round(current, 2), '.2f')}A.csv", [connection]
+                    f"step{format(round(velocity, 2), '.2f')}rads.csv", [connection]
                 )
 
             self.log.addCVP(t, [connection])
@@ -71,7 +71,7 @@ class BulkDataBatcher:
                 self.collect_index += 1
                 self.initialised = False
 
-            connection.setCurrent(current)
+            connection.setVelocity(velocity)
         elif self.state == State.Paused:
             if not self.initialised:
                 self.pause_end_time = t + PAUSE_TIME
