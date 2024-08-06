@@ -38,8 +38,8 @@ POLY_COEFFICIENTS_TOP = [
     3*(-1 * 2*math.pi / 1000),
 ]  # Coefficients for the top position reference
 
-DESIRED_TRAJECTORY_BOTTOM = [0.0, (3 * math.pi / 200), (-1 * math.pi / 1000)]
-DESIRED_TRAJECTORY_TOP = [0.0, (3 * 2 * math.pi / 200), (-1 * 2 * math.pi / 1000)]
+DESIRED_TRAJECTORY_BOTTOM = [0.0, 0.0, (3 * math.pi / 200), (-1 * math.pi / 1000)]
+DESIRED_TRAJECTORY_TOP = [0.0, 0.0, (3 * 2 * math.pi / 200), (-1 * 2 * math.pi / 1000)]
 
 DESIRED_VELOCITY_BOTTOM = [0.0, 2*(3 * math.pi / 200), 3*(-1 * math.pi / 1000)]
 DESIRED_VELOCITY_TOP = [0.0, 2*(3 * 2 * math.pi / 200), 3*(-1 * 2 * math.pi / 1000)]
@@ -159,4 +159,13 @@ if __name__ == "__main__":
         desired_velocity_top=DESIRED_VELOCITY_TOP,
         )
 
-    gather_data(command_func, DURATION, SAVE_NAME)
+    gather_data(
+        command_func,
+        DURATION,
+        SAVE_NAME,
+        desired_trajectory_bottom=DESIRED_TRAJECTORY_BOTTOM,
+        desired_trajectory_top=DESIRED_TRAJECTORY_TOP,
+        desired_velocity_bottom=DESIRED_VELOCITY_BOTTOM,
+        desired_velocity_top=DESIRED_VELOCITY_TOP
+    )
+
