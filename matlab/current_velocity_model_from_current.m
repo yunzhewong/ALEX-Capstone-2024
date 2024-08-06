@@ -1,18 +1,21 @@
 close all
+clear
 
-iters = 0.02;
-low = 0.6;
-high = 2.16;
-amperage = low:iters:high;
+ITERATIONS = 0.02;
+LOW = 0.8;
+HIGH = 2.2;
+current_commands = LOW:ITERATIONS:HIGH;
 
+count = numel(current_commands);
+steady_state_currents = zeros(1, count);
+steady_state_velocities = zeros(1, count);
 
-count = numel(amperage);
-K_bs = zeros(1, count);
 J_bs = zeros(1, count);
 
+figure
+hold on
 for i=1:count
-    current = amperage(i);
-    fullname = "./data/exo batch 2/step" + compose("%1.2f", current) + "A.csv";
+    fullname = "./data/exo batch 2/step" + compose("%1.2f", current_commands(i)) + "A.csv";
 
     data = readmatrix(fullname);
 
@@ -21,81 +24,74 @@ for i=1:count
     currents = data(:, 2);
     velocities = data(:, 3);
 
-    averageCurrent = mean(currents);
+    steady_state_index = floor(numel(times) / 2);
+
+    steady_state_currents(i) = mean(currents(steady_state_index:end));
+    steady_state_velocities(i) = mean(velocities(steady_state_index:end));
 
     finalTime = corrected_times(numel(corrected_times));
-    
-    steadyStateTime = finalTime / 2;
-
-    [~, steadyStateIndex] = closest(corrected_times, steadyStateTime);
-
-    steadyState = velocities(steadyStateIndex:numel(velocities));
-
-    expectedSteadyState = mean(steadyState);
-    % = K / b, K = K_ti - F
-    K_bs(i) = expectedSteadyState;
-
-    outputAfterOneTau = (1 - exp(-1)) * expectedSteadyState;
+   
+    outputAfterOneTau = (1 - exp(-1)) * steady_state_velocities(i);
 
     [~, tauIndex] = closest(velocities, outputAfterOneTau);
 
-    time = corrected_times(tauIndex);
-    % = J / b
+    J_bs(i) = corrected_times(tauIndex);
 
-    J_bs(i) = time;
-    
-    % figure
-    % plot(corrected_times, velocities)
-    % hold on
-    % xline(time)
-    % yline(expectedSteadyState)
+    plot(currents)
 end
 
+figure
+plot(steady_state_currents, steady_state_velocities)
+hold on
+p = polyfit(steady_state_currents, steady_state_velocities, 1);
+plot(steady_state_currents, p(1) * steady_state_currents + p(2))
+
+average_Kt_b = p(1);
+
+%v_ss_2 - v_ss_1 = Kt/b * (i_ss_2 - i_ss_1)
 Kt_bs = zeros(1, count - 1);
 for i = 1:count - 1
-    Kt_bs(i) = (K_bs(i + 1) - K_bs(i)) / iters;
+    Kt_bs(i) = (steady_state_velocities(i + 1) - steady_state_velocities(i)) / (steady_state_currents(i + 1) - steady_state_currents(i));
 end
 
-average_Kt_b = mean(Kt_bs);
-Fc_bs = K_bs - average_Kt_b * amperage;
-
-average_Fc_b = mean(Fc_bs);
-average_J_b = mean(J_bs);
-
-fprintf("Average Kt/b: %f\n", average_Kt_b)
-fprintf("Average Fc/b: %f\n", average_Fc_b)
-fprintf("Average J/b: %f\n", average_J_b)
-
-Kt_bs
-Fc_bs
-J_bs
-
 figure
-plot(amperage, K_bs)
+plot(Kt_bs)
 hold on
+yline(average_Kt_b)
 
-p = polyfit(amperage, K_bs, 2)
 
-quadratic_fit = p(1) * (amperage .* amperage) + p(2) * amperage + p(3)
-plot(amperage, quadratic_fit)
 
-figure
-plot(amperage(1:numel(amperage) - 1), Kt_bs)
-
-figure
-plot(amperage, Fc_bs)
+Fc_bs = zeros(1, count - 1);
+for i = 1:count - 1
+    Fc_bs(i) = average_Kt_b * steady_state_currents(i) - steady_state_velocities(i);
+end
 
 figure
-plot(amperage, J_bs)
+plot(Fc_bs)
+
+figure
+plot(steady_state_currents)
+
+figure
+plot(steady_state_velocities)
+
+consistent_Fc_b = mean(Fc_bs);
+consistent_J_b = mean(J_bs);
+
+figure
+plot(steady_state_currents, steady_state_velocities)
+hold on
+plot(steady_state_currents, average_Kt_b * steady_state_currents - consistent_Fc_b)
 
 %assumption
-K_t = 3.563;
-min_amperage = 0.48;
+Kt = 0.124 * 120;
+min_amperage = 0.80;
 
-b = K_t / average_Kt_b
-F_c = average_Fc_b * b
-F_stat = K_t * min_amperage
-J = average_J_b * b
+b = Kt / average_Kt_b
+F_c = consistent_Fc_b * b
+F_stat = Kt * min_amperage
+J = consistent_J_b * b
+
 function [match, index] = closest(values, searchValue) 
     [match, index] = min(abs(values - searchValue));
 end
