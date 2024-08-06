@@ -1,7 +1,10 @@
 close all
 
-amperage = 0.5:0.02:0.8;
 iters = 0.02;
+low = 0.6;
+high = 2.16;
+amperage = low:iters:high;
+
 
 count = numel(amperage);
 K_bs = zeros(1, count);
@@ -9,7 +12,7 @@ J_bs = zeros(1, count);
 
 for i=1:count
     current = amperage(i);
-    fullname = "./data/batch 6/step" + compose("%1.2f", current) + "A.csv";
+    fullname = "./data/exo batch 2/step" + compose("%1.2f", current) + "A.csv";
 
     data = readmatrix(fullname);
 
@@ -22,7 +25,7 @@ for i=1:count
 
     finalTime = corrected_times(numel(corrected_times));
     
-    steadyStateTime = finalTime / 5;
+    steadyStateTime = finalTime / 2;
 
     [~, steadyStateIndex] = closest(corrected_times, steadyStateTime);
 
