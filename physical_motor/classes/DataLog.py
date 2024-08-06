@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from aiosv2.CVP import CVP
 
 class DataLog:
     def __init__(self):
@@ -10,6 +11,11 @@ class DataLog:
         self.velocities_bottom = []
         self.positions_bottom = []
         self.times = []
+
+        self.desired_trajectory_bottom = desired_trajectory_bottom
+        self.desired_trajectory_top = desired_trajectory_top
+        self.desired_velocity_bottom = desired_velocity_bottom
+        self.desired_velocity_top = desired_velocity_top
 
     def addCVP(self, current_time, cvp_top, cvp_bottom):
         self.currents_top.append(cvp_top.current)
@@ -32,11 +38,21 @@ class DataLog:
 
         ax2.plot(x, np.array(self.velocities_top), label="Top Motor Velocity", color="red")
         ax2.plot(x, np.array(self.velocities_bottom), label="Bottom Motor Velocity", color="orange")
+        # Plot the desired velocities if provided
+        if self.desired_velocity_bottom is not None:
+            ax2.plot(x, np.polyval(self.desired_velocity_bottom[::-1], x), label="Desired Velocity Bottom", linestyle='--')
+        if self.desired_velocity_top is not None:
+            ax2.plot(x, np.polyval(self.desired_velocity_top[::-1], x), label="Desired Velocity Top", linestyle='--')
         ax2.set_ylabel("Velocity (rad/s)")
         ax2.legend()
 
         ax3.plot(x, np.array(self.positions_top), label="Top Motor Position (rad)", color="green")
         ax3.plot(x, np.array(self.positions_bottom), label="Bottom Motor Position (rad)", color="magenta")
+        # Plot the desired trajectories if provided
+        if self.desired_trajectory_bottom is not None:
+            ax3.plot(x, np.polyval(self.desired_trajectory_bottom[::-1], x), label="Desired Trajectory Bottom", linestyle='--')
+        if self.desired_trajectory_top is not None:
+            ax3.plot(x, np.polyval(self.desired_trajectory_top[::-1], x), label="Desired Trajectory Top", linestyle='--')
         ax3.set_xlabel("Time (s)")
         ax3.set_ylabel("Position (rad)")
         ax3.legend()
@@ -81,3 +97,37 @@ class DataLog:
             header=header,
             comments="",
         )
+
+class CVPPlot():
+    def __init__(self):
+        self.times = []
+        self.currents = []
+        self.velocities = []
+        self.positions = []
+    
+    def addCVP(self, current_time: float, cvp: CVP):
+        self.currents.append(cvp.current)
+        self.velocities.append(cvp.velocity)
+        self.positions.append(cvp.position)
+        self.times.append(current_time)
+
+    
+    def plot(self):
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
+
+        x = np.array(self.times)
+
+        ax1.plot(x, np.array(self.currents), color="blue")
+        ax1.set_ylabel("Current (A)")
+
+        ax2.plot(x, np.array(self.velocities), color="red")
+        ax2.set_ylabel("Velocity (rad/s)")
+
+        ax3.plot(x, np.array(self.positions), color="green")
+        ax3.set_ylabel("Position (rad)")
+        
+        fig.suptitle("Motor Values")
+
+        plt.tight_layout()
+
+        plt.show()

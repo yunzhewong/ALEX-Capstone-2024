@@ -12,9 +12,9 @@ MAGNITUDE = 2
 DURATION = 10
 
 if __name__ == "__main__":
-    def command_func(connection: aiosv2.SafeMotor, runningTime: float):
+    def command_func(topMotor: aiosv2.SafeMotor, bottomMotor: aiosv2.SafeMotor, runningTime: float):
         current = MAGNITUDE * np.sin(2 * np.pi * FREQUENCY * runningTime)
-        connection.setCurrent(current)    
+        topMotor.setCurrent(current)    
 
     gather_data(command_func, DURATION, f"sinusoid{FREQUENCY}Hz{MAGNITUDE}A.csv")
 

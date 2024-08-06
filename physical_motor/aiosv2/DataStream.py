@@ -20,7 +20,7 @@ class PIDConfig:
         self.positionP = response.get("pos_gain")
         self.velocityP = response.get("vel_gain")
         self.velocityI = response.get("vel_integrator_gain")
-        self.velocityLimit =response.get("vel_limit")
+        self.velocityLimit = response.get("vel_limit")
         self.limitTolerance = response.get("vel_limit_tolerance")
         self.motorConverter = converter
 
@@ -49,7 +49,9 @@ class ErrorParser:
 
 
 class DataStream:
-    def __init__(self, socket: AiosSocket, motors: List[SafeMotor], motorConverter: Converter):
+    def __init__(
+        self, socket: AiosSocket, motors: List[SafeMotor], motorConverter: Converter
+    ):
         self.socket = socket
         self.motors = motors
         self.stop = False
@@ -83,8 +85,6 @@ class DataStream:
             try:
                 json_obj, ip, datatype = result
 
-
-
                 if datatype == DataType.CVP:
                     for motor in self.motors:
                         if motor.getIP() == ip:
@@ -96,13 +96,13 @@ class DataStream:
                     ready = json_obj.get("property", None)
                     if ready is None or not ready:
                         return
-                    
+
                     for motor in self.motors:
                         if motor.getIP() == ip:
                             motor.confirmEncoderReady()
                 elif datatype == DataType.MOTION_CONFIG:
                     data = PIDConfig(json_obj, self.motorConverter)
-                    print(ip, data)
+                    print(ip, json_obj)
                 else:
                     raise Exception("This should not happen")
             except Exception as err:
@@ -112,8 +112,9 @@ class DataStream:
     def check_for_data(self):
         try:
             json_obj, ip = self.socket.readJSON()
+            # print(json_obj)
             target = json_obj.get("reqTarget")
-            if target in ["/m1/setPosition", "/m1/setVelocity", "/m1/setCurrent"]:
+            if target in ["/m1/setPosition", "/m1/setVelocity", "/m1/setCurrent", "/m1/CVP"]:
                 return json_obj, ip, DataType.CVP
             if target in ["/m1/error"]:
                 return json_obj, ip, DataType.ERROR

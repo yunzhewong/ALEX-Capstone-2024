@@ -1045,6 +1045,7 @@ def getCVP_pt(server_ip):
         data, address = s.recvfrom(1024)
         print("Server received from {}:{}".format(address, data))
         feedback = struct.unpack("<fffi", data[1:17])
+        print(feedback)
         return feedback
     except socket.timeout:  # fail after 1 second of no activity
         print("Didn't receive anymore data! [Timeout]")

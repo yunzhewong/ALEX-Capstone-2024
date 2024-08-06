@@ -1,9 +1,14 @@
 from typing import Callable
 from classes.DataLog import DataLog
 from aiosv2.TwinMotor import setup_teardown_twin_motor
-from aiosv2.SafeMotorOperation import SafeMotor, SafetyConfiguration
+from aiosv2.SafeMotorOperation import SafeMotor
 
-def gather_data(command_func: Callable[[SafeMotor, SafeMotor, float], None], duration: float, name: str):
+
+def gather_data(
+    command_func: Callable[[SafeMotor, SafeMotor, float], None],
+    duration: float,
+    name: str,
+):
     dataLog = DataLog()
 
     def func(twinMotor, runningTime: float):
@@ -16,11 +21,7 @@ def gather_data(command_func: Callable[[SafeMotor, SafeMotor, float], None], dur
         cvp_bottom = bottom_connection.getCVP()
 
         if cvp_top is not None and cvp_bottom is not None:
-            dataLog.addCVP(
-                runningTime,
-                cvp_top,
-                cvp_bottom
-            )
+            dataLog.addCVP(runningTime, cvp_top, cvp_bottom)
 
     setup_teardown_twin_motor(func, duration)
 
