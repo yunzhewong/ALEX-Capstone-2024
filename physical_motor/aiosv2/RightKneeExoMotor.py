@@ -1,15 +1,12 @@
-import math
 import time
 from typing import Callable
-from aiosv2 import AiosSocket
+from aiosv2.AiosSocket import AiosSocket
 from aiosv2.SafeMotorOperation import (
-    SafeMotor,
-    SafetyConfiguration,
-    SafetyLimit,
-    SafetyValueRange,
+    SafeMotor
 )
 from aiosv2.DataStream import DataStream
 from aiosv2.constants import ExoskeletonMotorConverter
+from aiosv2.readConfig import readConfig
 
 # experimentally, a sampling time of 300Hz yields consistent results
 SAMPLING_FREQUENCY = 300
@@ -17,42 +14,14 @@ SAMPLING_PERIOD = 1 / SAMPLING_FREQUENCY
 
 
 class RightKneeExoMotor:
-    CONTROL_BOX = "10.10.10.12"
-    MOTOR_IP = "10.10.10.30"
-    EXPECTED_IPS = [CONTROL_BOX, MOTOR_IP]
-
     def __init__(self, socket: AiosSocket):
         self.socket = socket
 
-        self.socket.assertConnectedAddresses(self.EXPECTED_IPS)
+        expected_ips, motors = readConfig("RightKneeExoMotor.json")
+        self.socket.assertConnectedAddresses(expected_ips)
         motorConverter = ExoskeletonMotorConverter()
 
-        config = SafetyConfiguration(
-            current_limit=SafetyLimit(
-                "Current", SafetyValueRange(-100, 100), SafetyValueRange(-30, 30)
-            ),
-            # velocity_limit=SafetyLimit(
-            #     "Velocity",
-            #     SafetyValueRange(-1, 1),
-            #     SafetyValueRange(-4, 4),
-            # ),
-            velocity_limit=SafetyLimit(
-                "Velocity",
-                SafetyValueRange(-3.5 * math.pi, 3.5 * math.pi),
-                SafetyValueRange(-4 * math.pi, 4 * math.pi),
-            ),
-            # position_limit=SafetyLimit(
-            #     "Position",
-            #     SafetyValueRange(-math.pi, math.pi),
-            #     SafetyValueRange(-2 * math.pi, 2 * math.pi),
-            # ),
-            position_limit=SafetyLimit(
-                "Position",
-                SafetyValueRange(-15 * math.pi, 15 * math.pi),
-                SafetyValueRange(-20 * math.pi, 20 * math.pi),
-            ),
-        )
-        self.motor = SafeMotor(self.MOTOR_IP, socket, config, motorConverter)
+        self.motor = SafeMotor(motors[0], socket, motorConverter)
 
         self.dataStream = DataStream(socket, [self.motor], motorConverter)
 

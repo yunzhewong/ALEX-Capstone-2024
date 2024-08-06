@@ -1,6 +1,5 @@
 from enum import Enum
 import threading
-import time
 from aiosv2.AiosSocket import AiosSocket
 from aiosv2.constants import ControlMode, Converter
 from aiosv2.ConnectedMotor import ConnectedMotor

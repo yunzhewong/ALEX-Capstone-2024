@@ -1,7 +1,7 @@
 import math
 import time
 from typing import Callable
-from aiosv2 import AiosSocket
+from aiosv2.AiosSocket import AiosSocket
 from aiosv2.constants import TwinMotorConverter
 from aiosv2.SafeMotorOperation import SafeMotor, SafetyConfiguration
 from aiosv2.DataStream import DataStream

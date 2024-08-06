@@ -1,14 +1,12 @@
-import os
 import time
 from typing import Callable
 from aiosv2 import AiosSocket
 from aiosv2.constants import TwinMotorConverter
 from aiosv2.SafeMotorOperation import (
     SafeMotor,
-    SafetyConfiguration,
 )
-import json
 from aiosv2.DataStream import DataStream
+from aiosv2.readConfig import readConfig
 
 # experimentally, a sampling time of 300Hz yields consistent results
 SAMPLING_FREQUENCY = 300
@@ -19,16 +17,8 @@ class TwinMotor:
     def __init__(self, socket: AiosSocket):
         self.socket = socket
 
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        config_path = os.path.join(script_dir, "config", "TwinMotor.json")
-        config_file = open(config_path)
-        configuration = json.loads(config_file.read())
-
-        control_box_ip = configuration["control_box_ip"]
-        motors = configuration["motors"]
-
-        expected_ips = [control_box_ip] + [motor["ip"] for motor in motors]
-
+        expected_ips, motors = readConfig("TwinMotor.json")
+        
         self.socket.assertConnectedAddresses(expected_ips)
         motorConverter = TwinMotorConverter()
 

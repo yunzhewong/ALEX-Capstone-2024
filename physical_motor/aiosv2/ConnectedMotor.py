@@ -1,15 +1,14 @@
 import socket
 import struct
-from aiosv2 import aios
 from aiosv2.constants import (
     ControlMode,
     AxisState,
     PORT_rt,
     PORT_srv,
+    Converter
 )
 from aiosv2.CVP import CVP
 from aiosv2.AiosSocket import AiosSocket
-from aiosv2.constants import Converter
 
 
 class CVPConverter:
