@@ -112,6 +112,9 @@ class CVPPlot():
         self.currents = []
         self.velocities = []
         self.positions = []
+
+        self.desired_trajectory = desired_trajectory
+        self.desired_velocity = desired_velocity
     
     def addCVP(self, current_time: float, cvp: CVP):
         self.currents.append(cvp.current)
@@ -131,8 +134,18 @@ class CVPPlot():
         ax2.plot(x, np.array(self.velocities), color="red")
         ax2.set_ylabel("Velocity (rad/s)")
 
+        # Plot the desired velocities if provided
+        if self.desired_velocity is not None:
+            desired_vel = [np.polyval(self.desired_velocity[::-1], t) for t in x]
+            ax2.plot(x, desired_vel, label="Desired Velocity", linestyle='--')
+
         ax3.plot(x, np.array(self.positions), color="green")
         ax3.set_ylabel("Position (rad)")
+
+        # Plot the desired trajectories if provided
+        if self.desired_trajectory_bottom is not None:
+            desired_traj = [np.polyval(self.desired_trajectory[::-1], t) for t in x]
+            ax3.plot(x, desired_traj, label="Desired Trajectory", linestyle='--')
         
         fig.suptitle("Motor Values")
 
