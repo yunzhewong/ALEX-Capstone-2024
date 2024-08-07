@@ -45,7 +45,7 @@ class DataLog:
             ax2.plot(x, desired_vel_bottom, label="Desired Velocity Bottom", linestyle='--')
         if self.desired_velocity_top is not None:
             desired_vel_top = [np.polyval(self.desired_velocity_top[::-1], t) for t in x]
-            ax2.plot(x, desired_vel_top, label="Desired Velocity Top", linestyle='--')
+            ax2.plot(x, desired_vel_top, label="Desired Velocity Top", linestyle='--', color="green")
 
         ax2.set_ylabel("Velocity (rad/s)")
         ax2.legend()
