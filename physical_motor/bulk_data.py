@@ -18,12 +18,12 @@ class State(Enum):
 
 
 MAX_ANGLE = 10 * math.pi
-MAX_TIME = 10
+MAX_TIME = 5
 STARTING_ANGLE = -10 * math.pi
-RESET_TIME = 10
+RESET_TIME = 5
 PAUSE_TIME = 1
-START_MAGNITUDE = 0.0
-END_MAGNITUDE = 1.8
+START_MAGNITUDE = 0.1
+END_MAGNITUDE = 2
 INCREMENT_MAGNITUDE = 0.1
 
 
@@ -46,16 +46,16 @@ class BulkDataBatcher:
         position = cvp.position
 
         if self.state == State.Collecting:
-            velocity = START_MAGNITUDE + self.collect_index * INCREMENT_MAGNITUDE
-            if velocity > END_MAGNITUDE:
+            delta = START_MAGNITUDE + self.collect_index * INCREMENT_MAGNITUDE
+            if delta > END_MAGNITUDE:
                 raise Exception("Exit")
 
             if not self.initialised:
-                print(velocity)
+                print(delta)
                 self.collecting_start = t
                 self.initialised = True
                 self.log = CSVWriter(
-                    f"step{format(round(velocity, 2), '.2f')}rads.csv", [connection]
+                    f"delta{format(round(delta, 2), '.2f')}.csv", [connection]
                 )
 
             self.log.addCVP(t, [connection])
@@ -71,7 +71,7 @@ class BulkDataBatcher:
                 self.collect_index += 1
                 self.initialised = False
 
-            connection.setVelocity(velocity)
+            connection.setPosition(position + delta)
         elif self.state == State.Paused:
             if not self.initialised:
                 self.pause_end_time = t + PAUSE_TIME
