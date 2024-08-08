@@ -22,23 +22,23 @@
                 "velocity": {
                     "$comment": "10.99 = 3.5 * pi, 12.56 = 4 * pi",
                     "soft": {
-                        "low": -10.99,
-                        "high": 10.99
+                        "low": -1.57,
+                        "high": 1.57
                     },
                     "hard": {
-                        "low": -12.56,
-                        "high": 12.56
+                        "low": -2,
+                        "high": 2
                     }
                 },
                 "position": {
                     "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
                     "soft": {
-                        "low": -47.12,
-                        "high": 47.12
+                        "low": -1.5,
+                        "high": 1.5
                     },
                     "hard": {
-                        "low": -62.83,
-                        "high": 62.83
+                        "low": -1.8,
+                        "high": 1.8
                     }
                 }
             }
