@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     state = State()
     def func(exoMotor: RightKneeExoMotor, runningTime: float):
-        exoMotor.motor.setVelocity(-2)
+        exoMotor.motor.setVelocity(-1)
 
         cvp = exoMotor.motor.getCVP()
         state.log.addCVP(runningTime, cvp)

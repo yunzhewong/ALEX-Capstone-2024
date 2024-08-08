@@ -1,0 +1,260 @@
+STILL NEED TO GET PID PARAMETERS
+
+
+{
+    "control_box_ip": "10.10.10.12",
+    "motors": [
+        {
+            "ip": "10.10.10.29",
+            "name": "left-abductor",
+            "positionP": 10,
+            "velocityP": 2,           
+            "velocityI": 0.04,           
+            "safetyConfiguration": {
+                "current": {
+                    "$comment": "we only want a hard limit, make soft limit further away",
+                    "soft": {
+                        "low": -100,
+                        "high": 100
+                    },
+                    "hard": {
+                        "low": -30,
+                        "high": 30
+                    }
+                },
+                "velocity": {
+                    "$comment": "a speed of 1rad/s is safe for initial testing",
+                    "soft": {
+                        "low": -1,
+                        "high": 1
+                    },
+                    "hard": {
+                        "low": -2,
+                        "high": 2
+                    }
+                },
+                "position": {
+                    "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
+                    "soft": {
+                        "low": -47.12,
+                        "high": 47.12
+                    },
+                    "hard": {
+                        "low": -62.83,
+                        "high": 62.83
+                    }
+                }
+            }
+        },
+        {
+            "ip": "10.10.10.39",
+            "name": "right-abductor",
+            "positionP": 10,
+            "velocityP": 2,           
+            "velocityI": 0.04,           
+            "safetyConfiguration": {
+                "current": {
+                    "$comment": "we only want a hard limit, make soft limit further away",
+                    "soft": {
+                        "low": -100,
+                        "high": 100
+                    },
+                    "hard": {
+                        "low": -30,
+                        "high": 30
+                    }
+                },
+                "velocity": {
+                    "$comment": "a speed of 1rad/s is safe for initial testing",
+                    "soft": {
+                        "low": -1,
+                        "high": 1
+                    },
+                    "hard": {
+                        "low": -2,
+                        "high": 2
+                    }
+                },
+                "position": {
+                    "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
+                    "soft": {
+                        "low": -47.12,
+                        "high": 47.12
+                    },
+                    "hard": {
+                        "low": -62.83,
+                        "high": 62.83
+                    }
+                }
+            }
+        },
+        {
+            "ip": "10.10.10.10",
+            "name": "left-extensor",
+            "positionP": 10,
+            "velocityP": 2,           
+            "velocityI": 0.04,           
+            "safetyConfiguration": {
+                "current": {
+                    "$comment": "we only want a hard limit, make soft limit further away",
+                    "soft": {
+                        "low": -100,
+                        "high": 100
+                    },
+                    "hard": {
+                        "low": -30,
+                        "high": 30
+                    }
+                },
+                "velocity": {
+                    "$comment": "a speed of 1rad/s is safe for initial testing",
+                    "soft": {
+                        "low": -1,
+                        "high": 1
+                    },
+                    "hard": {
+                        "low": -2,
+                        "high": 2
+                    }
+                },
+                "position": {
+                    "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
+                    "soft": {
+                        "low": -47.12,
+                        "high": 47.12
+                    },
+                    "hard": {
+                        "low": -62.83,
+                        "high": 62.83
+                    }
+                }
+            }
+        },
+        {
+            "ip": "10.10.10.36",
+            "name": "right-extensor",
+            "positionP": 10,
+            "velocityP": 2,           
+            "velocityI": 0.04,           
+            "safetyConfiguration": {
+                "current": {
+                    "$comment": "we only want a hard limit, make soft limit further away",
+                    "soft": {
+                        "low": -100,
+                        "high": 100
+                    },
+                    "hard": {
+                        "low": -30,
+                        "high": 30
+                    }
+                },
+                "velocity": {
+                    "$comment": "a speed of 1rad/s is safe for initial testing",
+                    "soft": {
+                        "low": -1,
+                        "high": 1
+                    },
+                    "hard": {
+                        "low": -2,
+                        "high": 2
+                    }
+                },
+                "position": {
+                    "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
+                    "soft": {
+                        "low": -47.12,
+                        "high": 47.12
+                    },
+                    "hard": {
+                        "low": -62.83,
+                        "high": 62.83
+                    }
+                }
+            }
+        },
+        {
+            "ip": "10.10.10.8",
+            "name": "left-knee",
+            "positionP": 10,
+            "velocityP": 2,           
+            "velocityI": 0.04,           
+            "safetyConfiguration": {
+                "current": {
+                    "$comment": "we only want a hard limit, make soft limit further away",
+                    "soft": {
+                        "low": -100,
+                        "high": 100
+                    },
+                    "hard": {
+                        "low": -30,
+                        "high": 30
+                    }
+                },
+                "velocity": {
+                    "$comment": "a speed of 1rad/s is safe for initial testing",
+                    "soft": {
+                        "low": -1,
+                        "high": 1
+                    },
+                    "hard": {
+                        "low": -2,
+                        "high": 2
+                    }
+                },
+                "position": {
+                    "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
+                    "soft": {
+                        "low": -47.12,
+                        "high": 47.12
+                    },
+                    "hard": {
+                        "low": -62.83,
+                        "high": 62.83
+                    }
+                }
+            }
+        },
+        {
+            "ip": "10.10.10.30",
+            "name": "right-knee",
+            "positionP": 10,
+            "velocityP": 2,           
+            "velocityI": 0.04,           
+            "safetyConfiguration": {
+                "current": {
+                    "$comment": "we only want a hard limit, make soft limit further away",
+                    "soft": {
+                        "low": -100,
+                        "high": 100
+                    },
+                    "hard": {
+                        "low": -30,
+                        "high": 30
+                    }
+                },
+                "velocity": {
+                    "$comment": "a speed of 1rad/s is safe for initial testing",
+                    "soft": {
+                        "low": -1,
+                        "high": 1
+                    },
+                    "hard": {
+                        "low": -2,
+                        "high": 2
+                    }
+                },
+                "position": {
+                    "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
+                    "soft": {
+                        "low": -47.12,
+                        "high": 47.12
+                    },
+                    "hard": {
+                        "low": -62.83,
+                        "high": 62.83
+                    }
+                }
+            }
+        }        
+    ]
+}
