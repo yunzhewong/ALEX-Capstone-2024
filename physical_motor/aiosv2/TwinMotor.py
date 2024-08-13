@@ -6,7 +6,7 @@ from aiosv2.SafeMotorOperation import (
     SafeMotor,
 )
 from aiosv2.DataStream import DataStream
-from aiosv2.readConfig import readConfig
+from aiosv2.readConfig import readConfig, prepareConfigurationForCalibration
 
 # experimentally, a sampling time of 300Hz yields consistent results
 SAMPLING_FREQUENCY = 300
@@ -84,6 +84,7 @@ class CalibrationTwinMotor():
         self.socket = socket
 
         expected_ips, motors = readConfig(["config", "TwinMotor.json"])
+        prepareConfigurationForCalibration(motors)
         
         self.socket.assertConnectedAddresses(expected_ips)
         motorConverter = TwinMotorConverter()
@@ -108,7 +109,7 @@ class CalibrationTwinMotor():
 def calibrate_twin_motor():
     try:
         socket = AiosSocket()
-        twinMotor = TwinMotor(socket)
+        twinMotor = CalibrationTwinMotor(socket)
         twinMotor.enable()
 
         twinMotor.bottomMotor.requestReadyCheck()
@@ -123,6 +124,9 @@ def calibrate_twin_motor():
         currentTime = startTime
         endTime = currentTime + 120
 
+        motors = [twinMotor.bottomMotor, twinMotor.topMotor]
+        zeroVelocitiesCounts = [0, 0]
+
         try:
             while currentTime < endTime:
                 currentTime = time.perf_counter()
@@ -130,8 +134,10 @@ def calibrate_twin_motor():
                 if error:
                     raise Exception(error)
 
-                runningTime = currentTime - startTime
-                actions(twinMotor, runningTime)
+                for motor in motors:
+                    cvp = motor.getCVP()
+                    
+                    motor.setVelocity(0.3)
 
                 time.sleep(SAMPLING_PERIOD)
         except Exception as e:
