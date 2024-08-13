@@ -1,3 +1,4 @@
+import math
 import time
 from typing import Callable
 from aiosv2 import AiosSocket
@@ -105,6 +106,7 @@ class CalibrationTwinMotor():
         self.bottomMotor.disable()  # Disable the bottom motor
         self.dataStream.disable()
 
+EPSILON = 0.01
 
 def calibrate_twin_motor():
     try:
@@ -124,8 +126,10 @@ def calibrate_twin_motor():
         currentTime = startTime
         endTime = currentTime + 120
 
-        motors = [twinMotor.bottomMotor, twinMotor.topMotor]
-        zeroVelocitiesCounts = [0, 0]
+        motors = [twinMotor.bottomMotor]
+        desiredPosition = [math.pi]
+        calibrationPosition = [None]
+        zeroVelocitiesCounts = [0]
 
         try:
             while currentTime < endTime:
@@ -134,10 +138,36 @@ def calibrate_twin_motor():
                 if error:
                     raise Exception(error)
 
-                for motor in motors:
+                for i, motor in enumerate(motors):
                     cvp = motor.getCVP()
+
+                    if cvp.velocity < EPSILON:
+                        zeroVelocitiesCounts[i] += 1
+
+                    if zeroVelocitiesCounts[i] > 10 and calibrationPosition[i] is None:
+                        print(f"{motor.getIP()} Found Limit")
+                        calibrationPosition[i] = cvp.position
+
+                    if calibrationPosition[i] is None:
+                        motor.setVelocity(0.3)
+                    else:
+                        position_adjustment = desiredPosition[i] - calibrationPosition[i]
+                        truePosition = cvp.position + position_adjustment
+                        print(truePosition)
+                        if abs(truePosition) > EPSILON:
+                            motor.setVelocity(-0.3)
+                        else:
+                            motor.setVelocity(0)
+
+
+                            calibrated = 0
+                            for pos in calibrationPosition:
+                                if pos is not None:
+                                    calibrated += 1
+
+                            if calibrated == len(calibrationPosition):
+                                raise Exception("All Motors Calibrated")
                     
-                    motor.setVelocity(0.3)
 
                 time.sleep(SAMPLING_PERIOD)
         except Exception as e:
