@@ -1,10 +1,11 @@
 import json
 import os
+from typing import List
 
 
-def readConfig(name: str):
+def readConfig(path: List[str]):
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    config_path = os.path.join(script_dir, "config", name)
+    config_path = os.path.join(script_dir, *path)
     config_file = open(config_path)
     configuration = json.loads(config_file.read())
 

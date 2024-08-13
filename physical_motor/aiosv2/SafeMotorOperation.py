@@ -87,9 +87,9 @@ class SafetyConfiguration:
             else:
                 # force control to point in other direction of limit
                 if limit_type == ExceedRange.AboveUpperLimit:
-                    return min(value, -5)
+                    return min(value, 0)
                 else:
-                    return max(value, 5)
+                    return max(value, 0)
 
         velocity_constraint = self.velocity_limit.check_value(cvp.velocity)
 

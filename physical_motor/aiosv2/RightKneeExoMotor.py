@@ -17,7 +17,7 @@ class RightKneeExoMotor:
     def __init__(self, socket: AiosSocket):
         self.socket = socket
 
-        expected_ips, motors = readConfig("RightKneeExoMotor.json")
+        expected_ips, motors = readConfig("config", "RightKneeExoMotor.json")
         self.socket.assertConnectedAddresses(expected_ips)
         motorConverter = ExoskeletonMotorConverter()
 
