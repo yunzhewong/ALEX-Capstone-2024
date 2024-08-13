@@ -1,0 +1,6 @@
+{
+    "motors": [{
+        "direction": 1,
+        "limit": 2.4827
+    }]
+}

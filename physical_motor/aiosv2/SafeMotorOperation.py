@@ -135,7 +135,7 @@ class SafeMotor:
         self,
         configuration: dict,
         socket: AiosSocket,
-        motorConverter: Converter,
+        motorConverter: Converter, calibrationAdjustment: float
     ):
         self.configuration = configuration
         self.raw_motor = ConnectedMotor(configuration["ip"], socket, motorConverter)
@@ -147,6 +147,7 @@ class SafeMotor:
         self.encoder_lock = threading.Lock()
         self.config_ready = True
         self.config_lock = threading.Lock()
+        self.calibrationAdjustment = calibrationAdjustment
 
         control_type = ControlMode.Current
         self.control_mode: ControlMode = control_type
@@ -173,9 +174,14 @@ class SafeMotor:
             if self.current_CVP is None:
                 raise Exception("CVP not ready")
             return self.current_CVP
+        
+    def getCalibratedCVP(self):
+        old = self.getCVP()
+        return CVP(old.current, old.velocity, old.position + self.calibrationAdjustment) 
+
 
     def setCVP(self, cvp: CVP):
-        print(cvp)
+        # print(cvp)
         with self.cvp_lock:
             if self.current_CVP and self.current_CVP.current == cvp.current:
                 self.current_repeats += 1
@@ -223,7 +229,7 @@ class SafeMotor:
 
         cvp = self.getCVP()
         override_value = self.safetyConfiguration.override_if_unsafe(
-            cvp, ControlMode.Position, position
+            cvp, ControlMode.Position, position - self.calibrationAdjustment
         )
         self.raw_motor.setPosition(override_value)
 
