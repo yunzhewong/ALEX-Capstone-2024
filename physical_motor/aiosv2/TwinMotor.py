@@ -1,13 +1,13 @@
 import math
 import time
-from typing import Callable
+from typing import Callable, List
 from aiosv2 import AiosSocket
 from aiosv2.constants import TwinMotorConverter
 from aiosv2.SafeMotorOperation import (
     SafeMotor,
 )
 from aiosv2.DataStream import DataStream
-from aiosv2.readConfig import readConfig, prepareConfigurationForCalibration
+from aiosv2.readConfig import readConfigurationJSON, prepareConfigurationForCalibration, destructureMotorCombinationConfig
 
 # experimentally, a sampling time of 300Hz yields consistent results
 SAMPLING_FREQUENCY = 300
@@ -15,10 +15,10 @@ SAMPLING_PERIOD = 1 / SAMPLING_FREQUENCY
 
 
 class TwinMotor:
-    def __init__(self, socket: AiosSocket):
+    def __init__(self, socket: AiosSocket, configuration: dict):
         self.socket = socket
 
-        expected_ips, motors = readConfig(["config", "TwinMotor.json"])
+        expected_ips, motors = destructureMotorCombinationConfig(configuration)
         
         self.socket.assertConnectedAddresses(expected_ips)
         motorConverter = TwinMotorConverter()
@@ -41,11 +41,15 @@ class TwinMotor:
 
 
 def setup_teardown_twin_motor(
-    actions: Callable[[TwinMotor, float], None], totalRunningTime: float
+    actions: Callable[[TwinMotor, float], None], totalRunningTime: float, overrideConfiguration: None | dict=None
 ):
     try:
         socket = AiosSocket()
-        twinMotor = TwinMotor(socket)
+        configuration = readConfigurationJSON(["config", "TwinMotor.json"])
+        if overrideConfiguration is not None:
+            configuration = overrideConfiguration
+
+        twinMotor = TwinMotor(socket, configuration)
         twinMotor.enable()
 
         twinMotor.bottomMotor.requestReadyCheck()
@@ -80,101 +84,59 @@ def setup_teardown_twin_motor(
         print("Keyboard Interrupt again to release locks")
         twinMotor.disable()
 
-class CalibrationTwinMotor():
-    def __init__(self, socket: AiosSocket):
-        self.socket = socket
-
-        expected_ips, motors = readConfig(["config", "TwinMotor.json"])
-        prepareConfigurationForCalibration(motors)
-        
-        self.socket.assertConnectedAddresses(expected_ips)
-        motorConverter = TwinMotorConverter()
-
-        self.topMotor = SafeMotor(motors[0], socket, motorConverter)
-        self.bottomMotor = SafeMotor(motors[1], socket, motorConverter)
-        self.dataStream = DataStream(
-            socket, [self.topMotor, self.bottomMotor], motorConverter
-        )
-
-    def enable(self):
-        self.topMotor.enable()  # Enable the top motor
-        self.bottomMotor.enable()  # Enable the bottom motor
-        self.dataStream.enable()
-
-    def disable(self):
-        self.topMotor.disable()  # Disable the top motor
-        self.bottomMotor.disable()  # Disable the bottom motor
-        self.dataStream.disable()
-
 EPSILON = 0.01
 
+
+
+class CalibrationState():
+    def __init__(self):
+        self.motors: List[SafeMotor] | None = None
+        self.desiredPosition = [math.pi]
+        self.calibrationPosition = [None]
+        self.zeroVelocitiesCounts = [0]
+
 def calibrate_twin_motor():
-    try:
-        socket = AiosSocket()
-        twinMotor = CalibrationTwinMotor(socket)
-        twinMotor.enable()
 
-        twinMotor.bottomMotor.requestReadyCheck()
-        twinMotor.topMotor.requestReadyCheck()
+    state = CalibrationState()
 
-        while not twinMotor.topMotor.isReady() or not twinMotor.bottomMotor.isReady():
-            print("Checking Encoder Status...")
-            time.sleep(0.1)
-        print("Encoder Ready")
+    def func(twinMotor: TwinMotor, runningTime: float):
+        if state.motors is None:
+            state.motors = [twinMotor.bottomMotor]
 
-        startTime = time.perf_counter()
-        currentTime = startTime
-        endTime = currentTime + 120
+        for i, motor in enumerate(state.motors):
+            cvp = motor.getCVP()
 
-        motors = [twinMotor.bottomMotor]
-        desiredPosition = [math.pi]
-        calibrationPosition = [None]
-        zeroVelocitiesCounts = [0]
+            if cvp.velocity < EPSILON:
+                state.zeroVelocitiesCounts[i] += 1
 
-        try:
-            while currentTime < endTime:
-                currentTime = time.perf_counter()
-                error = twinMotor.dataStream.errored()
-                if error:
-                    raise Exception(error)
+            if state.zeroVelocitiesCounts[i] > 10 and state.calibrationPosition[i] is None:
+                print(f"{motor.getIP()} Found Limit")
+                state.calibrationPosition[i] = cvp.position
 
-                for i, motor in enumerate(motors):
-                    cvp = motor.getCVP()
-
-                    if cvp.velocity < EPSILON:
-                        zeroVelocitiesCounts[i] += 1
-
-                    if zeroVelocitiesCounts[i] > 10 and calibrationPosition[i] is None:
-                        print(f"{motor.getIP()} Found Limit")
-                        calibrationPosition[i] = cvp.position
-
-                    if calibrationPosition[i] is None:
-                        motor.setVelocity(0.3)
-                    else:
-                        position_adjustment = desiredPosition[i] - calibrationPosition[i]
-                        truePosition = cvp.position + position_adjustment
-                        print(truePosition)
-                        if abs(truePosition) > EPSILON:
-                            motor.setVelocity(-0.3)
-                        else:
-                            motor.setVelocity(0)
+            if state.calibrationPosition[i] is None:
+                motor.setVelocity(0.3)
+            else:
+                position_adjustment = state.desiredPosition[i] - state.calibrationPosition[i]
+                truePosition = cvp.position + position_adjustment
+                print(truePosition)
+                if abs(truePosition) > EPSILON:
+                    motor.setVelocity(-0.3)
+                else:
+                    motor.setVelocity(0)
 
 
-                            calibrated = 0
-                            for pos in calibrationPosition:
-                                if pos is not None:
-                                    calibrated += 1
+                    calibrated = 0
+                    for pos in state.calibrationPosition:
+                        if pos is not None:
+                            calibrated += 1
 
-                            if calibrated == len(calibrationPosition):
-                                raise Exception("All Motors Calibrated")
-                    
+                    if calibrated == len(state.calibrationPosition):
+                        raise Exception("All Motors Calibrated")
 
-                time.sleep(SAMPLING_PERIOD)
-        except Exception as e:
-            print(e)
+        
+    configuration = readConfigurationJSON(["config", "TwinMotor.json"])
+    _, motors = destructureMotorCombinationConfig(configuration)
+    prepareConfigurationForCalibration(motors)
 
-        twinMotor.disable()
-    except KeyboardInterrupt:
-        print("Keyboard Interrupted: Motors turned off")
-        print("Keyboard Interrupt again to release locks")
-        twinMotor.disable()
+    setup_teardown_twin_motor(func, 120, configuration)
+    

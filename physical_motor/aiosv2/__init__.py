@@ -3,4 +3,4 @@ from .ConnectedMotor import ConnectedMotor
 from .CVP import CVP
 from .TwinMotor import TwinMotor
 from .SafeMotorOperation import SafeMotor
-from .readConfig import readConfig
+from .readConfig import readConfigurationJSON

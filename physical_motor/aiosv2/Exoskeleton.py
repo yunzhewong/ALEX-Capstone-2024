@@ -5,7 +5,7 @@ from aiosv2.AiosSocket import AiosSocket
 from aiosv2.constants import ExoskeletonMotorConverter, TwinMotorConverter
 from aiosv2.SafeMotorOperation import SafeMotor, SafetyConfiguration
 from aiosv2.DataStream import DataStream
-from aiosv2.readConfig import readConfig
+from aiosv2.readConfig import readConfigurationJSON, destructureMotorCombinationConfig
 
 SAMPLING_FREQUENCY = 300
 SAMPLING_PERIOD = 1 / SAMPLING_FREQUENCY
@@ -14,7 +14,8 @@ class Exoskeleton:
     def __init__(self, socket: AiosSocket):
         self.socket = socket
 
-        expected_ips, motors = readConfig(["config", "Exoskeleton.json"])
+        configurationJSON = readConfigurationJSON(["config", "Exoskeleton.json"])
+        expected_ips, motors = destructureMotorCombinationConfig(configurationJSON)
         
         self.socket.assertConnectedAddresses(expected_ips)
         motorConverter = ExoskeletonMotorConverter()

@@ -6,7 +6,7 @@ from aiosv2.SafeMotorOperation import (
 )
 from aiosv2.DataStream import DataStream
 from aiosv2.constants import ExoskeletonMotorConverter
-from aiosv2.readConfig import readConfig
+from aiosv2.readConfig import readConfigurationJSON, destructureMotorCombinationConfig
 
 # experimentally, a sampling time of 300Hz yields consistent results
 SAMPLING_FREQUENCY = 300
@@ -17,7 +17,9 @@ class RightKneeExoMotor:
     def __init__(self, socket: AiosSocket):
         self.socket = socket
 
-        expected_ips, motors = readConfig("config", "RightKneeExoMotor.json")
+        configurationJSON = readConfigurationJSON("config", "RightKneeExoMotor.json")
+        expected_ips, motors = destructureMotorCombinationConfig(configurationJSON)
+
         self.socket.assertConnectedAddresses(expected_ips)
         motorConverter = ExoskeletonMotorConverter()
 
