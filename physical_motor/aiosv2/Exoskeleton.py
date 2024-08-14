@@ -1,31 +1,37 @@
 import math
 import time
 from typing import Callable
+from aiosv2.Calibration import CalibrationState
 from aiosv2.AiosSocket import AiosSocket
 from aiosv2.constants import ExoskeletonMotorConverter, TwinMotorConverter
 from aiosv2.SafeMotorOperation import SafeMotor, SafetyConfiguration
 from aiosv2.DataStream import DataStream
-from aiosv2.readConfig import readConfigurationJSON, destructureMotorCombinationConfig
+from aiosv2.readConfig import readConfigurationJSON, destructureMotorCombinationConfig, removePositionLimits
+from aiosv2.ControlLoop import MotorCombination, setup_teardown_motor_combination
 
-SAMPLING_FREQUENCY = 300
-SAMPLING_PERIOD = 1 / SAMPLING_FREQUENCY
 
-class Exoskeleton:
-    def __init__(self, socket: AiosSocket):
-        self.socket = socket
+class Exoskeleton(MotorCombination):
+    def __init__(self, overrideConfiguration: dict | None = None):
+        socket = AiosSocket()
 
-        configurationJSON = readConfigurationJSON(["config", "Exoskeleton.json"])
-        expected_ips, motors = destructureMotorCombinationConfig(configurationJSON)
-        
-        self.socket.assertConnectedAddresses(expected_ips)
+        motorConfiguration = readConfigurationJSON(["config", "Exoskeleton.json"])
+        if overrideConfiguration is not None:
+            motorConfiguration = overrideConfiguration
+
+        expected_ips, motors = destructureMotorCombinationConfig(motorConfiguration)        
+        socket.assertConnectedAddresses(expected_ips)
+
+        self.calibrationData = readConfigurationJSON(['config', 'ExoskeletonCalibration.json'])
+        calibrationAdjustments = self.calibrationData['adjustments']
+
         motorConverter = ExoskeletonMotorConverter()
 
-        self.leftAbductor = SafeMotor(motors[0], socket, motorConverter)
-        self.rightAbductor = SafeMotor(motors[1], socket, motorConverter)
-        self.leftExtensor = SafeMotor(motors[2], socket, motorConverter)
-        self.rightExtensor = SafeMotor(motors[3], socket, motorConverter)
-        self.leftKnee = SafeMotor(motors[4], socket, motorConverter)
-        self.rightKnee = SafeMotor(motors[5], socket, motorConverter)
+        self.leftAbductor = SafeMotor(motors[0], socket, motorConverter, calibrationAdjustments[0])
+        self.rightAbductor = SafeMotor(motors[1], socket, motorConverter, calibrationAdjustments[1])
+        self.leftExtensor = SafeMotor(motors[2], socket, motorConverter, calibrationAdjustments[2])
+        self.rightExtensor = SafeMotor(motors[3], socket, motorConverter, calibrationAdjustments[3])
+        self.leftKnee = SafeMotor(motors[4], socket, motorConverter, calibrationAdjustments[4])
+        self.rightKnee = SafeMotor(motors[5], socket, motorConverter, calibrationAdjustments[5])
 
         self.motorList = [self.leftAbductor, self.rightAbductor, self.leftExtensor, self.rightExtensor, self.leftKnee, self.rightKnee]
 
@@ -35,6 +41,40 @@ class Exoskeleton:
         for motor in self.motorList:
             motor.enable()
         self.dataStream.enable()
+    
+    def verifyReady(self):
+        for motor in self.motorList:
+            motor.requestReadyCheck()
+
+        while True:
+            readyMotorCount = 0
+            for motor in self.motorList:
+                if motor.isReady():
+                    readyMotorCount += 1
+
+            if readyMotorCount == len(self.motorList):
+                break
+
+            print("Checking Encoder Status...")
+            time.sleep(0.1)
+        print("Encoder Ready")
+    
+    def logCalibrationData(self):
+        print()
+        print(f"Calibration was last done: {self.calibrationData['date']}")
+        print(f"Left Abductor Position: {self.leftAbductor.getCVP().position:.4f}")
+        print(f"Right Abductor Position: {self.rightAbductor.getCVP().position:.4f}")
+        print(f"Left Extensor Position: {self.leftExtensor.getCVP().position:.4f}")
+        print(f"Right Extensor Position: {self.rightExtensor.getCVP().position:.4f}")
+        print(f"Left Knee Position: {self.leftKnee.getCVP().position:.4f}")
+        print(f"Right Knee Position: {self.rightKnee.getCVP().position:.4f}")
+        print()        
+
+    def getStreamError(self):
+        return self.dataStream.errored()
+
+    def getStreamError(self):
+        return super().getStreamError()
 
     def disable(self):
         for motor in self.motorList:
@@ -43,41 +83,19 @@ class Exoskeleton:
         self.dataStream.disable()
 
 def setup_teardown_exoskeleton(actions: Callable[[Exoskeleton, float], None], totalRunningTime: float):
-    try:
-        socket = AiosSocket()
-        exoskeleton = Exoskeleton(socket)
-        exoskeleton.enable()
+    setup_teardown_motor_combination(Exoskeleton(), actions, totalRunningTime)
 
-        for motor in exoskeleton.motorList:
-            motor.requestReadyCheck()
+def calibrate_exoskeleton():
+    calibrationConfiguration = readConfigurationJSON(["config", "ExoskeletonCalibrationSetup.json"])
+    state = CalibrationState(calibrationConfiguration)
 
+    def func(exoskeleton: Exoskeleton, _: float):
+        if state.motors is None:
+            state.motors = exoskeleton.motorList
+        
+        state.iterate()
 
-        # needs to be modified when test with only one motor. 
-        while not all(motor.isReady() for motor in exoskeleton.motorList):
-            print("Checking Encoder Status...")
-            time.sleep(0.1)
-        print("Encoder Ready")
+    motorConfiguration = readConfigurationJSON(["config", "Exoskeleton.json"])
+    removePositionLimits(motorConfiguration)
 
-        startTime = time.perf_counter()
-        currentTime = startTime
-        endTime = currentTime + totalRunningTime
-
-        try:
-            while currentTime < endTime:
-                currentTime = time.perf_counter()
-                error = exoskeleton.dataStream.errored()
-                if error:
-                    raise Exception(error)
-
-                runningTime = currentTime - startTime
-                actions(exoskeleton, runningTime)
-
-                time.sleep(SAMPLING_PERIOD)
-        except Exception as e:
-            print(e)
-
-        exoskeleton.disable()
-    except KeyboardInterrupt:
-        print("Keyboard Interrupted: Motors turned off")
-        print("Keyboard Interrupt again to release locks")
-        exoskeleton.disable()
+    setup_teardown_motor_combination(Exoskeleton(motorConfiguration), func, 120)
