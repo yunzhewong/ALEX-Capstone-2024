@@ -45,12 +45,17 @@ Negative = rotate backwards
 Low = -0.5396
 High = 2.0004 (leg above hip stop)
 DIFFERENCE = 2.54
+good = -0.0511
+back = -0.5628
+
 
 Left Abductor:
 Negative = abduct (raise the leg)
 Low = -0.3942
 High = 0.3139 (cross leg stop)
 DIFFERENCE = 0.7081
+good = -0.1493
+bottom = 0.1339
 
 Right Abductor:
 Positive = abduct (raise the leg)
