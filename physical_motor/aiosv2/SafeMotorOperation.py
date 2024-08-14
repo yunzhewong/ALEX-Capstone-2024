@@ -169,19 +169,19 @@ class SafeMotor:
         self.valid = False
         self.raw_motor.disable()
 
-    def getCVP(self) -> CVP:
+    def getNonCalibratedCVP(self):
         with self.cvp_lock:
             if self.current_CVP is None:
                 raise Exception("CVP not ready")
             return self.current_CVP
         
-    def getCalibratedCVP(self):
-        old = self.getCVP()
-        return CVP(old.current, old.velocity, old.position + self.calibrationAdjustment) 
+    def calibrateCVP(self, cvp: CVP):
+        return CVP(cvp.current, cvp.velocity, cvp.position + self.calibrationAdjustment)    
 
+    def getCVP(self) -> CVP:
+        return self.calibrateCVP(self.getNonCalibratedCVP())
 
-    def setCVP(self, cvp: CVP):
-        # print(cvp)
+    def setNonCalibratedCVP(self, cvp: CVP):
         with self.cvp_lock:
             if self.current_CVP and self.current_CVP.current == cvp.current:
                 self.current_repeats += 1
@@ -193,7 +193,7 @@ class SafeMotor:
             
             self.current_CVP = cvp
             
-        self.safetyConfiguration.check_within_limits(cvp)
+        self.safetyConfiguration.check_within_limits(self.calibrateCVP(cvp))
 
 
     def requestReadyCheck(self):
@@ -228,8 +228,9 @@ class SafeMotor:
         self.modeChangeIfNecessary(ControlMode.Position)
 
         cvp = self.getCVP()
+        calibratedPosition = position - self.calibrationAdjustment
         override_value = self.safetyConfiguration.override_if_unsafe(
-            cvp, ControlMode.Position, position - self.calibrationAdjustment
+            cvp, ControlMode.Position, calibratedPosition
         )
         self.raw_motor.setPosition(override_value)
 

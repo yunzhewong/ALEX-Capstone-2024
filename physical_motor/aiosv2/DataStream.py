@@ -89,7 +89,7 @@ class DataStream:
                     for motor in self.motors:
                         if motor.getIP() == ip:
                             cvp = self.cvpConverter.parseCVP(json_obj)
-                            motor.setCVP(cvp)
+                            motor.setNonCalibratedCVP(cvp)
                 elif datatype == DataType.ERROR:
                     self.errorParser.check_for_error(json_obj)
                 elif datatype == DataType.ENCODER:
@@ -102,7 +102,7 @@ class DataStream:
                             motor.confirmEncoderReady()
                 elif datatype == DataType.MOTION_CONFIG:
                     data = PIDConfig(json_obj, self.motorConverter)
-                    print(ip, json_obj)
+                    print(f"{ip}: Motor Parameters Updated")
                 else:
                     raise Exception("This should not happen")
             except Exception as err:

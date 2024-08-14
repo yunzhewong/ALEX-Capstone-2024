@@ -47,20 +47,15 @@ def setup_teardown_twin_motor(
     try:
         socket = AiosSocket()
         configuration = readConfigurationJSON(["config", "TwinMotor.json"])
-        _, motors = destructureMotorCombinationConfig(configuration)
-        removePositionLimits(motors)
         if overrideConfiguration is not None:
             configuration = overrideConfiguration
 
         calibrationInformation = readConfigurationJSON(['config', 'TwinMotorCalibration.json'])
 
-        result = input(f"Calibration was last done: {calibrationInformation['date']}. Do you want to continue? (y): ")
-
-        if result != 'y':
-            raise Exception("Cancelled by the user")
-        
         twinMotor = TwinMotor(socket, configuration, calibrationInformation['adjustments'])
         twinMotor.enable()
+
+        print("Twin Motor Enabled")
 
         twinMotor.bottomMotor.requestReadyCheck()
         twinMotor.topMotor.requestReadyCheck()
@@ -70,6 +65,17 @@ def setup_teardown_twin_motor(
             time.sleep(0.1)
         print("Encoder Ready")
 
+        print()
+        print(f"Calibration was last done: {calibrationInformation['date']}")
+        print(f"Top Motor Position: {twinMotor.topMotor.getCVP().position:.4f}")
+        print(f"Bottom Motor Position: {twinMotor.bottomMotor.getCVP().position:.4f}")
+        print()
+
+        result = input("Do you want to continue? (y): ")
+
+        if result != 'y':
+            raise Exception("Cancelled by the user")
+         
         startTime = time.perf_counter()
         currentTime = startTime
         endTime = currentTime + totalRunningTime
@@ -122,7 +128,7 @@ class CalibrationState():
     
     def iterate(self):
         for i, motor in enumerate(self.motors):
-            cvp = motor.getCVP()
+            cvp = motor.getNonCalibratedCVP()
 
             if cvp.velocity < EPSILON:
                 self.calibrations[i].zeroVelocityCount += 1
