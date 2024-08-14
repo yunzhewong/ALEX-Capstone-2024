@@ -23,16 +23,16 @@ if __name__ == "__main__":
 
     state = State()
     def func(exoMotor: RightKneeExoMotor, runningTime: float):
-        if state.csvwriter is None:
-            # state.csvwriter = CSVWriter(f"lowerleg{format(round(CURRENT, 2), '.2f')}.csv", [exoMotor.motor])
-            state.csvwriter = CSVWriter(f"stop.csv", [exoMotor.motor])
+        # if state.csvwriter is None:
+        #     # state.csvwriter = CSVWriter(f"lowerleg{format(round(CURRENT, 2), '.2f')}.csv", [exoMotor.motor])
+        #     state.csvwriter = CSVWriter(f"stop.csv", [exoMotor.motor])
         # exoMotor.motor.setCurrent(CURRENT)
-        exoMotor.motor.setVelocity(-0.1)
+        exoMotor.motor.setVelocity(0.1)
 
         cvp = exoMotor.motor.getCVP()
         
         state.log.addCVP(runningTime, cvp)
-        state.csvwriter.addCVP(runningTime, [exoMotor.motor])
+        # state.csvwriter.addCVP(runningTime, [exoMotor.motor])
 
 
     # # Reset the motor's position to zero
