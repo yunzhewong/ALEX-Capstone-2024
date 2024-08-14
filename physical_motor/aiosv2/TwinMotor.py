@@ -9,21 +9,23 @@ from aiosv2.SafeMotorOperation import (
     SafeMotor,
 )
 from aiosv2.DataStream import DataStream
-from aiosv2.readConfig import readConfigurationJSON, removePositionLimits, destructureMotorCombinationConfig, writeConfigurationJSON
-
-# experimentally, a sampling time of 300Hz yields consistent results
-SAMPLING_FREQUENCY = 300
-SAMPLING_PERIOD = 1 / SAMPLING_FREQUENCY
+from aiosv2.readConfig import readConfigurationJSON, removePositionLimits, destructureMotorCombinationConfig
+from aiosv2.ControlLoop import MotorCombination, setup_teardown_motor_combination
 
 
-class TwinMotor:
-    def __init__(self, socket: AiosSocket, configuration: dict, calibrationAdjustments: List[float]):
-        self.socket = socket
+class TwinMotor(MotorCombination):
+    def __init__(self, overrideConfiguration:dict | None = None):
+        configuration = readConfigurationJSON(["config", "TwinMotor.json"])
+        if overrideConfiguration is not None:
+            configuration = overrideConfiguration
 
-        expected_ips, motors = destructureMotorCombinationConfig(configuration)
-        
-        self.socket.assertConnectedAddresses(expected_ips)
+        socket = AiosSocket()
+        expected_ips, motors = destructureMotorCombinationConfig(configuration)        
+        socket.assertConnectedAddresses(expected_ips)
         motorConverter = TwinMotorConverter()
+
+        self.calibrationData = readConfigurationJSON(['config', 'TwinMotorCalibration.json'])
+        calibrationAdjustments = self.calibrationData['adjustments']
 
         self.topMotor = SafeMotor(motors[0], socket, motorConverter, 0)
         self.bottomMotor = SafeMotor(motors[1], socket, motorConverter, calibrationAdjustments[0])
@@ -45,17 +47,16 @@ class TwinMotor:
             time.sleep(0.1)
         print("Encoder Ready")
     
-    def confirmCalibration(self, calibrationInformation: dict):
+    def logCalibrationData(self):
         print()
-        print(f"Calibration was last done: {calibrationInformation['date']}")
+        print(f"Calibration was last done: {self.calibrationData['date']}")
         print(f"Top Motor Position: {self.topMotor.getCVP().position:.4f}")
         print(f"Bottom Motor Position: {self.bottomMotor.getCVP().position:.4f}")
         print()        
 
-        result = input("Do you want to continue? (y): ")
 
-        if result != 'y':
-            raise Exception("Cancelled by the user")
+    def getStreamError(self):
+        return self.dataStream.errored()
 
     def disable(self):
         self.topMotor.disable()  # Disable the top motor
@@ -63,60 +64,8 @@ class TwinMotor:
         self.dataStream.disable()
 
 
-def setup_teardown_twin_motor(
-    actions: Callable[[TwinMotor, float], None], totalRunningTime: float, overrideConfiguration: None | dict=None
-):
-    try:
-        socket = AiosSocket()
-        configuration = readConfigurationJSON(["config", "TwinMotor.json"])
-        if overrideConfiguration is not None:
-            configuration = overrideConfiguration
-
-        calibrationInformation = readConfigurationJSON(['config', 'TwinMotorCalibration.json'])
-
-        twinMotor = TwinMotor(socket, configuration, calibrationInformation['adjustments'])
-        twinMotor.enable()
-
-        print("Twin Motor Enabled")
-
-        twinMotor.verifyReady()
-
-        twinMotor.confirmCalibration(calibrationInformation)
-
-        startTime = time.perf_counter()
-        currentTime = startTime
-        endTime = currentTime + totalRunningTime
-
-        try:
-            while currentTime < endTime:
-                currentTime = time.perf_counter()
-                error = twinMotor.dataStream.errored()
-                if error:
-                    raise Exception(error)
-
-                runningTime = currentTime - startTime
-                actions(twinMotor, runningTime)
-
-                time.sleep(SAMPLING_PERIOD)
-        except Exception as e:
-            print(e)
-
-        twinMotor.disable()
-    except KeyboardInterrupt:
-        print("Keyboard Interrupted: Motors turned off")
-        print("Keyboard Interrupt again to release locks")
-        twinMotor.disable()
-
-
 def calibrate_twin_motor():
-
     calibrationConfiguration = readConfigurationJSON(["config", "TwinMotorCalibrationSetup.json"])
-
-    motorConfiguration = readConfigurationJSON(["config", "TwinMotor.json"])
-    _, motors = destructureMotorCombinationConfig(motorConfiguration)
-    removePositionLimits(motors)
-
-
     state = CalibrationState(calibrationConfiguration)
 
     def func(twinMotor: TwinMotor, _: float):
@@ -125,5 +74,11 @@ def calibrate_twin_motor():
         
         state.iterate()
 
-    setup_teardown_twin_motor(func, 120, motorConfiguration)
+    motorConfiguration = readConfigurationJSON(["config", "TwinMotor.json"])
+    removePositionLimits(motorConfiguration)
+
+    setup_teardown_motor_combination(TwinMotor(motorConfiguration), func, 120)
+
+def setup_teardown_twin_motor(actions: Callable[[TwinMotor, float], None], totalRunningTime: float):
+    setup_teardown_motor_combination(TwinMotor(), actions, totalRunningTime)
     

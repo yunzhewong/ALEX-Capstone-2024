@@ -38,7 +38,7 @@ class AiosSocket:
         for ip in expectedIPs:
             if ip not in foundIPs:
                 raise Exception(f"Missing IP: {ip}")
-       
+        print("All Motor IPs connected")
                 
 
     def sendJSON(self, ip: str, port: int, data: dict):

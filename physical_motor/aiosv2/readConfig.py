@@ -28,8 +28,9 @@ def destructureMotorCombinationConfig(motorConfig: dict):
 
 NO_POSITION_LIMIT = 10 * math.pi
 # Not sure how to make it clear that it modifies motorConfigurations in place
-def removePositionLimits(motorConfigurations: List[dict]):
-    for config in motorConfigurations:
+def removePositionLimits(motorConfig: dict):
+    _, motors = destructureMotorCombinationConfig(motorConfig)
+    for config in motors:
         config["safetyConfiguration"]["position"]["soft"]["low"] = -1 * NO_POSITION_LIMIT
         config["safetyConfiguration"]["position"]["soft"]["high"] = NO_POSITION_LIMIT
         config["safetyConfiguration"]["position"]["hard"]["low"] = -1 * NO_POSITION_LIMIT
