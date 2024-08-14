@@ -1,10 +1,7 @@
-import time
-from typing import Callable, List
+from typing import Callable
 from aiosv2.Calibration import CalibrationState
 from aiosv2.AiosSocket import AiosSocket
-from aiosv2.SafeMotorOperation import (
-    SafeMotor
-)
+from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.DataStream import DataStream
 from aiosv2.constants import ExoskeletonMotorConverter
 from aiosv2.readConfig import readConfigurationJSON, destructureMotorCombinationConfig, removePositionLimits
@@ -33,14 +30,12 @@ class RightKneeExoMotor(MotorCombination):
     def enable(self):
         self.motor.enable()
         self.dataStream.enable()
-        
-    def verifyReady(self):
-        self.motor.requestReadyCheck()
 
-        while not self.motor.isReady():
-            print("Checking Encoder Status...")
-            time.sleep(0.1)
-        print("Encoder Ready")
+    def requestReadyCheck(self):
+        self.motor.requestReadyCheck()
+        
+    def isReady(self):
+        return self.motor.isReady()
     
     def logCalibrationData(self):
         print()

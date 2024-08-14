@@ -5,10 +5,13 @@ from typing import Any, Callable
 class MotorCombination():
     def enable(self):
         pass
-
-    def verifyReady(self):
-        pass
     
+    def requestReadyCheck(self):
+        pass
+
+    def isReady(self):
+        pass
+
     def logCalibrationData(self):
         pass
     
@@ -27,11 +30,18 @@ def setup_teardown_motor_combination(
     combination: MotorCombination, actions: Callable[[Any, float], None], totalRunningTime: float
 ):
     try:
+        print()
+
         combination.enable()
 
-        print("Motor Combination Enabled")
+        print("Motors Enabled")
 
-        combination.verifyReady()
+        combination.requestReadyCheck()
+
+        while not combination.isReady():
+            print("Checking Encoder Status...")
+            time.sleep(0.1)
+        print("Motors Ready")
 
         combination.logCalibrationData()
 
@@ -40,6 +50,8 @@ def setup_teardown_motor_combination(
         if result != 'y':
             raise Exception("Cancelled by the user")
     
+
+        print("Starting Control Loop")
 
         startTime = time.perf_counter()
         currentTime = startTime
@@ -56,6 +68,7 @@ def setup_teardown_motor_combination(
                 actions(combination, runningTime)
 
                 time.sleep(SAMPLING_PERIOD)
+            print("Control Loop Complete without Errors")
         except Exception as e:
             print(e)
 

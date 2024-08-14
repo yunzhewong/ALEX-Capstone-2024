@@ -1,0 +1,30 @@
+TO VERIFY
+
+{
+    "motors": [
+        {
+            "direction": -1,
+            "limit": 0
+        },
+        {
+            "direction": -1,
+            "limit": 0
+        },
+        {
+            "direction": -1,
+            "limit": 0
+        },
+        {
+            "direction": -1,
+            "limit": 0
+        },
+        {
+            "direction": -1,
+            "limit": 0
+        },
+        {
+            "direction": -1,
+            "limit": 0
+        }
+    ]
+}

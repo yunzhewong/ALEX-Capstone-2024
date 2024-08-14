@@ -1,13 +1,8 @@
-import datetime
-import math
-import time
-from typing import Callable, List
+from typing import Callable
 from aiosv2.Calibration import CalibrationState
 from aiosv2 import AiosSocket
 from aiosv2.constants import TwinMotorConverter
-from aiosv2.SafeMotorOperation import (
-    SafeMotor,
-)
+from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.DataStream import DataStream
 from aiosv2.readConfig import readConfigurationJSON, removePositionLimits, destructureMotorCombinationConfig
 from aiosv2.ControlLoop import MotorCombination, setup_teardown_motor_combination
@@ -38,22 +33,19 @@ class TwinMotor(MotorCombination):
         self.bottomMotor.enable()  # Enable the bottom motor
         self.dataStream.enable()
 
-    def verifyReady(self):
+    def requestReadyCheck(self):
         self.bottomMotor.requestReadyCheck()
         self.topMotor.requestReadyCheck()
 
-        while not (self.topMotor.isReady() and self.bottomMotor.isReady()):
-            print("Checking Encoder Status...")
-            time.sleep(0.1)
-        print("Encoder Ready")
-    
+    def isReady(self):
+        return self.topMotor.isReady() and self.bottomMotor.isReady()
+
     def logCalibrationData(self):
         print()
         print(f"Calibration was last done: {self.calibrationData['date']}")
         print(f"Top Motor Position: {self.topMotor.getCVP().position:.4f}")
         print(f"Bottom Motor Position: {self.bottomMotor.getCVP().position:.4f}")
         print()        
-
 
     def getStreamError(self):
         return self.dataStream.errored()

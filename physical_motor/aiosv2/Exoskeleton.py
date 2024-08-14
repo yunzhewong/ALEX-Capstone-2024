@@ -1,10 +1,8 @@
-import math
-import time
 from typing import Callable
 from aiosv2.Calibration import CalibrationState
 from aiosv2.AiosSocket import AiosSocket
-from aiosv2.constants import ExoskeletonMotorConverter, TwinMotorConverter
-from aiosv2.SafeMotorOperation import SafeMotor, SafetyConfiguration
+from aiosv2.constants import ExoskeletonMotorConverter
+from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.DataStream import DataStream
 from aiosv2.readConfig import readConfigurationJSON, destructureMotorCombinationConfig, removePositionLimits
 from aiosv2.ControlLoop import MotorCombination, setup_teardown_motor_combination
@@ -41,23 +39,18 @@ class Exoskeleton(MotorCombination):
         for motor in self.motorList:
             motor.enable()
         self.dataStream.enable()
-    
-    def verifyReady(self):
+
+    def requestReadyCheck(self):
         for motor in self.motorList:
             motor.requestReadyCheck()
+    
+    def isReady(self):
+        readyMotorCount = 0
+        for motor in self.motorList:
+            if motor.isReady():
+                readyMotorCount += 1
 
-        while True:
-            readyMotorCount = 0
-            for motor in self.motorList:
-                if motor.isReady():
-                    readyMotorCount += 1
-
-            if readyMotorCount == len(self.motorList):
-                break
-
-            print("Checking Encoder Status...")
-            time.sleep(0.1)
-        print("Encoder Ready")
+        return readyMotorCount == len(self.motorList)
     
     def logCalibrationData(self):
         print()
@@ -72,9 +65,6 @@ class Exoskeleton(MotorCombination):
 
     def getStreamError(self):
         return self.dataStream.errored()
-
-    def getStreamError(self):
-        return super().getStreamError()
 
     def disable(self):
         for motor in self.motorList:

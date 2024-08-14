@@ -10,7 +10,6 @@ class AiosSocket:
 
 
     def __init__(self):
-        print(f"Socket Active")
 
         newSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         newSocket.settimeout(2)
@@ -34,6 +33,7 @@ class AiosSocket:
 
 
     def assertConnectedAddresses(self, expectedIPs):
+        print(f"Checking Motor Addresses")
         foundIPs = self.readConnectedAddresses()
         for ip in expectedIPs:
             if ip not in foundIPs:
