@@ -22,7 +22,7 @@ class MotorCombination():
         pass
 
 
-# experimentally, a sampling time of 300Hz yields consistent results
+# experimentally, a sampling frequency of 300Hz yields consistent results
 SAMPLING_FREQUENCY = 300
 SAMPLING_PERIOD = 1 / SAMPLING_FREQUENCY
 
@@ -74,6 +74,6 @@ def setup_teardown_motor_combination(
 
         combination.disable()
     except KeyboardInterrupt:
-        print("Keyboard Interrupted: Motors turned off")
+        print("Keyboard Interrupted: Motors notified to turn off")
         print("Keyboard Interrupt again to release locks")
         combination.disable()

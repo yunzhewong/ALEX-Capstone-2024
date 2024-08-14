@@ -6,6 +6,7 @@ from aiosv2.CVP import CVP
 from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.RightKneeExoMotor import setup_teardown_rightknee_exomotor, RightKneeExoMotor
 from classes.DataLog import CVPPlot
+from aiosv2.TwinMotor import TwinMotor, setup_teardown_twin_motor
 from functions.TrajectoryGeneration import findCubicSpline, evaluateCubicSpline
 
         
@@ -19,16 +20,16 @@ class State():
     
 if __name__ == "__main__":
 
-    coefficients = findCubicSpline(0, 10, 0, math.pi / 2, 0, 0)
+    coefficients = findCubicSpline(0, 10, 0, math.pi, 0, 0)
     expected_velocities = []
     expected_positions = []
 
     K_P = 10
 
     state = State()
-    def func(exoMotor: RightKneeExoMotor, runningTime: float):
+    def func(twinMotor: TwinMotor, runningTime: float):
 
-        cvp = exoMotor.motor.getCVP()
+        cvp = twinMotor.bottomMotor.getCVP()
 
         state.log.addCVP(runningTime, cvp)
 
@@ -40,11 +41,11 @@ if __name__ == "__main__":
 
         velocityCommand = referenceVelocity + K_P * positionError
 
-        exoMotor.motor.setVelocity(velocityCommand)
+        twinMotor.bottomMotor.setVelocity(velocityCommand)
 
 
 
-    setup_teardown_rightknee_exomotor(func, 10)
+    setup_teardown_twin_motor(func, 10)
 
 
 
