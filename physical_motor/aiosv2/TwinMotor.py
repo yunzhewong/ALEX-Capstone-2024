@@ -35,6 +35,20 @@ class TwinMotor:
         self.bottomMotor.enable()  # Enable the bottom motor
         self.dataStream.enable()
 
+    def requestReadyCheck(self):
+        self.bottomMotor.requestReadyCheck()
+        self.topMotor.requestReadyCheck()
+
+    def isReady(self):
+        return self.topMotor.isReady() and self.bottomMotor.isReady()
+    
+    def logCalibrationData(self, calibrationInformation: dict):
+        print()
+        print(f"Calibration was last done: {calibrationInformation['date']}")
+        print(f"Top Motor Position: {self.topMotor.getCVP().position:.4f}")
+        print(f"Bottom Motor Position: {self.bottomMotor.getCVP().position:.4f}")
+        print()        
+
     def disable(self):
         self.topMotor.disable()  # Disable the top motor
         self.bottomMotor.disable()  # Disable the bottom motor
@@ -57,20 +71,15 @@ def setup_teardown_twin_motor(
 
         print("Twin Motor Enabled")
 
-        twinMotor.bottomMotor.requestReadyCheck()
-        twinMotor.topMotor.requestReadyCheck()
+        twinMotor.requestReadyCheck()
 
-        while not twinMotor.topMotor.isReady() or not twinMotor.bottomMotor.isReady():
+        while not twinMotor.isReady():
             print("Checking Encoder Status...")
             time.sleep(0.1)
         print("Encoder Ready")
 
-        print()
-        print(f"Calibration was last done: {calibrationInformation['date']}")
-        print(f"Top Motor Position: {twinMotor.topMotor.getCVP().position:.4f}")
-        print(f"Bottom Motor Position: {twinMotor.bottomMotor.getCVP().position:.4f}")
-        print()
-
+        twinMotor.logCalibrationData(calibrationInformation)
+        
         result = input("Do you want to continue? (y): ")
 
         if result != 'y':
@@ -101,7 +110,7 @@ def setup_teardown_twin_motor(
         twinMotor.disable()
 
 EPSILON = 0.01
-VELOCITY = 0.3
+CALIBRATION_SPEED = 0.3
 ZERO_VELOCITY_COUNT = 10
 
 class MotorCalibration():
@@ -130,7 +139,7 @@ class CalibrationState():
         for i, motor in enumerate(self.motors):
             cvp = motor.getNonCalibratedCVP()
 
-            if cvp.velocity < EPSILON:
+            if abs(cvp.velocity) < EPSILON:
                 self.calibrations[i].zeroVelocityCount += 1
 
             atBoundary = self.calibrations[i].zeroVelocityCount > ZERO_VELOCITY_COUNT
@@ -140,13 +149,15 @@ class CalibrationState():
                 print(f"{motor.getIP()} Found Limit")
                 self.calibrations[i].readLimitPosition = cvp.position
 
+            calibrationVelocity = self.calibrations[i].direction * CALIBRATION_SPEED
+
             if self.calibrations[i].readLimitPosition is None:
-                motor.setVelocity(VELOCITY)
+                motor.setVelocity(calibrationVelocity)
             else:
                 position_adjustment = self.calibrations[i].limit - self.calibrations[i].readLimitPosition
                 truePosition = cvp.position + position_adjustment
                 if abs(truePosition) > EPSILON:
-                    motor.setVelocity(-1 * VELOCITY)
+                    motor.setVelocity(-1 * calibrationVelocity)
                 else:
                     motor.setVelocity(0)
 
