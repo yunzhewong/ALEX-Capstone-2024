@@ -43,14 +43,12 @@ class AiosSocket:
 
     def sendJSON(self, ip: str, port: int, data: dict):
         json_str = json.dumps(data)
-        print(data)
         self.communicationSocket.sendto(json_str.encode(), (ip, port))
 
     def readJSON(self):
         data, addr = self.communicationSocket.recvfrom(1024)
 
         json_obj = json.loads(data.decode("utf-8"))
-        print(json_obj)
         ip = addr[0]
         return (json_obj, ip)
 

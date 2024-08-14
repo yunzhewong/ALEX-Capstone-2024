@@ -3,7 +3,7 @@ from aiosv2.Calibration import CalibrationState
 from aiosv2.AiosSocket import AiosSocket
 from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.DataStream import DataStream
-from aiosv2.constants import ExoskeletonMotorConverter
+from aiosv2.constants import ExoskeletonMotorConverter, logPosition
 from aiosv2.readConfig import readConfigurationJSON, destructureMotorCombinationConfig, removePositionLimits
 from aiosv2.ControlLoop import MotorCombination, setup_teardown_motor_combination
 
@@ -40,7 +40,7 @@ class RightKneeExoMotor(MotorCombination):
     def logCalibrationData(self):
         print()
         print(f"Calibration was last done: {self.calibrationData['date']}")
-        print(f"Motor Position: {self.motor.getCVP().position:.4f}")
+        print(f"Motor Position: {logPosition(self.motor.getCVP().position)}")
         print()        
 
     def getStreamError(self):

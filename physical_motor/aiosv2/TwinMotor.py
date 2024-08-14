@@ -1,7 +1,7 @@
 from typing import Callable
 from aiosv2.Calibration import CalibrationState
 from aiosv2 import AiosSocket
-from aiosv2.constants import TwinMotorConverter
+from aiosv2.constants import TwinMotorConverter, logPosition
 from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.DataStream import DataStream
 from aiosv2.readConfig import readConfigurationJSON, removePositionLimits, destructureMotorCombinationConfig
@@ -43,8 +43,8 @@ class TwinMotor(MotorCombination):
     def logCalibrationData(self):
         print()
         print(f"Calibration was last done: {self.calibrationData['date']}")
-        print(f"Top Motor Position: {self.topMotor.getCVP().position:.4f}")
-        print(f"Bottom Motor Position: {self.bottomMotor.getCVP().position:.4f}")
+        print(f"Top Motor Position: {logPosition(self.topMotor.getCVP().position)}")
+        print(f"Bottom Motor Position: {logPosition(self.bottomMotor.getCVP().position)}")
         print()        
 
     def getStreamError(self):

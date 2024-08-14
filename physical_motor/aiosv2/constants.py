@@ -51,3 +51,7 @@ class ExoskeletonMotorConverter(Converter):
     
     def convertFromMotorCommand(self, value):
         return value / self.CONVERSION_RATIO
+
+def logPosition(angleRadians: float):
+    angleDegrees = angleRadians / math.pi * 180 
+    return f"{angleRadians:.4f}rad ({angleDegrees:.1f} deg)"

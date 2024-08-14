@@ -1,7 +1,7 @@
 from typing import Callable
 from aiosv2.Calibration import CalibrationState
 from aiosv2.AiosSocket import AiosSocket
-from aiosv2.constants import ExoskeletonMotorConverter
+from aiosv2.constants import ExoskeletonMotorConverter, logPosition, rad2deg
 from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.DataStream import DataStream
 from aiosv2.readConfig import readConfigurationJSON, destructureMotorCombinationConfig, removePositionLimits
@@ -55,12 +55,12 @@ class Exoskeleton(MotorCombination):
     def logCalibrationData(self):
         print()
         print(f"Calibration was last done: {self.calibrationData['date']}")
-        print(f"Left Abductor Position: {self.leftAbductor.getCVP().position:.4f}")
-        print(f"Right Abductor Position: {self.rightAbductor.getCVP().position:.4f}")
-        print(f"Left Extensor Position: {self.leftExtensor.getCVP().position:.4f}")
-        print(f"Right Extensor Position: {self.rightExtensor.getCVP().position:.4f}")
-        print(f"Left Knee Position: {self.leftKnee.getCVP().position:.4f}")
-        print(f"Right Knee Position: {self.rightKnee.getCVP().position:.4f}")
+        print(f"Left Abductor Position: {logPosition(self.leftAbductor.getCVP().position)}")
+        print(f"Right Abductor Position: {logPosition(self.rightAbductor.getCVP().position)}")
+        print(f"Left Extensor Position: {logPosition(self.leftExtensor.getCVP().position)}")
+        print(f"Right Extensor Position: {logPosition(self.rightExtensor.getCVP().position)}")
+        print(f"Left Knee Position: {logPosition(self.leftKnee.getCVP().position)}")
+        print(f"Right Knee Position: {logPosition(self.rightKnee.getCVP().position)}")
         print()        
 
     def getStreamError(self):
