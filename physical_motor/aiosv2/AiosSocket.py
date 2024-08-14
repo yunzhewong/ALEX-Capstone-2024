@@ -26,7 +26,7 @@ class AiosSocket:
 
         while True:
             try:
-                _, address = self.communicationSocket.recvfrom(1024)
+                obj, address = self.communicationSocket.recvfrom(1024)
                 foundIPs.append(address[0])
             except socket.timeout:
                 return foundIPs

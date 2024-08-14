@@ -1,13 +1,14 @@
+from aiosv2.ControlLoop import setup_teardown_motor_combination
 from aiosv2.RightKneeExoMotor import setup_teardown_rightknee_exomotor, RightKneeExoMotor
 from aiosv2.TwinMotor import setup_teardown_twin_motor, TwinMotor
+from aiosv2.Exoskeleton import Exoskeleton
 
-
-def func(twinMotor: TwinMotor, runningTime: float):
-    cvp = twinMotor.bottomMotor.getCVP()
-    twinMotor.bottomMotor.setCurrent(0)
+def func(combo: Exoskeleton, runningTime: float):
+    combo.rightAbductor.setCurrent(0)
+    cvp = combo.rightAbductor.getCVP()
     print(cvp)
 
 if __name__ == "__main__":
-    setup_teardown_twin_motor(func, 100)
+    setup_teardown_motor_combination(Exoskeleton(), func, 100)
 
     

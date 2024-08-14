@@ -1,7 +1,7 @@
 from typing import Callable
 from aiosv2.Calibration import CalibrationState
 from aiosv2.AiosSocket import AiosSocket
-from aiosv2.constants import ExoskeletonMotorConverter, logPosition, rad2deg
+from aiosv2.constants import ExoskeletonMotorConverter, logPosition
 from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.DataStream import DataStream
 from aiosv2.readConfig import readConfigurationJSON, destructureMotorCombinationConfig, removePositionLimits

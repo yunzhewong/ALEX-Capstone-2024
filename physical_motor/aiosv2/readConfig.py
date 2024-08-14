@@ -19,10 +19,12 @@ def writeConfigurationJSON(dict: dict, path: List[str]):
     json.dump(dict, config_file, ensure_ascii=False, indent=4)
 
 def destructureMotorCombinationConfig(motorConfig: dict):
-    control_box_ip = motorConfig["control_box_ip"]
+    control_box_ip = motorConfig.get("control_box_ip", None)
     motors = motorConfig["motors"]
 
-    expected_ips = [control_box_ip] + [motor["ip"] for motor in motors]
+    expected_ips = [motor["ip"] for motor in motors]
+    if control_box_ip is not None:
+        expected_ips.append(control_box_ip)
 
     return expected_ips, motors
 

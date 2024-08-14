@@ -1,12 +1,14 @@
-from aiosv2.TwinMotor import TwinMotor, setup_teardown_twin_motor
+from aiosv2.ControlLoop import setup_teardown_motor_combination
+from aiosv2.TwinMotor import TwinMotor
+from aiosv2.RightKneeExoMotor import RightKneeExoMotor
 
 if __name__ == "__main__":
 
-    def func(twinMotor: TwinMotor, runningTime: float):
+    def func(twinMotor: RightKneeExoMotor, runningTime: float):
         if (runningTime < 5):
-            twinMotor.bottomMotor.setVelocity(-0.5)
+            twinMotor.motor.setVelocity(-0.5)
         else:
-            twinMotor.bottomMotor.setVelocity(0.5)
-        print(twinMotor.bottomMotor.getCVP())
+            twinMotor.motor.setVelocity(0.5)
+        print(twinMotor.motor.getCVP())
 
-    setup_teardown_twin_motor(func, 10)
+    setup_teardown_motor_combination(RightKneeExoMotor(), func, 10)

@@ -1,8 +1,4 @@
-STILL NEED TO GET PID PARAMETERS
-
-
 {
-    "control_box_ip": "10.10.10.12",
     "motors": [
         {
             "ip": "10.10.10.29",
@@ -23,10 +19,10 @@ STILL NEED TO GET PID PARAMETERS
                     }
                 },
                 "velocity": {
-                    "$comment": "a speed of 1rad/s is safe for initial testing",
+                    "$comment": "a speed of 0.5rad/s is safe for initial testing",
                     "soft": {
-                        "low": -1,
-                        "high": 1
+                        "low": -0.5,
+                        "high": 0.5
                     },
                     "hard": {
                         "low": -2,
@@ -34,14 +30,14 @@ STILL NEED TO GET PID PARAMETERS
                     }
                 },
                 "position": {
-                    "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
+                    "$comment": "6.28 = 2 * pi",
                     "soft": {
-                        "low": -47.12,
-                        "high": 47.12
+                        "low": -6.28,
+                        "high": 6.28
                     },
                     "hard": {
-                        "low": -62.83,
-                        "high": 62.83
+                        "low": -10,
+                        "high": 10
                     }
                 }
             }
@@ -65,10 +61,10 @@ STILL NEED TO GET PID PARAMETERS
                     }
                 },
                 "velocity": {
-                    "$comment": "a speed of 1rad/s is safe for initial testing",
+                    "$comment": "a speed of 0.5rad/s is safe for initial testing",
                     "soft": {
-                        "low": -1,
-                        "high": 1
+                        "low": -0.5,
+                        "high": 0.5
                     },
                     "hard": {
                         "low": -2,
@@ -76,14 +72,14 @@ STILL NEED TO GET PID PARAMETERS
                     }
                 },
                 "position": {
-                    "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
+                    "$comment": "6.28 = 2 * pi",
                     "soft": {
-                        "low": -47.12,
-                        "high": 47.12
+                        "low": -6.28,
+                        "high": 6.28
                     },
                     "hard": {
-                        "low": -62.83,
-                        "high": 62.83
+                        "low": -10,
+                        "high": 10
                     }
                 }
             }
@@ -107,10 +103,10 @@ STILL NEED TO GET PID PARAMETERS
                     }
                 },
                 "velocity": {
-                    "$comment": "a speed of 1rad/s is safe for initial testing",
+                    "$comment": "a speed of 0.5rad/s is safe for initial testing",
                     "soft": {
-                        "low": -1,
-                        "high": 1
+                        "low": -0.5,
+                        "high": 0.5
                     },
                     "hard": {
                         "low": -2,
@@ -118,14 +114,14 @@ STILL NEED TO GET PID PARAMETERS
                     }
                 },
                 "position": {
-                    "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
+                    "$comment": "6.28 = 2 * pi",
                     "soft": {
-                        "low": -47.12,
-                        "high": 47.12
+                        "low": -6.28,
+                        "high": 6.28
                     },
                     "hard": {
-                        "low": -62.83,
-                        "high": 62.83
+                        "low": -10,
+                        "high": 10
                     }
                 }
             }
@@ -149,10 +145,10 @@ STILL NEED TO GET PID PARAMETERS
                     }
                 },
                 "velocity": {
-                    "$comment": "a speed of 1rad/s is safe for initial testing",
+                    "$comment": "a speed of 0.5rad/s is safe for initial testing",
                     "soft": {
-                        "low": -1,
-                        "high": 1
+                        "low": -0.5,
+                        "high": 0.5
                     },
                     "hard": {
                         "low": -2,
@@ -160,14 +156,14 @@ STILL NEED TO GET PID PARAMETERS
                     }
                 },
                 "position": {
-                    "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
+                    "$comment": "6.28 = 2 * pi",
                     "soft": {
-                        "low": -47.12,
-                        "high": 47.12
+                        "low": -6.28,
+                        "high": 6.28
                     },
                     "hard": {
-                        "low": -62.83,
-                        "high": 62.83
+                        "low": -10,
+                        "high": 10
                     }
                 }
             }
@@ -191,10 +187,10 @@ STILL NEED TO GET PID PARAMETERS
                     }
                 },
                 "velocity": {
-                    "$comment": "a speed of 1rad/s is safe for initial testing",
+                    "$comment": "a speed of 0.5rad/s is safe for initial testing",
                     "soft": {
-                        "low": -1,
-                        "high": 1
+                        "low": -0.5,
+                        "high": 0.5
                     },
                     "hard": {
                         "low": -2,
@@ -202,14 +198,14 @@ STILL NEED TO GET PID PARAMETERS
                     }
                 },
                 "position": {
-                    "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
+                    "$comment": "6.28 = 2 * pi",
                     "soft": {
-                        "low": -47.12,
-                        "high": 47.12
+                        "low": -6.28,
+                        "high": 6.28
                     },
                     "hard": {
-                        "low": -62.83,
-                        "high": 62.83
+                        "low": -10,
+                        "high": 10
                     }
                 }
             }
@@ -233,10 +229,10 @@ STILL NEED TO GET PID PARAMETERS
                     }
                 },
                 "velocity": {
-                    "$comment": "a speed of 1rad/s is safe for initial testing",
+                    "$comment": "a speed of 0.5rad/s is safe for initial testing",
                     "soft": {
-                        "low": -1,
-                        "high": 1
+                        "low": -0.5,
+                        "high": 0.5
                     },
                     "hard": {
                         "low": -2,
@@ -244,14 +240,14 @@ STILL NEED TO GET PID PARAMETERS
                     }
                 },
                 "position": {
-                    "$comment": "47.12 = 15 * pi, 62.83 = 20 * pi",
+                    "$comment": "6.28 = 2 * pi",
                     "soft": {
-                        "low": -47.12,
-                        "high": 47.12
+                        "low": 0,
+                        "high": 1.57
                     },
                     "hard": {
-                        "low": -62.83,
-                        "high": 62.83
+                        "low": -0.2,
+                        "high": 2.10
                     }
                 }
             }
