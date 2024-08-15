@@ -30,14 +30,14 @@
                     }
                 },
                 "position": {
-                    "$comment": "0.7081 / 2 = 0.35405",
+                    "$comment": "diff = 0.7081, limit = -0.4249",
                     "soft": {
-                        "low": -0.34,
-                        "high": 0.34
+                        "low": -0.42,
+                        "high": 0.27
                     },
                     "hard": {
-                        "low": -0.36,
-                        "high": 0.36
+                        "low": -0.4249,
+                        "high": 0.2832
                     }
                 }
             }
@@ -72,14 +72,14 @@
                     }
                 },
                 "position": {
-                    "$comment": "0.7081 / 2 = 0.35405",
+                    "$comment": "diff = 0.7081, limit = 0.4249",
                     "soft": {
-                        "low": -0.34,
-                        "high": 0.34
+                        "low": -0.27,
+                        "high": 0.42
                     },
                     "hard": {
-                        "low": -0.36,
-                        "high": 0.36
+                        "low": -0.2832,
+                        "high": 0.4249
                     }
                 }
             }
@@ -114,14 +114,14 @@
                     }
                 },
                 "position": {
-                    "$comment": "6.28 = 2 * pi",
+                    "$comment": "diff = 2.54, limit = -0.5117",
                     "soft": {
-                        "low": -6.28,
-                        "high": 6.28
+                        "low": -0.50,
+                        "high": 2.00
                     },
                     "hard": {
-                        "low": -10,
-                        "high": 10
+                        "low": -0.5117,
+                        "high": 2.03
                     }
                 }
             }
@@ -156,14 +156,14 @@
                     }
                 },
                 "position": {
-                    "$comment": "6.28 = 2 * pi",
+                    "$comment": "diff = 2.54, limit = 0.5117",
                     "soft": {
-                        "low": -6.28,
-                        "high": 6.28
+                        "low": -2.00,
+                        "high": 0.50
                     },
                     "hard": {
-                        "low": -10,
-                        "high": 10
+                        "low": -2.03,
+                        "high": 0.5117
                     }
                 }
             }
@@ -198,14 +198,14 @@
                     }
                 },
                 "position": {
-                    "$comment": "6.28 = 2 * pi",
+                    "$comment": "diff = 2.1142, limit = 0",
                     "soft": {
-                        "low": -6.28,
-                        "high": 6.28
+                        "low": -2.10,
+                        "high": -0.05
                     },
                     "hard": {
-                        "low": -10,
-                        "high": 10
+                        "low": -2.1142,
+                        "high": 0.1
                     }
                 }
             }
@@ -240,14 +240,14 @@
                     }
                 },
                 "position": {
-                    "$comment": "6.28 = 2 * pi",
+                    "$comment": "diff = 2.1142, limit = 0",
                     "soft": {
-                        "low": 0,
-                        "high": 1.57
+                        "low": 0.05,
+                        "high": 2.10
                     },
                     "hard": {
-                        "low": -0.2,
-                        "high": 2.10
+                        "low": -0.1,
+                        "high": 2.1142
                     }
                 }
             }
