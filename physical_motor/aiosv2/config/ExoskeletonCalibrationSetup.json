@@ -1,25 +1,23 @@
-TO VERIFY
-
 {
     "motors": [
         {
             "direction": -1,
-            "limit": 0
+            "limit": -0.4249
+        },
+        {
+            "direction": 1,
+            "limit": 0.4249
         },
         {
             "direction": -1,
-            "limit": 0
+            "limit": -0.5117
         },
         {
-            "direction": -1,
-            "limit": 0
+            "direction": 1,
+            "limit": 0.5117
         },
         {
-            "direction": -1,
-            "limit": 0
-        },
-        {
-            "direction": -1,
+            "direction": 1,
             "limit": 0
         },
         {

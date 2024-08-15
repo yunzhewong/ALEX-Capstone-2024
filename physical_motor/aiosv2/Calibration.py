@@ -10,23 +10,30 @@ CALIBRATION_SPEED = 0.3
 ZERO_VELOCITY_COUNT = 10
 
 class MotorCalibration():
-    def __init__(self, config: dict):
-        print(config)
+    def __init__(self, config: dict, position: float | None):
         self.direction = config['direction']
         self.limit = config['limit']
-        self.readLimitPosition: float | None = None
+        self.readLimitPosition = position
         self.zeroVelocityCount = 0
+        self.centered = False
+        if position is not None:
+            self.centered = True
 
 
 class CalibrationState():
-    def __init__(self, setupConfig: dict):
+    def __init__(self, setupConfig: dict, savePath: List[str], positions: List[float | None]):
         self.motors: List[SafeMotor] | None = None
-        self.calibrations = [MotorCalibration(config) for config in setupConfig['motors']]
+        self.calibrations: List[MotorCalibration] = []
 
-    def allMotorsCalibrated(self):
+        for i, config in enumerate(setupConfig["motors"]):
+            self.calibrations.append(MotorCalibration(config, positions[i]))
+
+        self.savePath = savePath
+
+    def allMotorsCentered(self):
         count = 0 
         for calibration in self.calibrations:
-            if calibration.readLimitPosition is not None:
+            if calibration.centered:
                 count += 1
         
         return count == len(self.calibrations)
@@ -52,14 +59,17 @@ class CalibrationState():
             else:
                 position_adjustment = self.calibrations[i].limit - self.calibrations[i].readLimitPosition
                 truePosition = cvp.position + position_adjustment
-                if abs(truePosition) > EPSILON:
-                    motor.setVelocity(-1 * calibrationVelocity)
-                else:
+                
+                if self.calibrations[i].centered or abs(truePosition) < EPSILON:
                     motor.setVelocity(0)
-
-                    if self.allMotorsCalibrated():
+                    self.calibrations[i].centered = True
+                    if self.allMotorsCentered():
                         writeConfigurationJSON({
                             "date": datetime.datetime.now().isoformat(),
                             "adjustments": [self.calibrations[i].limit - self.calibrations[i].readLimitPosition for i in range(len(self.calibrations))]
-                        }, ["config", "TwinMotorCalibration.json"])
+                        }, self.savePath)
                         raise Exception("All Motors Calibrated")
+                else:
+                    motor.setVelocity(-1 * calibrationVelocity)
+
+                    

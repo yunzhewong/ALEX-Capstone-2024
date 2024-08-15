@@ -77,7 +77,7 @@ def setup_teardown_exoskeleton(actions: Callable[[Exoskeleton, float], None], to
 
 def calibrate_exoskeleton():
     calibrationConfiguration = readConfigurationJSON(["config", "ExoskeletonCalibrationSetup.json"])
-    state = CalibrationState(calibrationConfiguration)
+    state = CalibrationState(calibrationConfiguration, ["config", "ExoskeletonCalibration.json"], [0, 0, 0, 0, 0, 0])
 
     def func(exoskeleton: Exoskeleton, _: float):
         if state.motors is None:

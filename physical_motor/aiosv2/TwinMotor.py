@@ -22,8 +22,8 @@ class TwinMotor(MotorCombination):
         self.calibrationData = readConfigurationJSON(['config', 'TwinMotorCalibration.json'])
         calibrationAdjustments = self.calibrationData['adjustments']
 
-        self.topMotor = SafeMotor(motors[0], socket, motorConverter, 0)
-        self.bottomMotor = SafeMotor(motors[1], socket, motorConverter, calibrationAdjustments[0])
+        self.topMotor = SafeMotor(motors[0], socket, motorConverter, calibrationAdjustments[0])
+        self.bottomMotor = SafeMotor(motors[1], socket, motorConverter, calibrationAdjustments[1])
         self.dataStream = DataStream(
             socket, [self.topMotor, self.bottomMotor], motorConverter
         )
@@ -58,11 +58,11 @@ class TwinMotor(MotorCombination):
 
 def calibrate_twin_motor():
     calibrationConfiguration = readConfigurationJSON(["config", "TwinMotorCalibrationSetup.json"])
-    state = CalibrationState(calibrationConfiguration)
+    state = CalibrationState(calibrationConfiguration, ["config", "TwinMotorCalibration.json"], [0, None])
 
     def func(twinMotor: TwinMotor, _: float):
         if state.motors is None:
-            state.motors = [twinMotor.bottomMotor]
+            state.motors = [twinMotor.topMotor, twinMotor.bottomMotor]
         
         state.iterate()
 

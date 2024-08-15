@@ -56,7 +56,7 @@ def setup_teardown_rightknee_exomotor(actions: Callable[[RightKneeExoMotor, floa
 
 def calibrate_right_knee_exomotor():
     calibrationConfiguration = readConfigurationJSON(["config", "RightKneeCalibrationSetup.json"])
-    state = CalibrationState(calibrationConfiguration)
+    state = CalibrationState(calibrationConfiguration, ["config", "RightKneeCalibration.json"], [None])
 
     def func(exoMotor: RightKneeExoMotor, _: float):
         if state.motors is None:
