@@ -6,7 +6,7 @@ from aiosv2.readConfig import writeConfigurationJSON
 
 
 EPSILON = 0.01
-CALIBRATION_SPEED = 0.3
+CALIBRATION_SPEED = 0.2
 ZERO_VELOCITY_COUNT = 10
 
 class MotorCalibration():
