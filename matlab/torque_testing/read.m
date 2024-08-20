@@ -34,8 +34,11 @@ g = 9.81;
 
 p = polyfit(average_currents, sind(final_positions), 1);
 l = Kt / (m*g*p(1));
-
 F_c = -p(2) * m * g *l;
+
+fprintf("Effective Length: %.4f\n", l)
+fprintf("Effective Static Friction: %.4f\n", F_c)
+
 
 spaced_currents = 0:0.05:3;
 expected_sin_positions = (Kt * spaced_currents - F_c) / (m*g*l);
