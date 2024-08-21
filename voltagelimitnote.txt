@@ -1,1 +1,6 @@
 42V?
+
+Send JSON Obj: {"method": "GET", "reqTarget": "/config"}
+Server received from ('10.10.10.30', 2334):{"status":"OK","reqTarget":"/config","dc_bus_overvoltage_trip_level":55,"dc_bus_undervoltage_trip_level":10}
+^CKeyboard Interrupted: Motors notified to turn off
+Keyboard Interrupt again to release locks
