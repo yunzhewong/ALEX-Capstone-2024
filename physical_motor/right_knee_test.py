@@ -27,7 +27,7 @@ if __name__ == "__main__":
         #     # state.csvwriter = CSVWriter(f"lowerleg{format(round(CURRENT, 2), '.2f')}.csv", [exoMotor.motor])
         #     state.csvwriter = CSVWriter(f"stop.csv", [exoMotor.motor])
         # exoMotor.motor.setCurrent(CURRENT)
-        exoMotor.motor.setVelocity(0.1)
+        exoMotor.motor.setVelocity(1.8)
 
         cvp = exoMotor.motor.getCVP()
         
