@@ -1,15 +1,20 @@
 close all
 
-current_commands = 0.8:0.1:1.80;
-
-figure
-hold on
+current_commands = 0.00:0.05:1.60;
+CUTOFF_CURRENT = 0.75;
+cutoff_index = (CUTOFF_CURRENT / 0.05) + 1;
 
 average_currents = zeros(1, numel(current_commands));
 final_positions = zeros(1, numel(current_commands));
 
+figure
+hold on
+title("Position vs Time for Incrementing Currents")
+xlabel("Test Time (s)")
+ylabel("Position (degrees)")
+
 for i = 1:numel(current_commands)
-    filename = "./data/lowerleg" + compose("%1.2f", current_commands(i)) + ".csv";
+    filename = "./test2/current" + compose("%1.2f", current_commands(i)) + "A.csv";
 
     data = readmatrix(filename);
 
@@ -23,7 +28,12 @@ for i = 1:numel(current_commands)
 
     average_currents(i) = mean(currents);
     final_positions(i) = position_degrees(end);
+    
+    plot(corrected_times, position_degrees)
 end
+
+figure
+plot(current_commands, average_currents)
 
 %K_t*i = mgl*sin(theta) + F_c
 Kt = 0.124 * 120;
@@ -32,7 +42,7 @@ g = 9.81;
 
 % sin(theta) = (K_t/mgl)*i - F_c/(m*g*l)
 
-p = polyfit(average_currents, sind(final_positions), 1);
+p = polyfit(average_currents(cutoff_index:end), sind(final_positions(cutoff_index:end)), 1);
 l = Kt / (m*g*p(1));
 F_c = -p(2) * m * g *l;
 
