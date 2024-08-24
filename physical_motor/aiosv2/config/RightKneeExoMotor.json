@@ -5,8 +5,8 @@
             "ip": "10.10.10.30",
             "name": "right-knee",
             "positionP": 1,
-            "velocityP": 2,           
-            "velocityI": 0.04,           
+            "velocityP": 1,           
+            "velocityI": 0,           
             "safetyConfiguration": {
                 "current": {
                     "$comment": "we only want a hard limit, make soft limit further away",
@@ -21,12 +21,12 @@
                 },
                 "velocity": {
                     "soft": {
-                        "low": -1,
-                        "high": 1
+                        "low": -0.3,
+                        "high": 0.3
                     },
                     "hard": {
-                        "low": -2,
-                        "high": 2
+                        "low": -1,
+                        "high": 1
                     }
                 },
                 "position": {
@@ -35,8 +35,8 @@
                         "high": 1.57
                     },
                     "hard": {
-                        "low": -0.1,
-                        "high": 1.7
+                        "low": -10,
+                        "high": 200
                     }
                 }
             }

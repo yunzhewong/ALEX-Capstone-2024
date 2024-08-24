@@ -1,5 +1,6 @@
 from enum import Enum
 import math
+from typing import List
 from aiosv2.CSVWriter import CSVWriter
 import aiosv2
 from classes.DataLog import DataLog
@@ -9,6 +10,7 @@ from aiosv2.RightKneeExoMotor import (
 )
 from aiosv2.TwinMotor import setup_teardown_twin_motor
 from aiosv2 import CVP
+import trajectory
 
 
 class State(Enum):
@@ -16,20 +18,21 @@ class State(Enum):
     Paused = (2,)
     Resetting = 3
 
-
-MAX_ANGLE = 10 * math.pi
 MAX_TIME = 5
-STARTING_ANGLE = -10 * math.pi
-RESET_TIME = 5
 PAUSE_TIME = 1
-START_MAGNITUDE = 0.1
-END_MAGNITUDE = 2
-INCREMENT_MAGNITUDE = 0.1
+
+START_MAGNITUDE = 2
+INCREMENT_MAGNITUDE = 0.05
+END_MAGNITUDE = 3
+
+COUNT = int((END_MAGNITUDE - START_MAGNITUDE) / INCREMENT_MAGNITUDE)
+magnitudes = [START_MAGNITUDE + INCREMENT_MAGNITUDE * i for i in range(COUNT)]
 
 
 class BulkDataBatcher:
-    def __init__(self):
+    def __init__(self,  magnitudes: List[float]):
         self.log: CSVWriter | None = None
+        self.magnitudes = magnitudes
 
         self.state = State.Resetting
         self.post_pause_state = State.Paused
@@ -43,35 +46,32 @@ class BulkDataBatcher:
 
     def at_time(self, t, connection: aiosv2.SafeMotor):
         cvp = connection.getCVP()
-        position = cvp.position
 
         if self.state == State.Collecting:
-            delta = START_MAGNITUDE + self.collect_index * INCREMENT_MAGNITUDE
-            if delta > END_MAGNITUDE:
+
+            magnitude = self.magnitudes[self.collect_index]
+        
+            if magnitude > END_MAGNITUDE:
                 raise Exception("Exit")
 
             if not self.initialised:
-                print(delta)
+                print(magnitude)
                 self.collecting_start = t
                 self.initialised = True
                 self.log = CSVWriter(
-                    f"delta{format(round(delta, 2), '.2f')}.csv", [connection]
+                    f"vel{format(round(magnitude, 2), '.2f')}rads.csv", [connection]
                 )
 
             self.log.addCVP(t, [connection])
 
-            exceeded_max_angle = position > MAX_ANGLE
-            exceeded_max_time = (t - self.collecting_start) >= MAX_TIME
-            should_stop = exceeded_max_angle or exceeded_max_time
-
-            if should_stop:
+            if (t - self.collecting_start) >= MAX_TIME:
                 self.log.close()
                 self.state = State.Paused
                 self.post_pause_state = State.Resetting
                 self.collect_index += 1
                 self.initialised = False
 
-            connection.setPosition(position + delta)
+            connection.setVelocity(magnitude)
         elif self.state == State.Paused:
             if not self.initialised:
                 self.pause_end_time = t + PAUSE_TIME
@@ -84,25 +84,18 @@ class BulkDataBatcher:
             connection.setCurrent(0)
         else:
             if not self.initialised:
-                self.reset_start = t
-                self.reset_end = t + RESET_TIME
-                self.reset_angle = position
                 self.initialised = True
 
-            expected_pos = self.reset_angle - (
-                (self.reset_angle - STARTING_ANGLE) / RESET_TIME
-            ) * (t - self.reset_start)
-
-            if t > self.reset_end:
+            connection.setVelocity(-1)
+            
+            if cvp.position < 0.05:
                 self.post_pause_state = State.Collecting
                 self.state = State.Paused
                 self.initialised = False
 
-            connection.setPosition(expected_pos)
-
 
 if __name__ == "__main__":
-    dataBatcher = BulkDataBatcher()
+    dataBatcher = BulkDataBatcher(magnitudes)
 
     def func(exoMotor: RightKneeExoMotor, runningTime: float):
         dataBatcher.at_time(runningTime, exoMotor.motor)

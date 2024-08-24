@@ -9,17 +9,17 @@ from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.CVP import CVP
 
 def stop_collection(cvp: CVP):
-    return cvp.position < (math.pi / 2)
+    return cvp.position > (math.pi / 2)
 
 
-MAX_TIME = 10
+MAX_TIME = 20
 PAUSE_TIME = 1
 
-START_MAGNITUDE = 0.1
-INCREMENT_MAGNITUDE = 0.1
-END_MAGNITUDE = 2
+START_MAGNITUDE = 1.65
+INCREMENT_MAGNITUDE = 0.05
+END_MAGNITUDE = 1.7
 
-COUNT = (START_MAGNITUDE - END_MAGNITUDE) / INCREMENT_MAGNITUDE 
+COUNT = int((END_MAGNITUDE - START_MAGNITUDE) / INCREMENT_MAGNITUDE)
 currents = [START_MAGNITUDE + INCREMENT_MAGNITUDE * i for i in range(COUNT)]
 
 class State(Enum):
@@ -87,9 +87,9 @@ class BulkDataBatcher:
             if not self.initialised:
                 self.initialised = True
 
-            trajectory.slow_move_to_pos(0)
+            trajectory.slow_move_to_pos(connection, 0)
             
-            if cvp.position < 0.01:
+            if cvp.position < 0.05:
                 self.post_pause_state = State.Collecting
                 self.state = State.Paused
                 self.initialised = False
@@ -97,15 +97,16 @@ class BulkDataBatcher:
 
 if __name__ == "__main__":
 
-    dataBatcher = BulkDataBatcher()
+    dataBatcher = BulkDataBatcher(currents)
 
     def func(exoskeleton: Exoskeleton, runningTime: float):
         trajectory.slow_move_to_pos(exoskeleton.rightAbductor, 0)
         trajectory.slow_move_to_pos(exoskeleton.leftAbductor, 0)
         trajectory.slow_move_to_pos(exoskeleton.rightExtensor, 0)
         trajectory.slow_move_to_pos(exoskeleton.leftExtensor, 0)
-        trajectory.slow_move_to_pos(exoskeleton.rightKnee, 0)
-        dataBatcher.at_time(runningTime, exoskeleton.leftKnee)
+        dataBatcher.at_time(runningTime, exoskeleton.rightKnee)
+        trajectory.slow_move_to_pos(exoskeleton.leftKnee, 0)
+
 
     setup_teardown_motor_combination(Exoskeleton(), func, 1000)
     

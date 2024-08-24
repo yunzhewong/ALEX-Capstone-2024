@@ -205,6 +205,19 @@ class ConnectedMotor:
             },
         )
 
+    def setRootConfig(self, over: int, under: int):
+        self.socket.sendJSON(
+            self.ip, 
+            PORT_srv,
+            {
+                "method": "SET",
+                "reqTarget": "/config",
+                "dc_bus_overvoltage_trip_level": over,
+                "dc_bus_undervoltage_trip_level": under,
+            }
+        )
+
+
     def getCVP_pt(self):
         tx_messages = struct.pack("<B", 0x1A)
         self.socket.sendBytes(tx_messages)
