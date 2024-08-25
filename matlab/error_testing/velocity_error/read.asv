@@ -1,0 +1,25 @@
+close all
+
+current_data = readmatrix("current");
+times = current_data(:, 1);
+current_times = times(:, 1) - times(1);
+current_currents = current_data(:, 2);
+current_velocities = current_data(:, 3);
+
+velocity_data = readmatrix("velocity");
+times = velocity_data(:, 1);
+velocity_times = times(:, 1) - times(1);
+velocity_currents = velocity_data(:, 2);
+velocity_velocities = velocity_data(:, 3);
+
+figure
+hold on
+plot(current_times, current_currents)
+plot(velocity_times, velocity_currents)
+title("Current Comparison")
+xlabel("Time (s)")
+
+figure
+hold on
+plot(current_times, current_velocities)
+plot(velocity_times, velocity_velocities)

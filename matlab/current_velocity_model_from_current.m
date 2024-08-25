@@ -12,7 +12,6 @@ for i=1:count
     fullname = "./data/exo batch 2/step" + compose("%1.2f", current_commands(i)) + "A.csv";
 
     data = readmatrix(fullname);
-
     times = data(:, 1);
     corrected_times = times(:, 1) - times(1);
     currents = data(:, 2);
