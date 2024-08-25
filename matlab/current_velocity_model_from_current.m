@@ -1,19 +1,13 @@
 close all
 clear
 
-ITERATIONS = 0.02;
-LOW = 0.8;
-HIGH = 2.2;
-current_commands = LOW:ITERATIONS:HIGH;
-
+current_commands = 0.60:0.02:2.2;
 count = numel(current_commands);
 steady_state_currents = zeros(1, count);
 steady_state_velocities = zeros(1, count);
 
 J_bs = zeros(1, count);
 
-figure
-hold on
 for i=1:count
     fullname = "./data/exo batch 2/step" + compose("%1.2f", current_commands(i)) + "A.csv";
 
@@ -36,61 +30,60 @@ for i=1:count
     [~, tauIndex] = closest(velocities, outputAfterOneTau);
 
     J_bs(i) = corrected_times(tauIndex);
-
-    plot(currents)
 end
-
-figure
-plot(steady_state_currents, steady_state_velocities)
-hold on
-p = polyfit(steady_state_currents, steady_state_velocities, 1);
-plot(steady_state_currents, p(1) * steady_state_currents + p(2))
-
-average_Kt_b = p(1);
-
-%v_ss_2 - v_ss_1 = Kt/b * (i_ss_2 - i_ss_1)
-Kt_bs = zeros(1, count - 1);
-for i = 1:count - 1
-    Kt_bs(i) = (steady_state_velocities(i + 1) - steady_state_velocities(i)) / (steady_state_currents(i + 1) - steady_state_currents(i));
-end
-
-figure
-plot(Kt_bs)
-hold on
-yline(average_Kt_b)
-
-
-
-Fc_bs = zeros(1, count - 1);
-for i = 1:count - 1
-    Fc_bs(i) = average_Kt_b * steady_state_currents(i) - steady_state_velocities(i);
-end
-
-figure
-plot(Fc_bs)
-
-figure
-plot(steady_state_currents)
-
-figure
-plot(steady_state_velocities)
-
-consistent_Fc_b = mean(Fc_bs);
-consistent_J_b = mean(J_bs);
-
-figure
-plot(steady_state_currents, steady_state_velocities)
-hold on
-plot(steady_state_currents, average_Kt_b * steady_state_currents - consistent_Fc_b)
 
 %assumption
 Kt = 0.124 * 120;
-min_amperage = 0.80;
+F_kinetic = 8.1003;
+F_static = 10.4160;
 
-b = Kt / average_Kt_b
-F_c = consistent_Fc_b * b
-F_stat = Kt * min_amperage
-J = consistent_J_b * b
+moving_index = (0.8 - 0.6)/ 0.02;
+moving_currents = steady_state_currents(moving_index:end);
+moving_velocities = steady_state_velocities(moving_index:end);
+
+expected_torques = Kt * moving_currents - F_kinetic;
+b_predictions = expected_torques ./ moving_velocities;
+
+figure
+plot(moving_currents, b_predictions)
+title("Observed Current vs Predicted Damping Coefficient")
+ylabel("Damping Coefficient")
+xlabel("Current (A)")
+
+%looks like b is a function of i, such that b(i) = b_2*i + b_1
+pb = polyfit(moving_currents, b_predictions, 1);
+b_2 = pb(1);
+b_1 = pb(2);
+fprintf("b(i) = %.4f*i + %.4f\n", b_2, b_1);
+
+sim_currents = 0.0:0.01:2.2;
+sim_b = b_2 * sim_currents + b_1;
+
+figure
+plot(moving_currents, b_predictions)
+hold on
+plot(sim_currents, sim_b)   
+title("Current vs Predicted Damping Coefficient")
+ylabel("Damping Coefficient")
+xlabel("Current (A)")
+legend("Observed Results", "Line of Best Fit")
+
+expected_velocities = zeros(1, numel(sim_currents));
+for i = 1:numel(sim_currents)
+    motor_torque = Kt*sim_currents(i);
+    if motor_torque > F_static
+        expected_velocities(i) = (motor_torque - F_kinetic)/sim_b(i);
+    end
+end
+
+figure
+plot(sim_currents, expected_velocities)
+hold on
+plot(steady_state_currents, steady_state_velocities)
+title("Current vs Velocity")
+ylabel("Velocity (rad/s)")
+xlabel("Current (A)")
+legend("Observed Results", "Modelled Results")
 
 function [match, index] = closest(values, searchValue) 
     [match, index] = min(abs(values - searchValue));

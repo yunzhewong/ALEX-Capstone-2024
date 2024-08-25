@@ -1,0 +1,140 @@
+close all
+clear
+
+ITERATIONS = 0.02;
+LOW = 0.8;
+HIGH = 2.2;
+current_commands = LOW:ITERATIONS:HIGH;
+
+count = numel(current_commands);
+steady_state_currents = zeros(1, count);
+steady_state_velocities = zeros(1, count);
+
+J_bs = zeros(1, count);
+
+figure
+hold on
+for i=1:count
+    fullname = "./data/exo batch 2/step" + compose("%1.2f", current_commands(i)) + "A.csv";
+
+    data = readmatrix(fullname);
+
+    times = data(:, 1);
+    corrected_times = times(:, 1) - times(1);
+    currents = data(:, 2);
+    velocities = data(:, 3);
+
+    steady_state_index = floor(numel(times) / 2);
+
+    steady_state_currents(i) = mean(currents(steady_state_index:end));
+    steady_state_velocities(i) = mean(velocities(steady_state_index:end));
+
+    finalTime = corrected_times(numel(corrected_times));
+   
+    outputAfterOneTau = (1 - exp(-1)) * steady_state_velocities(i);
+
+    [~, tauIndex] = closest(velocities, outputAfterOneTau);
+
+    J_bs(i) = corrected_times(tauIndex);
+
+    plot(currents)
+end
+
+figure
+plot(steady_state_currents, steady_state_velocities)
+hold on
+p = polyfit(steady_state_currents, steady_state_velocities, 1);
+plot(steady_state_currents, p(1) * steady_state_currents + p(2))
+
+average_Kt_b = p(1);
+
+%v_ss_2 - v_ss_1 = Kt/b * (i_ss_2 - i_ss_1)
+Kt_bs = zeros(1, count - 1);
+for i = 1:count - 1
+    Kt_bs(i) = (steady_state_velocities(i + 1) - steady_state_velocities(i)) / (steady_state_currents(i + 1) - steady_state_currents(i));
+end
+
+figure
+plot(Kt_bs)
+hold on
+yline(average_Kt_b)
+
+
+
+Fc_bs = zeros(1, count - 1);
+for i = 1:count - 1
+    Fc_bs(i) = average_Kt_b * steady_state_currents(i) - steady_state_velocities(i);
+end
+
+figure
+plot(Fc_bs)
+
+figure
+plot(steady_state_currents)
+
+figure
+plot(steady_state_velocities)
+
+consistent_Fc_b = mean(Fc_bs);
+consistent_J_b = mean(J_bs);
+
+figure
+plot(steady_state_currents, steady_state_velocities)
+hold on
+plot(steady_state_currents, average_Kt_b * steady_state_currents - consistent_Fc_b)
+%% 
+close all
+
+%assumption
+Kt = 0.124 * 120;
+F_kinetic = 8.1003;
+F_static = 10.4160;
+
+expected_torques = Kt * steady_state_currents - F_kinetic;
+
+figure
+plot(expected_torques)
+hold on
+plot(10*sqrt(steady_state_velocities))
+
+b_predictions = expected_torques ./ steady_state_velocities;
+
+figure
+plot(steady_state_currents, b_predictions)
+
+%looks like b is a function of i, such that b(i) = a_2*i + a_1
+pb = polyfit(steady_state_currents, b_predictions, 1);
+a_2 = pb(1);
+a_1 = pb(2);
+fprintf("b(i) = %.4f*i + %.4f\n", a_2, a_1);
+
+sim_currents = 0.8:0.01:2.2;
+sim_b = a_2 * sim_currents + a_1;
+
+figure
+plot(steady_state_currents, b_predictions)
+hold on
+plot(sim_currents, sim_b)   
+
+expected_velocities = zeros(1, numel(sim_currents));
+for i = 1:numel(sim_currents)
+
+    motor_torque = Kt*sim_currents(i);
+    if motor_torque <= F_static
+
+    else
+        expected_velocities(i) = motor_torque ) - F_kinetic/sim_b(i);
+    end
+
+    
+end
+
+figure
+plot(sim_currents, expected_velocities)
+hold on
+plot(steady_state_currents, steady_state_velocities)
+
+function [match, index] = closest(values, searchValue) 
+    [match, index] = min(abs(values - searchValue));
+end
+
