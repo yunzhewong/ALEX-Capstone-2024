@@ -56,10 +56,19 @@ def setup_teardown_motor_combination(
         startTime = time.perf_counter()
         currentTime = startTime
         endTime = currentTime + totalRunningTime
+        lastLoop = currentTime
+        averageLoopTime = 0
+        samples = 0
 
         try:
             while currentTime < endTime:
                 currentTime = time.perf_counter()
+
+                loopTime = currentTime - lastLoop
+                averageLoopTime = (averageLoopTime * samples + loopTime) / (samples + 1)
+                samples += 1
+                lastLoop = currentTime
+
                 error = combination.getStreamError()
                 if error:
                     raise Exception(error)
@@ -68,6 +77,7 @@ def setup_teardown_motor_combination(
                 actions(combination, runningTime)
 
                 time.sleep(SAMPLING_PERIOD)
+            print(f"Average Loop Time: {averageLoopTime:.4f}s")
             print("Control Loop Complete without Errors")
         except Exception as e:
             print(e)
