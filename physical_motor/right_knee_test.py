@@ -21,25 +21,22 @@ if __name__ == "__main__":
 
     def func(exoskeleton: Exoskeleton, runningTime: float):
         if not state.initialised:
-            state.csvwriter = CSVWriter("leg-attached-vel-P1-I0-0.1", [exoskeleton.rightKnee])
+            state.csvwriter = CSVWriter("0.2rads sinusoid right extensor.csv", [exoskeleton.rightExtensor])
             state.initialised = True
 
         trajectory.slow_move_to_pos(exoskeleton.rightAbductor, 0)
         trajectory.slow_move_to_pos(exoskeleton.leftAbductor, 0)
-        trajectory.slow_move_to_pos(exoskeleton.rightExtensor, 0)
         trajectory.slow_move_to_pos(exoskeleton.leftExtensor, 0)
-        trajectory.slow_move_to_pos(exoskeleton.leftKnee, 0.05)
+        trajectory.slow_move_to_pos(exoskeleton.rightKnee, 0)
+        trajectory.slow_move_to_pos(exoskeleton.leftKnee, 0)
 
-        if (runningTime < 6):
-            trajectory.slow_move_to_pos(exoskeleton.rightKnee, 0.05)
-            return
 
-        cvp = exoskeleton.rightKnee.getCVP()
+        cvp = exoskeleton.rightExtensor.getCVP()
 
-        exoskeleton.rightKnee.setVelocity(0.1)
+        exoskeleton.rightExtensor.setVelocity(0.2 * math.sin(runningTime))
         
         state.log.addCVP(runningTime, cvp)
-        state.csvwriter.addCVP(runningTime, [exoskeleton.rightKnee])
+        state.csvwriter.addCVP(runningTime, [exoskeleton.rightExtensor])
 
 
     setup_teardown_motor_combination(Exoskeleton(), func, 20)
