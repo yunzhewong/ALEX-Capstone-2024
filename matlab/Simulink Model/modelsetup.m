@@ -10,9 +10,10 @@ close all
 
 % on exo-rightkneemotor
 J = 5.0652;
-b = 15.2092;
+b_2 = -20.2899;
+b_1 = 60.2078;
 K_t = 0.124 * 120;
-F_c = 7.7857;
-F_stat = 7.7857;
+F_kinetic = 8.1003;
+F_static = 10.4160;
 EPSILON = 0.005;
 
