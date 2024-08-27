@@ -19,27 +19,20 @@ class State():
 if __name__ == "__main__":
     state = State()
 
-    def func(exoskeleton: Exoskeleton, runningTime: float):
+    def func(rightKnee: RightKneeExoMotor, runningTime: float):
         if not state.initialised:
-            state.csvwriter = CSVWriter("0.2rads sinusoid right extensor.csv", [exoskeleton.rightExtensor])
+            state.csvwriter = CSVWriter("rightknee.csv", [rightKnee.motor])
             state.initialised = True
 
-        trajectory.slow_move_to_pos(exoskeleton.rightAbductor, 0)
-        trajectory.slow_move_to_pos(exoskeleton.leftAbductor, 0)
-        trajectory.slow_move_to_pos(exoskeleton.leftExtensor, 0)
-        trajectory.slow_move_to_pos(exoskeleton.rightKnee, 0)
-        trajectory.slow_move_to_pos(exoskeleton.leftKnee, 0)
+        cvp = rightKnee.motor.getCVP()
 
-
-        cvp = exoskeleton.rightExtensor.getCVP()
-
-        exoskeleton.rightExtensor.setVelocity(0.2 * math.sin(runningTime))
+        rightKnee.motor.setVelocity(0.2 * math.sin(runningTime))
         
         state.log.addCVP(runningTime, cvp)
-        state.csvwriter.addCVP(runningTime, [exoskeleton.rightExtensor])
+        state.csvwriter.addCVP(runningTime, [rightKnee.motor])
 
 
-    setup_teardown_motor_combination(Exoskeleton(), func, 20)
+    setup_teardown_motor_combination(RightKneeExoMotor(), func, 20)
     
 
     state.log.plot()
