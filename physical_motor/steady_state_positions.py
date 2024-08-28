@@ -42,7 +42,6 @@ class BulkDataBatcher:
         self.writer.addCVP(t, [connection])
 
 if __name__ == "__main__":
-    print(currents)
     dataBatcher = BulkDataBatcher(currents)
 
     def func(exoskeleton: Exoskeleton, runningTime: float):

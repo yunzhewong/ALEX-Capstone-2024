@@ -8,18 +8,14 @@ from aiosv2.ControlLoop import setup_teardown_motor_combination
 from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.CVP import CVP
 
-def stop_collection(cvp: CVP):
-    return cvp.position > (math.pi / 2)
-
-
 MAX_TIME = 15
-PAUSE_TIME = 1
+PAUSE_TIME = 2
 
-START_MAGNITUDE = 3.95
+START_MAGNITUDE = 1.80
 INCREMENT_MAGNITUDE = 0.05
-END_MAGNITUDE = 5.00
+END_MAGNITUDE = 3
 
-COUNT = int((END_MAGNITUDE - START_MAGNITUDE) / INCREMENT_MAGNITUDE)
+COUNT = int((END_MAGNITUDE - START_MAGNITUDE) / INCREMENT_MAGNITUDE) + 2
 currents = [START_MAGNITUDE + INCREMENT_MAGNITUDE * i for i in range(COUNT)]
 
 class State(Enum):
@@ -43,17 +39,11 @@ class BulkDataBatcher:
         self.reset_end = -1
         self.reset_angle = -1
 
- 
-
-
     def at_time(self, t, connection: SafeMotor):
         cvp = connection.getCVP()
 
         if self.state == State.Collecting:
             current = self.collectionPoints[self.collect_index]
-
-            if stop_collection(cvp):
-                raise Exception("Exit")
 
             if not self.initialised:
                 print(current)
