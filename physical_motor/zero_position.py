@@ -9,11 +9,8 @@ if __name__ == "__main__":
         trajectory.slow_move_to_pos(exoskeleton.leftAbductor, 0)
         trajectory.slow_move_to_pos(exoskeleton.rightExtensor, 0)
         trajectory.slow_move_to_pos(exoskeleton.leftExtensor, 0)
-        trajectory.slow_move_to_pos(exoskeleton.leftKnee, -0.05)
-        if runningTime < 5:
-            trajectory.slow_move_to_pos(exoskeleton.rightKnee, 0.05)
-        else:
-            trajectory.slow_move_to_pos(exoskeleton.rightKnee, 1)
+        trajectory.slow_move_to_pos(exoskeleton.leftKnee, 0)
+        trajectory.slow_move_to_pos(exoskeleton.rightKnee, 0)
 
 
     setup_teardown_motor_combination(Exoskeleton(), func, 10)

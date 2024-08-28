@@ -37,7 +37,7 @@
                     },
                     "hard": {
                         "low": -0.4249,
-                        "high": 0.2832
+                        "high": 0.29
                     }
                 }
             }
@@ -72,13 +72,13 @@
                     }
                 },
                 "position": {
-                    "$comment": "diff = 0.7081, limit = 0.4249",
+                    "$comment": "diff = 0.7081, limit = 0.4249, softlow =-0.27, low = -0.2832",
                     "soft": {
                         "low": -0.27,
                         "high": 0.42
                     },
                     "hard": {
-                        "low": -0.2832,
+                        "low": -0.29,
                         "high": 0.4249
                     }
                 }
@@ -201,7 +201,7 @@
                     "$comment": "diff = 2.1142, limit = 0",
                     "soft": {
                         "low": -2.10,
-                        "high": -0.01
+                        "high": 0.05
                     },
                     "hard": {
                         "low": -2.1142,
@@ -242,7 +242,7 @@
                 "position": {
                     "$comment": "diff = 2.1142, limit = 0",
                     "soft": {
-                        "low": 0.01,
+                        "low": -0.05,
                         "high": 2.10
                     },
                     "hard": {

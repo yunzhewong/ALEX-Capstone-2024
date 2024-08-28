@@ -8,18 +8,14 @@ from aiosv2.ControlLoop import setup_teardown_motor_combination
 from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.CVP import CVP
 
-def stop_collection(cvp: CVP):
-    return cvp.position > (math.pi / 2)
+MAX_TIME = 15
+PAUSE_TIME = 2
 
-
-MAX_TIME = 20
-PAUSE_TIME = 1
-
-START_MAGNITUDE = 1.65
+START_MAGNITUDE = 1.80
 INCREMENT_MAGNITUDE = 0.05
-END_MAGNITUDE = 1.7
+END_MAGNITUDE = 3
 
-COUNT = int((END_MAGNITUDE - START_MAGNITUDE) / INCREMENT_MAGNITUDE)
+COUNT = int((END_MAGNITUDE - START_MAGNITUDE) / INCREMENT_MAGNITUDE) + 2
 currents = [START_MAGNITUDE + INCREMENT_MAGNITUDE * i for i in range(COUNT)]
 
 class State(Enum):
@@ -43,17 +39,11 @@ class BulkDataBatcher:
         self.reset_end = -1
         self.reset_angle = -1
 
- 
-
-
     def at_time(self, t, connection: SafeMotor):
         cvp = connection.getCVP()
 
         if self.state == State.Collecting:
             current = self.collectionPoints[self.collect_index]
-
-            if stop_collection(cvp):
-                raise Exception("Exit")
 
             if not self.initialised:
                 print(current)
@@ -72,7 +62,7 @@ class BulkDataBatcher:
                 self.collect_index += 1
                 self.initialised = False
 
-            connection.setCurrent(current)
+            connection.setCurrent(-1 * current)
         elif self.state == State.Paused:
             if not self.initialised:
                 self.pause_end_time = t + PAUSE_TIME
@@ -89,7 +79,7 @@ class BulkDataBatcher:
 
             trajectory.slow_move_to_pos(connection, 0)
             
-            if cvp.position < 0.05:
+            if abs(cvp.position) < 0.05:
                 self.post_pause_state = State.Collecting
                 self.state = State.Paused
                 self.initialised = False
@@ -102,9 +92,9 @@ if __name__ == "__main__":
     def func(exoskeleton: Exoskeleton, runningTime: float):
         trajectory.slow_move_to_pos(exoskeleton.rightAbductor, 0)
         trajectory.slow_move_to_pos(exoskeleton.leftAbductor, 0)
-        trajectory.slow_move_to_pos(exoskeleton.rightExtensor, 0)
+        dataBatcher.at_time(runningTime, exoskeleton.rightExtensor)
         trajectory.slow_move_to_pos(exoskeleton.leftExtensor, 0)
-        dataBatcher.at_time(runningTime, exoskeleton.rightKnee)
+        trajectory.slow_move_to_pos(exoskeleton.rightKnee, 0)
         trajectory.slow_move_to_pos(exoskeleton.leftKnee, 0)
 
 
