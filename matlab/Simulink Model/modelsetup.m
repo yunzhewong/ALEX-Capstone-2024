@@ -9,7 +9,7 @@ close all
 % F_stat = 1.7102;
 
 % on exo-rightkneemotor
-J = 5.0652;
+J = 8.0803;
 b_2 = -20.2899;
 b_1 = 60.2078;
 K_t = 0.124 * 120;

@@ -1,15 +1,18 @@
-close all
+% close all
 clear
 
-current_commands = 0.60:0.02:2.2;
+% current_commands = 0.60:0.02:2.2;
+current_commands = 1.00:0.20:2.2;
 count = numel(current_commands);
 steady_state_currents = zeros(1, count);
 steady_state_velocities = zeros(1, count);
 
+first_accels = zeros(1, count);
 J_bs = zeros(1, count);
 
 for i=1:count
-    fullname = "./data/exo batch 2/step" + compose("%1.2f", current_commands(i)) + "A.csv";
+    fullname = "./data/exo1/step" + compose("%1.2f", current_commands(i)) + "A.csv";
+    % fullname = "./data/exo batch 2/step" + compose("%1.2f", current_commands(i)) + "A.csv";
 
     data = readmatrix(fullname);
     times = data(:, 1);
@@ -29,18 +32,42 @@ for i=1:count
     [~, tauIndex] = closest(velocities, outputAfterOneTau);
 
     J_bs(i) = corrected_times(tauIndex);
-end
 
+
+    FIRST_COUNT = 20;
+    first_velocities = velocities(1:FIRST_COUNT, 1);
+    first_times = corrected_times(1:FIRST_COUNT, 1);
+    accels = zeros(1, FIRST_COUNT);
+    for j = 1:(FIRST_COUNT-1)
+        v_diff = first_velocities(j + 1) - first_velocities(j);
+        t_diff = first_times(j + 1) - first_times(j);
+        accels(j) = v_diff/t_diff;
+    end
+    first_accels(i) = mean(accels);
+end
+ 
 %assumption
 Kt = 0.124 * 120;
 F_kinetic = 8.1003;
 F_static = 10.4160;
 
-moving_index = (0.8 - 0.6)/ 0.02;
+% moving_index = (0.86 - 0.6)/ 0.02;
+moving_index = 1;
 moving_currents = steady_state_currents(moving_index:end);
 moving_velocities = steady_state_velocities(moving_index:end);
+moving_accelerations = first_accels(moving_index:end);
 
 expected_torques = Kt * moving_currents - F_kinetic;
+
+% J_t*a_i = tau_i
+J_t_measurements = expected_torques ./ moving_accelerations;
+
+figure
+plot(J_t_measurements)
+
+J_t = mean(J_t_measurements);
+fprintf("J_t = %.4f\n", J_t);
+
 b_predictions = expected_torques ./ moving_velocities;
 
 figure
