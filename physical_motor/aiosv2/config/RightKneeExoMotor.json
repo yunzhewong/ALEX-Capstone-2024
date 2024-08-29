@@ -5,8 +5,8 @@
             "ip": "10.10.10.30",
             "name": "right-knee",
             "positionP": 1,
-            "velocityP": 0.5,           
-            "velocityI": 0.1,           
+            "velocityP": 1,           
+            "velocityI": 0.02,           
             "safetyConfiguration": {
                 "current": {
                     "$comment": "we only want a hard limit, make soft limit further away",
