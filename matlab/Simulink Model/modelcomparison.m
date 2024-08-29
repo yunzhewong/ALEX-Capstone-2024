@@ -1,6 +1,6 @@
 close all
 
-FILENAME = '../data/vel1sin.csv';
+FILENAME = '../data/vel1.csv';
 data = readmatrix(FILENAME);    
 times = data(:, 1);
 
@@ -15,7 +15,7 @@ plot(out.input.Time, out.input.Data)
 title("Current over Time")
 xlabel("Time (s)")
 ylabel("Current (A)")
-legend("Measured", "Modelled", "Location", "southwest")
+legend("Measured", "Modelled", "Location", "northeast")
 
 
 figure
