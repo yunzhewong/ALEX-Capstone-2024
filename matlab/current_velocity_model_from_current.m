@@ -1,8 +1,8 @@
-% close all
+close all
 clear
 
-% current_commands = 0.60:0.02:2.2;
-current_commands = 1.00:0.20:2.2;
+current_commands = 0.00:0.05:3.05;
+% current_commands = 1.00:0.20:2.2;
 count = numel(current_commands);
 steady_state_currents = zeros(1, count);
 steady_state_velocities = zeros(1, count);
@@ -11,8 +11,8 @@ first_accels = zeros(1, count);
 J_bs = zeros(1, count);
 
 for i=1:count
-    fullname = "./data/exo1/step" + compose("%1.2f", current_commands(i)) + "A.csv";
-    % fullname = "./data/exo batch 2/step" + compose("%1.2f", current_commands(i)) + "A.csv";
+    % fullname = "./data/exo1/step" + compose("%1.2f", current_commands(i)) + "A.csv";
+    fullname = "./data/current" + compose("%1.2f", current_commands(i)) + "A.csv";
 
     data = readmatrix(fullname);
     times = data(:, 1);
@@ -45,17 +45,21 @@ for i=1:count
     end
     first_accels(i) = mean(accels);
 end
+
+figure
+plot(steady_state_velocities)
+
+MOVING_INDEX = 20;
+SATURATION_INDEX = 50;
  
 %assumption
 Kt = 0.124 * 120;
 F_kinetic = 8.1003;
 F_static = 10.4160;
 
-% moving_index = (0.86 - 0.6)/ 0.02;
-moving_index = 1;
-moving_currents = steady_state_currents(moving_index:end);
-moving_velocities = steady_state_velocities(moving_index:end);
-moving_accelerations = first_accels(moving_index:end);
+moving_currents = steady_state_currents(MOVING_INDEX:SATURATION_INDEX);
+moving_velocities = steady_state_velocities(MOVING_INDEX:SATURATION_INDEX);
+moving_accelerations = first_accels(MOVING_INDEX:SATURATION_INDEX);
 
 expected_torques = Kt * moving_currents - F_kinetic;
 
