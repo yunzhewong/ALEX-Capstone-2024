@@ -1,7 +1,7 @@
 
-iters = 0.02;
-low = 0.6;
-high = 2.4;
+iters = 0.05;
+low = 0.00;
+high = 2.50;
 
 amperage = low:iters:high;
 
@@ -57,7 +57,7 @@ for i = 1:numel(amperage)
 end
 
 function [times, currents, velocities] = loadFile(current)
-    FILENAME = "../data/exo batch 2/step" + compose("%1.2f", current) + "A.csv";
+    FILENAME = "../data/current" + compose("%1.2f", current) + "A.csv";
     data = readmatrix(FILENAME);    
     times = data(:, 1);
     currents = data(:, 2);

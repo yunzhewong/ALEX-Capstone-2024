@@ -27,4 +27,4 @@ figure
 plot(velocity_commands, average_velocities)
 
 figure
-plot(velocity_commands, average_currents)
+plot(average_currents, average_velocities)
