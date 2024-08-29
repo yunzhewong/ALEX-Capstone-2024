@@ -202,8 +202,8 @@ class SafeMotor:
         velocityP = self.configuration["velocityP"]
         velocityI = self.configuration["velocityI"]
         self.raw_motor.setPIDConfig(positionP, velocityP, velocityI, limit, margin)
-        self.raw_motor.requestCVP()
         self.raw_motor.requestEncoderCheck()
+        self.raw_motor.requestCVP()
 
     def cvpIsReady(self):
         with self.cvp_lock:

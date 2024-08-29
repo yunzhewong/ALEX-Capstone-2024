@@ -1,0 +1,5 @@
+currents from 0 - 3.05A
+match velocity and current error - 0.1
+velocity steps
+velocity sinusoids
+current sinusoids

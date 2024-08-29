@@ -21,11 +21,11 @@ class State(Enum):
 MAX_TIME = 5
 PAUSE_TIME = 1
 
-START_MAGNITUDE = 2
+START_MAGNITUDE = 2.2
 INCREMENT_MAGNITUDE = 0.05
-END_MAGNITUDE = 3
+END_MAGNITUDE = 4.00
 
-COUNT = int((END_MAGNITUDE - START_MAGNITUDE) / INCREMENT_MAGNITUDE)
+COUNT = int((END_MAGNITUDE - START_MAGNITUDE) / INCREMENT_MAGNITUDE) + 2
 magnitudes = [START_MAGNITUDE + INCREMENT_MAGNITUDE * i for i in range(COUNT)]
 
 
@@ -48,18 +48,14 @@ class BulkDataBatcher:
         cvp = connection.getCVP()
 
         if self.state == State.Collecting:
-
             magnitude = self.magnitudes[self.collect_index]
-        
-            if magnitude > END_MAGNITUDE:
-                raise Exception("Exit")
 
             if not self.initialised:
                 print(magnitude)
                 self.collecting_start = t
                 self.initialised = True
                 self.log = CSVWriter(
-                    f"vel{format(round(magnitude, 2), '.2f')}rads.csv", [connection]
+                    f"current{format(round(magnitude, 2), '.2f')}A.csv", [connection]
                 )
 
             self.log.addCVP(t, [connection])
@@ -71,7 +67,7 @@ class BulkDataBatcher:
                 self.collect_index += 1
                 self.initialised = False
 
-            connection.setVelocity(magnitude)
+            connection.setCurrent(magnitude)
         elif self.state == State.Paused:
             if not self.initialised:
                 self.pause_end_time = t + PAUSE_TIME
@@ -100,4 +96,4 @@ if __name__ == "__main__":
     def func(exoMotor: RightKneeExoMotor, runningTime: float):
         dataBatcher.at_time(runningTime, exoMotor.motor)
 
-    setup_teardown_rightknee_exomotor(func, 1000)
+    setup_teardown_rightknee_exomotor(func, 2000)

@@ -152,3 +152,29 @@ class CVPPlot():
         plt.tight_layout()
 
         plt.show()
+
+    def download(self, name):
+        times = np.array(self.times)
+        currents = np.array(self.currents)
+        velocities = np.array(self.velocities)
+        positions = np.array(self.positions)
+
+        data = np.column_stack(
+            (
+                times,
+                currents,
+                velocities,
+                positions,
+            )
+        )
+
+        header = "Time, Motor Current, Motor Velocities, Motor Positions"
+
+        # Save data to CSV file
+        np.savetxt(
+            name,
+            data,
+            delimiter=",",
+            header=header,
+            comments="",
+        )
