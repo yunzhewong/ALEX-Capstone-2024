@@ -11,9 +11,9 @@ from aiosv2.CVP import CVP
 MAX_TIME = 10
 PAUSE_TIME = 1.5
 
-START_MAGNITUDE = 2.45
-INCREMENT_MAGNITUDE = 0.05
-END_MAGNITUDE = 3
+START_MAGNITUDE = 1.80
+INCREMENT_MAGNITUDE = 0.02
+END_MAGNITUDE = 2.5
 
 COUNT = int((END_MAGNITUDE - START_MAGNITUDE) / INCREMENT_MAGNITUDE) + 2
 currents = [START_MAGNITUDE + INCREMENT_MAGNITUDE * i for i in range(COUNT)]
@@ -57,6 +57,7 @@ class BulkDataBatcher:
 
             if (t - self.collecting_start) >= MAX_TIME:
                 self.log.close()
+                print(cvp)
                 self.state = State.Paused
                 self.post_pause_state = State.Resetting
                 self.collect_index += 1
@@ -93,7 +94,7 @@ if __name__ == "__main__":
         dataBatcher.at_time(runningTime, exoskeleton.rightAbductor)
         trajectory.slow_move_to_pos(exoskeleton.leftAbductor, 0)
         trajectory.slow_move_to_pos(exoskeleton.leftExtensor, 0)
-        trajectory.slow_move_to_pos(exoskeleton.rightExtensor, 0)
+        trajectory.slow_move_to_pos(exoskeleton.rightExtensor, -math.pi / 2)
         trajectory.slow_move_to_pos(exoskeleton.rightKnee, 0)
         trajectory.slow_move_to_pos(exoskeleton.leftKnee, 0)
 

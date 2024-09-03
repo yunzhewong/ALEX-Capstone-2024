@@ -123,5 +123,8 @@ class DataStream:
             if target == "/m1/controller/config":
                 return json_obj, ip, DataType.MOTION_CONFIG
             return None
-        except:
+        except Exception as err:
+            self.stop = True
+            self.error = err
+            print("errored", err)
             return None

@@ -21,11 +21,11 @@ class State(Enum):
 MAX_TIME = 5
 PAUSE_TIME = 1
 
-START_MAGNITUDE = 2.2
+START_MAGNITUDE = 0
 INCREMENT_MAGNITUDE = 0.05
-END_MAGNITUDE = 4.00
+END_MAGNITUDE = 3.00
 
-COUNT = int((END_MAGNITUDE - START_MAGNITUDE) / INCREMENT_MAGNITUDE) + 2
+COUNT = int((END_MAGNITUDE - START_MAGNITUDE) / INCREMENT_MAGNITUDE) + 1
 magnitudes = [START_MAGNITUDE + INCREMENT_MAGNITUDE * i for i in range(COUNT)]
 
 
@@ -62,6 +62,7 @@ class BulkDataBatcher:
 
             if (t - self.collecting_start) >= MAX_TIME:
                 self.log.close()
+                print(cvp)
                 self.state = State.Paused
                 self.post_pause_state = State.Resetting
                 self.collect_index += 1
