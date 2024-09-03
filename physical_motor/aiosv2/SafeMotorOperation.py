@@ -135,8 +135,11 @@ class SafeMotor:
         self,
         configuration: dict,
         socket: AiosSocket,
-        motorConverter: Converter, calibrationAdjustment: float
+        motorConverter: Converter,
+        calibrationAdjustment: float,
+        name: str = None  # Added name parameter
     ):
+        self.name = name if name else configuration.get("name", "Unnamed Motor")  # Set the name attribute
         self.configuration = configuration
         self.raw_motor = ConnectedMotor(configuration["ip"], socket, motorConverter)
         self.valid: bool = True
@@ -157,6 +160,9 @@ class SafeMotor:
         )  # input mode of current allows for all control types
 
         self.current_repeats = 0
+
+    # ... rest of the class remains the same ...
+
 
     def getIP(self):
         return self.raw_motor.ip

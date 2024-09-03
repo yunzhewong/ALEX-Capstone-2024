@@ -1,56 +1,71 @@
-
 import time
 from typing import Any, Callable
 
-class MotorCombination():
+class MotorCombination:
+    def __init__(self, no_robot=False):
+        self.no_robot = no_robot  # Store the no_robot flag
+
     def enable(self):
-        pass
-    
+        if not self.no_robot:
+            # Add actual enable logic here
+            pass
+
     def requestReadyCheck(self):
-        pass
+        if not self.no_robot:
+            # Add actual ready check logic here
+            pass
 
     def isReady(self):
-        pass
+        if self.no_robot:
+            return True  # Automatically return True when NO_ROBOT is True
+        # Otherwise, add actual isReady logic here
+        return False
 
     def logCalibrationData(self):
-        pass
-    
+        if not self.no_robot:
+            # Add actual log calibration data logic here
+            pass
+
     def getStreamError(self):
-        pass
+        if self.no_robot:
+            return None  # Automatically return None when NO_ROBOT is True
+        # Otherwise, add actual getStreamError logic here
+        return "Some Error"
 
     def disable(self):
-        pass
+        if not self.no_robot:
+            # Add actual disable logic here
+            pass
 
 
-# experimentally, a sampling frequency of 300Hz yields consistent results
+# Experimentally, a sampling frequency of 300Hz yields consistent results
 SAMPLING_FREQUENCY = 300
 SAMPLING_PERIOD = 1 / SAMPLING_FREQUENCY
 
 def setup_teardown_motor_combination(
-    combination: MotorCombination, actions: Callable[[Any, float], None], totalRunningTime: float
+    combination: MotorCombination, actions: Callable[[Any, float], None], totalRunningTime: float, no_robot=False
 ):
     try:
-        print()
+        if not no_robot:
+            print()
 
-        combination.enable()
+            combination.enable()
+            print("Motors Enabled")
 
-        print("Motors Enabled")
+            combination.requestReadyCheck()
 
-        combination.requestReadyCheck()
+            while not combination.isReady():
+                print("Checking Encoder Status...")
+                time.sleep(0.1)
+            print("Motors Ready")
 
-        while not combination.isReady():
-            print("Checking Encoder Status...")
-            time.sleep(0.1)
-        print("Motors Ready")
+            combination.logCalibrationData()
 
-        combination.logCalibrationData()
+            result = input("Do you want to continue? (y): ")
 
-        result = input("Do you want to continue? (y): ")
-
-        if result != 'y':
-            raise Exception("Cancelled by the user")
+            if result != 'y':
+                raise Exception("Cancelled by the user")
     
-
         print("Starting Control Loop")
 
         startTime = time.perf_counter()
@@ -69,9 +84,10 @@ def setup_teardown_motor_combination(
                 samples += 1
                 lastLoop = currentTime
 
-                error = combination.getStreamError()
-                if error:
-                    raise Exception(error)
+                if not no_robot:
+                    error = combination.getStreamError()
+                    if error:
+                        raise Exception(error)
 
                 runningTime = currentTime - startTime
                 actions(combination, runningTime)
@@ -82,8 +98,11 @@ def setup_teardown_motor_combination(
         except Exception as e:
             print(e)
 
-        combination.disable()
+        if not no_robot:
+            combination.disable()
     except KeyboardInterrupt:
         print("Keyboard Interrupted: Motors notified to turn off")
+        if not no_robot:
+            combination.disable()
         print("Keyboard Interrupt again to release locks")
-        combination.disable()
+

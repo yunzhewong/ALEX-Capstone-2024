@@ -9,7 +9,8 @@ class AiosSocket:
     NETWORK = "10.10.10.255"
 
 
-    def __init__(self):
+    def __init__(self, no_robot=False):
+        self.no_robot = no_robot
 
         newSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         newSocket.settimeout(2)
@@ -33,6 +34,10 @@ class AiosSocket:
 
 
     def assertConnectedAddresses(self, expectedIPs):
+        if self.no_robot:
+            print("NO_ROBOT flag is set, skipping motor IP check.")
+            return
+        
         print(f"Checking Motor Addresses")
         foundIPs = self.readConnectedAddresses()
         for ip in expectedIPs:
