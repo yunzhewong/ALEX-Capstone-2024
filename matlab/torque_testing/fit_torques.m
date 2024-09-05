@@ -1,4 +1,4 @@
-function fit_torques(average_currents, final_positions, static_index, cutoff_start, cutoff_end)
+function [m_times_l, F_kinetic, F_static] = fit_torques(average_currents, final_positions, static_index, cutoff_start, cutoff_end)
     figure
     hold on
     plot(final_positions)
