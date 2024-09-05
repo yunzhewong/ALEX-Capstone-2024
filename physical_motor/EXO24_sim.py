@@ -38,54 +38,59 @@ def interpolate_trajectory(viaPoints, dt):
     return time_steps, interpolated_trajectories
 
 def create_trajectory(dt, speed_scale=1.0):
+    GAIT_CYCLE_TIME = 2.0
     viaPoints = []
+    # Scaling factor to extend time from 8 seconds to 60 seconds
+    scale_factor = 5
     init_time = 0.0  # Initialize time
 
-    # WIDEN HIPS
-    viaPoints.append(np.array([0.0, -0.0, 0.0, 0.0, -0.0, -0.0, 0.0]))
-    viaPoints.append(np.array([1.0, -6.0, 6.0, 0.0, -0.0, -0.0, 0.0]))
+    # WIDEN HIPS (Scaled Times)
+    viaPoints.append(np.array([0.0 * scale_factor, -0.0, 0.0, 0.0, -0.0, -0.0, 0.0]))
+    viaPoints.append(np.array([1.0 * scale_factor, -6.0, 6.0, 0.0, -0.0, -0.0, 0.0]))
 
-    # SIT TO STAND
-    viaPoints.append(np.array([4.0, -6.0, 6.0, 45.0, -45.0, -90.0, 90.0]))
-    viaPoints.append(np.array([5.0, -6.0, 6.0, 45.0, -45.0, -90.0, 90.0]))
-    viaPoints.append(np.array([8.0, -6.0, 6.0, 0.0, -0.0, -0.0, 0.0]))
+    # SIT TO STAND (Scaled Times)
+    viaPoints.append(np.array([4.0 * scale_factor, -6.0, 6.0, 45.0, -45.0, -90.0, 90.0]))
+    viaPoints.append(np.array([5.0 * scale_factor, -6.0, 6.0, 45.0, -45.0, -90.0, 90.0]))
+    viaPoints.append(np.array([8.0 * scale_factor, -6.0, 6.0, 0.0, -0.0, -0.0, 0.0]))
 
-    # Side Step Trajectory
+    
+
+    # Side Step Trajectory (Scaled Times)
     SIDE_STEP_CYCLES = 2
-    GAIT_CYCLE_TIME = 1.0  # Example time for a gait cycle
+    init_time = 8.0 * scale_factor
     for _ in range(SIDE_STEP_CYCLES):
         viaPoints.append(
-            np.array([get_time(init_time, 0.05), -6.0, 6.0, 10.0, -10.0, -10.0, 10.0])
+            np.array([get_time(init_time, 0.05 * scale_factor), -6.0, 6.0, 10.0, -10.0, -10.0, 10.0])
         )
         viaPoints.append(
-            np.array([get_time(init_time, 0.15), -6.0, 6.0, 10.0, -30.0, -10.0, 65.0])
+            np.array([get_time(init_time, 0.15 * scale_factor), -6, 6, 10.0, -30.0, -10.0, 65.0])
         )
         viaPoints.append(
-            np.array([get_time(init_time, 0.30), -0.0, 30.0, 10.0, -30.0, -10.0, 65.0])
+            np.array([get_time(init_time, 0.30 * scale_factor), -0, 30, 10.0, -30.0, -10.0, 65.0])
         )
         viaPoints.append(
-            np.array([get_time(init_time, 0.50), -0.0, 30.0, 10.0, -10.0, -10.0, 10.0])
+            np.array([get_time(init_time, 0.50 * scale_factor), -0, 30, 10.0, -10, -10.0, 10.0])
         )
         viaPoints.append(
-            np.array([get_time(init_time, 0.65), -30.0, 0.0, 10.0, -10.0, -10.0, 10.0])
+            np.array([get_time(init_time, 0.65 * scale_factor), -30, 0, 10.0, -10, -10.0, 10.0])
         )
         viaPoints.append(
-            np.array([get_time(init_time, 0.80), -30.0, 0.0, 30.0, -10.0, -65.0, 10.0])
+            np.array([get_time(init_time, 0.80 * scale_factor), -30, 0, 30.0, -10.0, -65.0, 10.0])
         )
         viaPoints.append(
-            np.array([get_time(init_time, 0.90), -6.0, 6.0, 30.0, -10.0, -65.0, 10.0])
+            np.array([get_time(init_time, 0.90 * scale_factor), -6, 6, 30.0, -10.0, -65.0, 10.0])
         )
         viaPoints.append(
-            np.array([get_time(init_time, 1.0), -6.0, 6.0, 10.0, -10.0, -10.0, 10.0])
+            np.array([get_time(init_time, 1 * scale_factor), -6, 6, 10.0, -10.0, -10.0, 10.0])
         )
-        init_time = init_time + GAIT_CYCLE_TIME
+        init_time = init_time + GAIT_CYCLE_TIME * scale_factor
 
-    # RESET HIPS
+    # RESET HIPS (Scaled Times)
     viaPoints.append(
-        np.array([get_time(init_time, 0.10), -6.0, 6.0, 0.0, 0.0, -0.0, 0.0])
+        np.array([get_time(init_time, 0.10 * scale_factor), -6.0, 6.0, 0.0, 0.0, -0.0, 0.0])
     )
     viaPoints.append(
-        np.array([get_time(init_time, 0.20), -0.0, 0.0, 0.0, -0.0, -0.0, 0.0])
+        np.array([get_time(init_time, 0.20 * scale_factor), -0.0, 0.0, 0.0, -0.0, -0.0, 0.0])
     )
 
     # Time interpolation
