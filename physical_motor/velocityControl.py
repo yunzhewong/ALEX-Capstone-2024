@@ -49,12 +49,6 @@ if __name__ == "__main__":
 
 
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
-
-    times = np.array(state.log.times)
-
-
-
     ax1.plot(times, np.array(state.log.velocities), label="True", color="blue")
     ax1.plot(times, np.array(expected_velocities), label="Expected", color="red")
     ax1.set_ylabel("Velocity (rad/s)")
