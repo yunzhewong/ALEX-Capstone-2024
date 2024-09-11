@@ -46,10 +46,7 @@ def create_trajectory(dt, speed_scale=1.0):
     GAIT_CYCLE_TIME = 2.0
     viaPoints = []
     # Scaling factor to extend time from 8 seconds to 60 seconds
-    scale_factor = 5
-    init_time = 0.0  # Initialize time
-
-    # WIDEN HIPS (Scaled Times)
+    scale_factor = 1
     viaPoints.append(np.array([0.0 * scale_factor, -0.0, 0.0, 0.0, -0.0, -0.0, 0.0]))
     viaPoints.append(np.array([1.0 * scale_factor, -6.0, 6.0, 0.0, -0.0, -0.0, 0.0]))
 
