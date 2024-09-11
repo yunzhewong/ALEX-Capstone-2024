@@ -15,6 +15,11 @@ function [m_times_l, F_kinetic, F_static] = fit_torques(average_currents, final_
     Kt = 0.124 * 120;
     g = 9.81;
 
+    figure
+    plot(x, y)
+    hold on
+    plot(x, p(1)*x + p(2))
+
     
     % m = 5.77;
     m_times_l = Kt / (g*p(1));
