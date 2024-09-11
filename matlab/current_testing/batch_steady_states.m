@@ -1,4 +1,4 @@
-names = ["batch1", "batch2", "batch3", "batch4", "batch5", "batch0309", "batch2808", "exo1", "exo2"];
+names = ["batch1", "batch2", "batch3", "batch4", "batch5", "batch6", "batch0309", "batch2808", "exo1", "exo2"];
 
 figure
 hold on

@@ -1,6 +1,6 @@
-names = ["batch1", "batch2", "batch3", "batch4", "batch5"];
+names = ["batch1", "batch2", "batch3", "batch4", "batch5", "batch6"];
 
-current = 1.5;
+current = 1;
 name = "current" + compose("%1.2f", current) + "A.csv";
 
 figure
@@ -9,9 +9,11 @@ for i = 1:numel(names)
     batchName = names(i);
     filename = "./" + batchName + "/" + name;
     [times, currents, velocities, positions] = read_data(filename);
-    % plot(times, velocities)
-    % plot(times, currents)
-    plot(times, positions)
+
+    rolling = movmean(currents, 100);
+    plot(times, rolling)
+    % % plot(times, currents)
+    % plot(times, positions)
     % [c, v] = steady_state_current_velocity(batchName);
     % plot(c, v, "DisplayName", batchName)
 end
