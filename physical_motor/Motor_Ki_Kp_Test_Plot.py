@@ -40,9 +40,12 @@ def get_frequency(t):
 # plt.legend()
 # plt.show()
 
-Kp_pos_list = [50]
+Kp_pos = 10
 Kp_vel = 1
 Ki_vel = 0
+# Kp_pos_list = [10, 20]
+Kp_vel_list = [1, 10]
+# Ki_vel_list = [10, 20]
 
 DURATION = 10
 NAME = "pos_C_chirp0to25.csv"
@@ -51,15 +54,15 @@ INITIAL_FREQUENCY = 0
 FINAL_FREQUENCY = 25
 CHIRP_RATE = (FINAL_FREQUENCY - INITIAL_FREQUENCY) / DURATION
 
-t_r = np.arange(0, DURATION, 0.01)
-frequency = get_frequency(t_r)
-angular_frequency = 2 * np.pi * frequency
-p_r = WAVE_MAGNITUDE * np.sin(angular_frequency * t_r)
-plt.plot(t_r, p_r, label="ref", color = 'c')
+# t_r = np.arange(0, DURATION, 0.01)
+# frequency = get_frequency(t_r)
+# angular_frequency = 2 * np.pi * frequency
+# p_r = WAVE_MAGNITUDE * np.sin(angular_frequency * t_r)
+# plt.plot(t_r, p_r, label="ref", color = 'c')
 
 
-for Kp_pos in Kp_pos_list:
-    file_n = f'vel_C_chirp_test_Kpp = {Kp_pos} kpv = {Kp_vel} kiv = {Ki_vel}'
+for Kp_vel in Kp_vel_list:
+    file_n = f'pos_C_chirp_test_Kpp = {Kp_pos} kpv = {Kp_vel} kiv = {Ki_vel}'
     file_p = file_n + '.csv'
     df = pd.read_csv(file_p, on_bad_lines='skip')
     df = df.sort_values(by='Time')
