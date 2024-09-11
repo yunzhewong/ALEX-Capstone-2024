@@ -26,11 +26,25 @@ SAMPLE_PERIOD = 0.04
 integral_error = 0.0
 previous_error = 0.0
 
+f0 = 0
+k = 2.5
+
+def get_position_ref(running_time: float):
+    t = np.arange(0, 0.01, running_time)
+    velocity_ref = np.sin(2*np.pi * (f0*t + 0.5*k*t**2))
+    position_ref = cumulative_trapezoid(velocity_ref, t, initial=0)
+    return position_ref
+
+def get_velocity_ref(running_time: float):
+    return 
+
+
+
 def pid_controller(error, integral_error, previous_error, dt):
     P = Kp_pos * error
     I = Ki_pos * integral_error
     # D = Kd * (error - previous_error) / dt
-    return P + I + D
+    return P + I 
 
 
 def calculate_refPosition(running_time: float):
@@ -97,14 +111,13 @@ if __name__ == "__main__":
             state.csvwriter = CSVWriter(SAVE_NAME, [rightKnee.motor])
             state.initialised = True
 
-        frequency = get_frequency(runningTime)
-        angular_frequency = 2 * np.pi * frequency
-        velocity_ref = WAVE_MAGNITUDE * np.sin(angular_frequency * runningTime)
-        position_ref = cumulative_trapezoid(velocity_ref, t, initial=0)
+
+        velocity_ref = np.sin(2*np.pi * (f0*runningTime + 0.5*k*runningTime**2))
+        position_ref = get_position_ref(runningTime)
 
         global integral_error, previous_error
         current_position = (
-            rightKnee.getCVP().position if rightKnee.getCVP() is not None else 0.0
+            rightKnee.motor.getCVP().position if rightKnee.motor.getCVP() is not None else 0.0
         )
         error = position_ref - current_position
         integral_error += error * SAMPLE_PERIOD
