@@ -8,12 +8,12 @@ from aiosv2.ControlLoop import setup_teardown_motor_combination
 from aiosv2.SafeMotorOperation import SafeMotor
 from aiosv2.CVP import CVP
 
-MAX_TIME = 10
+MAX_TIME = 20
 PAUSE_TIME = 1.5
 
-START_MAGNITUDE = 1.80
-INCREMENT_MAGNITUDE = 0.02
-END_MAGNITUDE = 2.5
+START_MAGNITUDE = 1
+INCREMENT_MAGNITUDE = 0.01
+END_MAGNITUDE = 1.5
 
 COUNT = int((END_MAGNITUDE - START_MAGNITUDE) / INCREMENT_MAGNITUDE) + 2
 currents = [START_MAGNITUDE + INCREMENT_MAGNITUDE * i for i in range(COUNT)]
@@ -38,6 +38,7 @@ class BulkDataBatcher:
         self.reset_start = -1
         self.reset_end = -1
         self.reset_angle = -1
+        self.initial_angle = -1
 
     def at_time(self, t, connection: SafeMotor):
         cvp = connection.getCVP()
@@ -76,11 +77,14 @@ class BulkDataBatcher:
             connection.setCurrent(0)
         else:
             if not self.initialised:
+                if self.initial_angle == -1:
+                    self.initial_angle = cvp.position
+                    print(self.initial_angle)
                 self.initialised = True
 
-            trajectory.slow_move_to_pos(connection, -0.27)
-            
-            if abs(cvp.position + 0.27) < 0.05:
+            trajectory.slow_move_to_pos(connection, self.initial_angle)
+            print(cvp.position - self.initial_angle)
+            if abs(cvp.position - self.initial_angle) < 0.02:
                 self.post_pause_state = State.Collecting
                 self.state = State.Paused
                 self.initialised = False
@@ -94,7 +98,7 @@ if __name__ == "__main__":
         dataBatcher.at_time(runningTime, exoskeleton.rightAbductor)
         trajectory.slow_move_to_pos(exoskeleton.leftAbductor, 0)
         trajectory.slow_move_to_pos(exoskeleton.leftExtensor, 0)
-        trajectory.slow_move_to_pos(exoskeleton.rightExtensor, -math.pi / 2)
+        trajectory.slow_move_to_pos(exoskeleton.rightExtensor, 0)
         trajectory.slow_move_to_pos(exoskeleton.rightKnee, 0)
         trajectory.slow_move_to_pos(exoskeleton.leftKnee, 0)
 

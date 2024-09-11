@@ -72,13 +72,13 @@
                     }
                 },
                 "position": {
-                    "$comment": "diff = 0.7081, limit = 0.4249, softlow =-0.27, low = -0.2832",
+                    "$comment": "diff = 0.7081, limit = 0.4249, softlow =-0.27, low = -0.2832 -0.27 -0.29",
                     "soft": {
-                        "low": -0.27,
+                        "low": -10,
                         "high": 0.42
                     },
                     "hard": {
-                        "low": -0.29,
+                        "low": -10,
                         "high": 0.4249
                     }
                 }
