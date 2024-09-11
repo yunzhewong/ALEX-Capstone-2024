@@ -18,10 +18,10 @@ class State(Enum):
     Paused = (2,)
     Resetting = 3
 
-MAX_TIME = 5
+MAX_TIME = 10
 PAUSE_TIME = 1
 
-START_MAGNITUDE = 0
+START_MAGNITUDE = 0.7
 INCREMENT_MAGNITUDE = 0.05
 END_MAGNITUDE = 3.00
 
@@ -85,7 +85,7 @@ class BulkDataBatcher:
 
             connection.setVelocity(-1)
             
-            if cvp.position < 0.05:
+            if cvp.position < 0.00:
                 self.post_pause_state = State.Collecting
                 self.state = State.Paused
                 self.initialised = False

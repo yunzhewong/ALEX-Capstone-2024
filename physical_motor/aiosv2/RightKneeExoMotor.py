@@ -47,6 +47,7 @@ class RightKneeExoMotor(MotorCombination):
         return self.dataStream.errored()
 
     def disable(self):
+        self.motor.setCurrent(0)
         self.motor.disable()
         self.dataStream.disable()
 

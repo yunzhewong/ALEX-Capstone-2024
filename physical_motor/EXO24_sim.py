@@ -1,10 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 # Example joint names, replace these with the actual joint objects.
 class Joint:
     def __init__(self, name):
         self.name = name
+
 
 # Example joints, replace with actual joints from EXO24.py
 joints = [
@@ -13,15 +15,17 @@ joints = [
     Joint("leftExtensor"),
     Joint("rightExtensor"),
     Joint("leftKnee"),
-    Joint("rightKnee")
+    Joint("rightKnee"),
 ]
 
+
 def get_time(init_time, offset):
-    """ Calculate the time for each trajectory point based on the initial time and an offset. """
+    """Calculate the time for each trajectory point based on the initial time and an offset."""
     return init_time + offset
 
+
 def interpolate_trajectory(viaPoints, dt):
-    """ Interpolates trajectory points to consider velocity control. """
+    """Interpolates trajectory points to consider velocity control."""
     times = [point[0] for point in viaPoints]
     trajectories = [point[1:] for point in viaPoints]
 
@@ -37,6 +41,7 @@ def interpolate_trajectory(viaPoints, dt):
 
     return time_steps, interpolated_trajectories
 
+
 def create_trajectory(dt, speed_scale=1.0):
     GAIT_CYCLE_TIME = 2.0
     viaPoints = []
@@ -46,48 +51,126 @@ def create_trajectory(dt, speed_scale=1.0):
     viaPoints.append(np.array([1.0 * scale_factor, -6.0, 6.0, 0.0, -0.0, -0.0, 0.0]))
 
     # SIT TO STAND (Scaled Times)
-    viaPoints.append(np.array([4.0 * scale_factor, -6.0, 6.0, 45.0, -45.0, -90.0, 90.0]))
-    viaPoints.append(np.array([5.0 * scale_factor, -6.0, 6.0, 45.0, -45.0, -90.0, 90.0]))
+    viaPoints.append(
+        np.array([4.0 * scale_factor, -6.0, 6.0, 45.0, -45.0, -90.0, 90.0])
+    )
+    viaPoints.append(
+        np.array([5.0 * scale_factor, -6.0, 6.0, 45.0, -45.0, -90.0, 90.0])
+    )
     viaPoints.append(np.array([8.0 * scale_factor, -6.0, 6.0, 0.0, -0.0, -0.0, 0.0]))
-
-    
 
     # Side Step Trajectory (Scaled Times)
     SIDE_STEP_CYCLES = 2
     init_time = 8.0 * scale_factor
     for _ in range(SIDE_STEP_CYCLES):
         viaPoints.append(
-            np.array([get_time(init_time, 0.05 * scale_factor), -6.0, 6.0, 10.0, -10.0, -10.0, 10.0])
+            np.array(
+                [
+                    get_time(init_time, 0.05 * scale_factor),
+                    -6.0,
+                    6.0,
+                    10.0,
+                    -10.0,
+                    -10.0,
+                    10.0,
+                ]
+            )
         )
         viaPoints.append(
-            np.array([get_time(init_time, 0.15 * scale_factor), -6, 6, 10.0, -30.0, -10.0, 65.0])
+            np.array(
+                [
+                    get_time(init_time, 0.15 * scale_factor),
+                    -6,
+                    6,
+                    10.0,
+                    -30.0,
+                    -10.0,
+                    65.0,
+                ]
+            )
         )
         viaPoints.append(
-            np.array([get_time(init_time, 0.30 * scale_factor), -0, 30, 10.0, -30.0, -10.0, 65.0])
+            np.array(
+                [
+                    get_time(init_time, 0.30 * scale_factor),
+                    -0,
+                    30,
+                    10.0,
+                    -30.0,
+                    -10.0,
+                    65.0,
+                ]
+            )
         )
         viaPoints.append(
-            np.array([get_time(init_time, 0.50 * scale_factor), -0, 30, 10.0, -10, -10.0, 10.0])
+            np.array(
+                [
+                    get_time(init_time, 0.50 * scale_factor),
+                    -0,
+                    30,
+                    10.0,
+                    -10,
+                    -10.0,
+                    10.0,
+                ]
+            )
         )
         viaPoints.append(
-            np.array([get_time(init_time, 0.65 * scale_factor), -30, 0, 10.0, -10, -10.0, 10.0])
+            np.array(
+                [
+                    get_time(init_time, 0.65 * scale_factor),
+                    -30,
+                    0,
+                    10.0,
+                    -10,
+                    -10.0,
+                    10.0,
+                ]
+            )
         )
         viaPoints.append(
-            np.array([get_time(init_time, 0.80 * scale_factor), -30, 0, 30.0, -10.0, -65.0, 10.0])
+            np.array(
+                [
+                    get_time(init_time, 0.80 * scale_factor),
+                    -30,
+                    0,
+                    30.0,
+                    -10.0,
+                    -65.0,
+                    10.0,
+                ]
+            )
         )
         viaPoints.append(
-            np.array([get_time(init_time, 0.90 * scale_factor), -6, 6, 30.0, -10.0, -65.0, 10.0])
+            np.array(
+                [
+                    get_time(init_time, 0.90 * scale_factor),
+                    -6,
+                    6,
+                    30.0,
+                    -10.0,
+                    -65.0,
+                    10.0,
+                ]
+            )
         )
         viaPoints.append(
-            np.array([get_time(init_time, 1 * scale_factor), -6, 6, 10.0, -10.0, -10.0, 10.0])
+            np.array(
+                [get_time(init_time, 1 * scale_factor), -6, 6, 10.0, -10.0, -10.0, 10.0]
+            )
         )
         init_time = init_time + GAIT_CYCLE_TIME * scale_factor
 
     # RESET HIPS (Scaled Times)
     viaPoints.append(
-        np.array([get_time(init_time, 0.10 * scale_factor), -6.0, 6.0, 0.0, 0.0, -0.0, 0.0])
+        np.array(
+            [get_time(init_time, 0.10 * scale_factor), -6.0, 6.0, 0.0, 0.0, -0.0, 0.0]
+        )
     )
     viaPoints.append(
-        np.array([get_time(init_time, 0.20 * scale_factor), -0.0, 0.0, 0.0, -0.0, -0.0, 0.0])
+        np.array(
+            [get_time(init_time, 0.20 * scale_factor), -0.0, 0.0, 0.0, -0.0, -0.0, 0.0]
+        )
     )
 
     # Time interpolation
@@ -109,6 +192,7 @@ def create_trajectory(dt, speed_scale=1.0):
 
     return trajectory_positions, trajectory_velocities
 
+
 def plot_trajectory(trajectory_positions, trajectory_velocities, joints, dt):
     tt = np.arange(0, len(trajectory_positions[0, :]) * dt, dt)
     fig, ax = plt.subplots(2, sharex=True)
@@ -117,6 +201,7 @@ def plot_trajectory(trajectory_positions, trajectory_velocities, joints, dt):
         ax[1].plot(tt, trajectory_velocities[j, :], label=joints[j].name)
     plt.legend(loc="upper right")
     plt.show()
+
 
 # Define time step
 dt = 0.01
