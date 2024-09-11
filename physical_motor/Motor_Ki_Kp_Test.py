@@ -8,11 +8,21 @@ from aiosv2.RightKneeExoMotor import setup_teardown_rightknee_exomotor, RightKne
 from classes.DataLog import CVPPlot
 from aiosv2 import aios
 import trajectory
+import numpy as np
 
-Kp_pos = 1
-Kp_vel = 0.5
-Ki_vel = 0.1
-SAVE_NAME = f'Vel_C Kp_pos={Kp_pos}, Kp_vel={Kp_vel}, Ki_vel={Ki_vel}' + '.csv'
+Kp_pos = 10
+Kp_vel = 1
+Ki_vel = 0
+SAVE_NAME = f'pos_C_chirp_test_Kpp = {Kp_pos} kpv = {Kp_vel} kiv = {Ki_vel}.csv'
+
+DURATION = 10
+WAVE_MAGNITUDE = 1
+INITIAL_FREQUENCY = 0
+FINAL_FREQUENCY = 25
+CHIRP_RATE = (FINAL_FREQUENCY - INITIAL_FREQUENCY) / DURATION
+
+def get_frequency(t):
+    return CHIRP_RATE * t + INITIAL_FREQUENCY
         
 class State():
     def __init__(self):
@@ -37,20 +47,25 @@ if __name__ == "__main__":
             state.csvwriter = CSVWriter(SAVE_NAME, [rightKnee.motor])
             state.initialised = True
 
+
+        frequency = get_frequency(runningTime)
+        angular_frequency = 2 * np.pi * frequency
+        position_ref = WAVE_MAGNITUDE * np.sin(angular_frequency * runningTime)
+
         cvp = rightKnee.motor.getCVP()
 
-        rightKnee.motor.setVelocity(1*math.sin(runningTime))
+        rightKnee.motor.setPosition(position_ref)
 
         state.log.addCVP(runningTime, cvp)
         state.csvwriter.addCVP(runningTime, [rightKnee.motor])
 
-    setup_teardown_motor_combination(RightKneeExoMotor(), func, 7)
+    setup_teardown_motor_combination(RightKneeExoMotor(), func, DURATION)
     state.log.download(SAVE_NAME)
     setup_teardown_motor_combination(RightKneeExoMotor(), reset_position, 3)
 
     
 
-    # state.log.plot()
+    state.log.plot()
 
 
     

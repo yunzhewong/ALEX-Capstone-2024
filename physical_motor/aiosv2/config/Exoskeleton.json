@@ -213,7 +213,7 @@
         {
             "ip": "10.10.10.30",
             "name": "right-knee",
-            "positionP": 10,
+            "positionP": 20,
             "velocityP": 1,           
             "velocityI": 0.0,           
             "safetyConfiguration": {
