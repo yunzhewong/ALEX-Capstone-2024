@@ -124,14 +124,7 @@ if __name__ == "__main__":
         velocity = pid_controller(
             error, integral_error, previous_error, SAMPLE_PERIOD
         ) + calculate_refVelocity(runningTime)
-        desired_position = sum(
-            coef * (runningTime**i) for i, coef in enumerate(DESIRED_TRAJECTORY)
-        )
-        desired_velocity = sum(
-            coef * (runningTime**i) for i, coef in enumerate(DESIRED_VELOCITY)
-        )
-        velocity += desired_velocity - calculate_refVelocity(runningTime)
-        RightKneeExoMotor.setVelocity(velocity)
+        rightKnee.motor.setVelocity(velocity)
         previous_error = error
 
         cvp = rightKnee.motor.getCVP()
