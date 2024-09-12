@@ -12,3 +12,7 @@ fit_torques(average_currents, final_positions, 17, 17, 40);
 %% 
 [average_currents, final_positions] = read_torque_batch("withoutkneeleg");
 fit_torques(average_currents, final_positions, 36, 36, 55);
+
+%% 
+[average_currents, final_positions] = read_torque_batch("justend");
+fit_torques(average_currents, final_positions, 55, 55, 61);
