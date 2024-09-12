@@ -33,17 +33,17 @@ function [omega, M, theta] = bode_from_chirp(t, u, y)
     theta = ratio_angle(1:total_points / 2 + 1);
 
 
-    figure
-    semilogx(omega, M)
-    title("Magnitude Plot")
-    xlabel("Frequency (rads^-1)")
-    ylabel("Magnitude (db)")
-
-    figure
-    semilogx(omega, theta);
-    title("Phase Plot vs Frequency")
-    xlabel("Frequency (rads^-1)")
-    ylabel("Phase (degrees)")
+    % figure
+    % semilogx(omega, M)
+    % title("Magnitude Plot")
+    % xlabel("Frequency (rads^-1)")
+    % ylabel("Magnitude (db)")
+    % 
+    % figure
+    % semilogx(omega, theta);
+    % title("Phase Plot vs Frequency")
+    % xlabel("Frequency (rads^-1)")
+    % ylabel("Phase (degrees)")
 
 
 end

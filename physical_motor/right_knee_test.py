@@ -11,17 +11,7 @@ from classes.DataLog import CVPPlot
 from aiosv2 import aios
 import trajectory
 
-DURATION = 1
-NAME = "chirp0to2550s.csv"
 
-WAVE_MAGNITUDE = 2.5
-INITIAL_FREQUENCY = 0
-FINAL_FREQUENCY = 25
-CHIRP_RATE = (FINAL_FREQUENCY - INITIAL_FREQUENCY) / DURATION
-
-def get_frequency(t):
-    return CHIRP_RATE * t + INITIAL_FREQUENCY
-        
 class State():
     def __init__(self):
         self.log = CVPPlot()
@@ -33,22 +23,18 @@ if __name__ == "__main__":
 
     def func(rightKnee: RightKneeExoMotor, runningTime: float):
         if not state.initialised:
-            state.csvwriter = CSVWriter("renamed.5A.csv", [rightKnee.motor])
+            state.csvwriter = CSVWriter("210.csv", [rightKnee.motor])
             state.initialised = True
-
-        frequency = get_frequency(runningTime)
-        angular_frequency = 2 * np.pi * frequency
-        current = WAVE_MAGNITUDE * np.sin(angular_frequency * runningTime)
 
         cvp = rightKnee.motor.getCVP()
 
-        rightKnee.motor.setCurrent(current)
+        rightKnee.motor.setCurrent(2)
 
         state.log.addCVP(runningTime, cvp)
         state.csvwriter.addCVP(runningTime, [rightKnee.motor])
 
 
-    setup_teardown_motor_combination(RightKneeExoMotor(), func, 1)
+    setup_teardown_motor_combination(RightKneeExoMotor(), func, 10)
     
 
     state.log.plot()

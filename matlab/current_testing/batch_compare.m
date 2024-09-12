@@ -1,6 +1,6 @@
 names = ["batch1", "batch2", "batch3", "batch4", "batch5", "batch6"];
 
-current = 2;
+current = 1;
 name = "current" + compose("%1.2f", current) + "A.csv";
 
 figure
@@ -17,6 +17,9 @@ for i = 1:numel(names)
     % [c, v] = steady_state_current_velocity(batchName);
     % plot(c, v, "DisplayName", batchName)
 end
+title("Rolling Average Velocity vs Time for Current = 1A Command")
+xlabel("Time (s)")
+ylabel("Rolling Average Velocity (rads^{-1})")
 legend("Location", "southeast")
 
 dcm = datacursormode(gcf);

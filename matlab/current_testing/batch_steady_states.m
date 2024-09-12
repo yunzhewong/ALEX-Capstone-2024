@@ -7,6 +7,9 @@ for i = 1:numel(names)
     [c, v] = steady_state_current_velocity(batchName);
     plot(c, v, "DisplayName", batchName)
 end
+title("Steady State Velocity vs Steady State Current for Various Batches")
+ylabel("Steady State Velocity (rads^{-1})")
+xlabel("Steady State Current (A)")
 legend("Location", "southeast")
 
 
