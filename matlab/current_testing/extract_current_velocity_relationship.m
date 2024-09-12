@@ -25,9 +25,9 @@ function [J_t, b_2, b_1] = extract_current_velocity_relationship(directory, star
         first_accels(i) = mean(accels);
     end
     
-    figure
-    plot(steady_state_velocities)
-    
+    % figure
+    % plot(steady_state_velocities)
+    % 
     %assumption
     Kt = 0.124 * 120;
     F_kinetic = 8.1003;
@@ -42,19 +42,19 @@ function [J_t, b_2, b_1] = extract_current_velocity_relationship(directory, star
     % J_t*a_i = tau_i
     J_t_measurements = expected_torques ./ moving_accelerations;
     
-    figure
-    plot(J_t_measurements)
+    % figure
+    % plot(J_t_measurements)
     
     J_t = mean(J_t_measurements);
     fprintf("J_t = %.4f\n", J_t);
     
     b_predictions = expected_torques ./ moving_velocities;
     
-    figure
-    plot(moving_currents, b_predictions)
-    title("Observed Current vs Predicted Damping Coefficient")
-    ylabel("Damping Coefficient")
-    xlabel("Current (A)")
+    % figure
+    % plot(moving_currents, b_predictions)
+    % title("Observed Current vs Predicted Damping Coefficient")
+    % ylabel("Damping Coefficient")
+    % xlabel("Current (A)")
     
     %looks like b is a function of i, such that b(i) = b_2*i + b_1
     pb = polyfit(moving_currents, b_predictions, 1);
@@ -65,14 +65,14 @@ function [J_t, b_2, b_1] = extract_current_velocity_relationship(directory, star
     sim_currents = moving_currents(1):0.01:moving_currents(end);
     sim_b = b_2 * sim_currents + b_1;
     
-    figure
-    plot(moving_currents, b_predictions)
-    hold on
-    plot(sim_currents, sim_b)   
-    title("Current vs Predicted Damping Coefficient")
-    ylabel("Damping Coefficient")
-    xlabel("Current (A)")
-    legend("Observed Results", "Line of Best Fit")
+    % figure
+    % plot(moving_currents, b_predictions)
+    % hold on
+    % plot(sim_currents, sim_b)   
+    % title("Current vs Predicted Damping Coefficient")
+    % ylabel("Damping Coefficient")
+    % xlabel("Current (A)")
+    % legend("Observed Results", "Line of Best Fit")
     
     expected_velocities = zeros(1, numel(sim_currents));
     for i = 1:numel(sim_currents)
@@ -82,12 +82,12 @@ function [J_t, b_2, b_1] = extract_current_velocity_relationship(directory, star
         end
     end
     
-    figure
-    plot(sim_currents, expected_velocities)
-    hold on
-    plot(steady_state_currents, steady_state_velocities)
-    title("Current vs Velocity")
-    ylabel("Velocity (rad/s)")
-    xlabel("Current (A)")
-    legend("Observed Results", "Modelled Results")
+    % figure
+    % plot(sim_currents, expected_velocities)
+    % hold on
+    % plot(steady_state_currents, steady_state_velocities)
+    % title("Current vs Velocity")
+    % ylabel("Velocity (rad/s)")
+    % xlabel("Current (A)")
+    % legend("Observed Results", "Modelled Results")
 end
