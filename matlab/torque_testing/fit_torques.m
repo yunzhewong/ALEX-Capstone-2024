@@ -4,6 +4,8 @@ function [m_times_l, F_kinetic, F_static] = fit_torques(average_currents, final_
     plot(final_positions)
     xline(cutoff_start)
     xline(cutoff_end)
+    dcm = datacursormode(gcf);
+    set(dcm, 'UpdateFcn', @myUpdateFcn);
 
     %K_t*i = mgl*sin(theta) + F_kinetic
     % sin(theta) = (K_t/mgl)*i - F_kinetic/(m*g*l)
@@ -19,7 +21,7 @@ function [m_times_l, F_kinetic, F_static] = fit_torques(average_currents, final_
     plot(x, y)
     hold on
     plot(x, p(1)*x + p(2))
-
+    
     
     % m = 5.77;
     m_times_l = Kt / (g*p(1));
@@ -58,4 +60,28 @@ function [m_times_l, F_kinetic, F_static] = fit_torques(average_currents, final_
     legend("Measured Results", "Modelled Results", "Location", "southeast")
     xlabel("Mean Current")
     ylabel("Angle (degrees)")
+
+
+    dcm = datacursormode(gcf);
+    set(dcm, 'UpdateFcn', @myUpdateFcn);
+    
+    
+
+end
+
+% Custom update function to display plot name
+function output_txt = myUpdateFcn(~, event_obj)
+    % Get the target (the plot line)
+    target = get(event_obj, 'Target');
+    
+    % Get the display name
+    displayName = get(target, 'DisplayName');
+    
+    % Get the position of the data cursor
+    pos = get(event_obj, 'Position');
+    
+    % Construct the output text
+    output_txt = {['X: ', num2str(pos(1))], ...
+                  ['Y: ', num2str(pos(2))], ...
+                  ['Name: ', displayName]};
 end
