@@ -106,6 +106,7 @@ if __name__ == "__main__":
     
     state = State()
 
+
     def func(rightKnee: RightKneeExoMotor, runningTime: float):
         if not state.initialised:
             state.csvwriter = CSVWriter(SAVE_NAME, [rightKnee.motor])
