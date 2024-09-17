@@ -42,9 +42,11 @@ def get_frequency(t):
 
 Kp_pos = 10
 Kp_vel = 1
+Ki_pos = 0
 Ki_vel = 0
+
 # Kp_pos_list = [10, 20]
-Kp_vel_list = [1, 10]
+Kp_vel_list = [ 1]
 # Ki_vel_list = [10, 20]
 
 DURATION = 10
@@ -61,22 +63,35 @@ CHIRP_RATE = (FINAL_FREQUENCY - INITIAL_FREQUENCY) / DURATION
 # plt.plot(t_r, p_r, label="ref", color = 'c')
 
 
-for Kp_vel in Kp_vel_list:
-    file_n = f'pos_C_chirp_test_Kpp = {Kp_pos} kpv = {Kp_vel} kiv = {Ki_vel}'
-    file_p = file_n + '.csv'
-    df = pd.read_csv(file_p, on_bad_lines='skip')
-    df = df.sort_values(by='Time')
+file_n = f'vel_C_chirp_test_Kpp={Kp_pos}_Ki_pos={Ki_pos}_kpv={Kp_vel}_kiv={Ki_vel}'
+file_p = file_n + '.csv'
+df = pd.read_csv(file_p, on_bad_lines='skip')
+df = df.sort_values(by='Time')
+t = df['Time'].to_numpy()
+c = df[' Motor Current'].to_numpy()
+v = df[' Motor Velocities'].to_numpy()
+p = df[' Motor Positions'].to_numpy()
 
-    t = df['Time'].to_numpy()
-    c = df[' Motor Current'].to_numpy()
-    v = df[' Motor Velocities'].to_numpy()
-    p = df[' Motor Positions'].to_numpy()
-    # ax1.plot(t, c, label=f'Position gain = {gain}')
-    # ax1.set_ylabel("Current (A)")
-    plt.plot(t, p, label=f'Kpp = {Kp_pos} kpv = {Kp_vel} kiv = {Ki_vel}')
 
-plt.legend()
-plt.show()
+fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+
+
+# for Kp_vel in Kp_vel_list:
+#     file_n = f'vel_C_chirp_test_Kpp={Kp_pos}_Ki_pos={Ki_pos}_kpv={Kp_vel}_kiv={Ki_vel}'
+#     file_p = file_n + '.csv'
+#     df = pd.read_csv(file_p, on_bad_lines='skip')
+#     df = df.sort_values(by='Time')
+
+#     t = df['Time'].to_numpy()
+#     c = df[' Motor Current'].to_numpy()
+#     v = df[' Motor Velocities'].to_numpy()
+#     p = df[' Motor Positions'].to_numpy()
+#     # ax1.plot(t, c, label=f'Position gain = {gain}')
+#     # ax1.set_ylabel("Current (A)")
+#     plt.plot(t, p, label=f'Kpp = {Kp_pos} kpv = {Kp_vel} kiv = {Ki_vel}')
+
+# plt.legend()
+# plt.show()
 
 
 # fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)

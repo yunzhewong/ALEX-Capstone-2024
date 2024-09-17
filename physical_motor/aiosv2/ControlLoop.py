@@ -43,10 +43,10 @@ def setup_teardown_motor_combination(
 
         combination.logCalibrationData()
 
-        result = input("Do you want to continue? (y): ")
+        # result = input("Do you want to continue? (y): ")
 
-        if result != 'y':
-            raise Exception("Cancelled by the user")
+        # if result != 'y':
+        #     raise Exception("Cancelled by the user")
     
         print("Starting Control Loop")
 
