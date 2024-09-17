@@ -17,3 +17,12 @@ F_kinetic = 8.1003;
 F_static = 10.4160;
 EPSILON = 0.005;
 
+% first order model
+estimated_b = b_1 + 2.5 * b_2;
+
+curr_vel_const = 180 / (pi * 3);
+K = K_t / estimated_b;
+tau = J / estimated_b;
+
+closed_loop_A = -35.56 / 0.5571;
+closed_loop_B = 34.56 / 0.5571;

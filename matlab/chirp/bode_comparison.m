@@ -2,8 +2,8 @@ b_2 = -13.8341;
 b_1 = 51.0314;
 estimated_b = b_1 + 2.5 * b_2;
 
-Kt_b = 0.124 * 120 / estimated_b;
-J_b = 9.1617 / estimated_b;
+Kt_b = 0.124 * 120 / estimated_b
+J_b = 9.1617 / estimated_b
 
 sys = tf(Kt_b, [J_b 1]);
 [omega_sim, m_sim, theta_sim] = bode_from_chirp(out.current.Time, out.current.Data', out.velocity.Data');
