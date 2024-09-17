@@ -11,13 +11,14 @@ import trajectory
 import numpy as np
 from scipy.integrate import cumulative_trapezoid
 from rebuild import trajectoryGenerator as tg
+import matplotlib.pyplot as plt
 
 Kp_pos = 10
-Ki_pos = 0.01
+Ki_pos = 0.1
 Kp_vel = 10
 Ki_vel = 0
-SAVE_NAME = f'pos_C_chirp_test_Kpp = {Kp_pos} kpv = {Kp_vel} kiv = {Ki_vel}.csv'
-DURATION = 10
+SAVE_NAME = f'Cascade_traj_kpp={Kp_pos}_kip={Ki_pos}_kpv={Kp_vel}_kiv={Ki_vel}.csv'
+DURATION = 60
 WAVE_MAGNITUDE = 1
 INITIAL_FREQUENCY = 0
 FINAL_FREQUENCY = 25
@@ -227,13 +228,32 @@ def create_trajectory(dt):
 
 #     state.log.plot()
 
+def get_value(time_array, value_array, running_time):
+    index = np.argmin(np.abs(time_array - running_time))
+    return value_array[index]
+
 
 if __name__ == "__main__":
     
     state = State()
 
     trajectory_positions, trajectory_velocities = create_trajectory(SAMPLE_PERIOD)
-    right_knee_traj = trajectory_velocities[5,:]
+    right_knee_velocities = trajectory_velocities[5,:]
+    right_knee_positions = trajectory_positions[5,:]
+    time_array_vel = np.arange(0, len(right_knee_velocities)*SAMPLE_PERIOD, SAMPLE_PERIOD)
+    time_array_pos = np.arange(0, len(right_knee_positions)*SAMPLE_PERIOD, SAMPLE_PERIOD)
+
+    for i in range(len(right_knee_positions)):
+        right_knee_positions[i] = math.radians(right_knee_positions[i])
+
+    for i in range(len(right_knee_velocities)):
+        right_knee_velocities[i] = math.radians(right_knee_velocities[i])
+
+    # fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+
+    # ax1.plot(time_array_vel, right_knee_velocities)
+    # ax2.plot(time_array_pos, right_knee_positions)
+    # plt.show()
 
 
 
@@ -243,31 +263,29 @@ if __name__ == "__main__":
             state.initialised = True
 
 
-        velocity_ref = sum(coef * (runningTime**i) for i, coef in enumerate(POLY_COEFFICIENTS))
-        position_ref = sum(coef * (runningTime**i)for i, coef in enumerate(POLYNOMIAL_COEFFICIENTS))
+        velocity_ref = get_value(time_array_vel, right_knee_velocities, runningTime)
+        position_ref = get_value(time_array_pos, right_knee_positions, runningTime)
+        # print(velocity_ref)
 
         global integral_error, previous_error
-        current_position = (
-            rightKnee.motor.getCVP().position if rightKnee.motor.getCVP() is not None else 0.0
-        )
+        cvp = rightKnee.motor.getCVP()
+        current_position = cvp.position
+
         error = position_ref - current_position
         integral_error += error * SAMPLE_PERIOD
         velocity = pid_controller(
             error, integral_error, previous_error, SAMPLE_PERIOD
-        ) + calculate_refVelocity(runningTime)
+        ) + velocity_ref
         # Incorporate desired trajectory and velocity
-        desired_position = sum(
-            coef * (runningTime**i) for i, coef in enumerate(DESIRED_TRAJECTORY)
-        )
-        desired_velocity = sum(
-            coef * (runningTime**i) for i, coef in enumerate(DESIRED_VELOCITY)
-        )
+
+        # desired_position = 0
+        # desired_velocity = 0
+
         # Adjust control outputs based on desired values
-        velocity += desired_velocity - calculate_refVelocity(runningTime)
+        # velocity += desired_velocity - calculate_refVelocity(runningTime)
+        # print(velocity)
         rightKnee.motor.setVelocity(velocity)
         previous_error = error
-
-        cvp = rightKnee.motor.getCVP()
 
         state.log.addCVP(runningTime, cvp)
         state.csvwriter.addCVP(runningTime, [rightKnee.motor])

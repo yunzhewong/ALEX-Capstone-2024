@@ -159,6 +159,8 @@ class CVPPlot():
         velocities = np.array(self.velocities)
         positions = np.array(self.positions)
 
+        assert len(times) == len(currents) == len(velocities) == len(positions), "Array lengths must be equal"
+
         data = np.column_stack(
             (
                 times,
@@ -171,10 +173,5 @@ class CVPPlot():
         header = "Time, Motor Current, Motor Velocities, Motor Positions"
 
         # Save data to CSV file
-        np.savetxt(
-            name,
-            data,
-            delimiter=",",
-            header=header,
-            comments="",
-        )
+        with open(name, 'w') as f:
+            np.savetxt(f, data, delimiter=",", header=header, comments="", fmt='%.10f')
