@@ -1,4 +1,4 @@
-from SafeMotorOperation import SafeMotor
+from aiosv2.SafeMotorOperation import SafeMotor
 
 CONTROLLER_P_GAIN = 10
 CONTROLLER_I_GAIN = 0.1

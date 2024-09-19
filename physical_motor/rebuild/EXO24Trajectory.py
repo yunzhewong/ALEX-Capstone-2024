@@ -10,7 +10,7 @@ def create_trajectory(dt):
     
     # Time, L-Abd, R-Abd, L-Ext, R-Ext, L-Knee, R-Knee
     # WIDEN HIPS
-    viaPoints.append(np.array([0.0, 2.0, -2.0, 0.0, -0.0, -0.0, 0.0]))
+    viaPoints.append(np.array([0.0, 6.0, -6.0, 0.0, -0.0, -0.0, 0.0]))
     viaPoints.append(np.array([1.0, -0.0, 0.0, 0.0, -0.0, -0.0, 0.0]))
     
     # SIT TO STAND
@@ -100,7 +100,7 @@ def create_trajectory(dt):
         np.array([init_time + 1, -0.0, 0.0, 0.0, 0.0, -0.0, 0.0])
     )
     viaPoints.append(
-        np.array([init_time + 2, 2.0, -2.0, 0.0, -0.0, -0.0, 0.0])
+        np.array([init_time + 2, 6.0, -6.0, 0.0, -0.0, -0.0, 0.0])
     )
     init_time = init_time + 2
 
@@ -112,15 +112,16 @@ def create_trajectory(dt):
     
     return tg.getTrajectory(vp.T, dt, Kv=0.75)
 
+
+SAMPLE_PERIOD = 1 / 300
 class Exo24Trajectory():
-    def __init__(self, dt):
-        positions, velocities = create_trajectory(dt)
-        self.dt = dt
+    def __init__(self):
+        positions, velocities = create_trajectory(SAMPLE_PERIOD)
         self.positions = positions / 180 * math.pi
         self.velocities = velocities / 180 * math.pi
 
     def get_state(self, t):
-        index = math.floor(t / self.dt)
+        index = math.floor(t / SAMPLE_PERIOD)
         position = self.positions[:, index]
         velocity = self.velocities[:, index]
 
