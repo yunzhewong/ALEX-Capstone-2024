@@ -7,7 +7,7 @@ def getTrajectory(via_points, time_delta, Kv=0.0):
 
     # Set trajectory initial conditions
     trajectory_positions = np.zeros([number_of_via_points, 1])
-    trajector_velocities = np.zeros([number_of_via_points, 1])
+    trajectory_velocities = np.zeros([number_of_via_points, 1])
     via_point_initial_velocity = np.zeros([number_of_joints, 1])
     via_point_final_velocity = np.zeros([number_of_joints, 1])
 
@@ -37,19 +37,19 @@ def getTrajectory(via_points, time_delta, Kv=0.0):
         )
         if i == 0:
             trajectory_positions = segment_positions
-            trajector_velocities = segment_velocities
+            trajectory_velocities = segment_velocities
         else:
             ## NOTE: Check axis
             trajectory_positions = np.concatenate(
                 (trajectory_positions, segment_positions), axis=1
             )
-            trajector_velocities = np.concatenate(
-                (trajector_velocities, segment_velocities), axis=1
+            trajectory_velocities = np.concatenate(
+                (trajectory_velocities, segment_velocities), axis=1
             )
 
         via_point_initial_velocity = via_point_final_velocity
 
-    return trajectory_positions, trajector_velocities
+    return trajectory_positions, trajectory_velocities
 
 
 def getSegment(viaPoints, time_delta, viaPointVelInit, viaPointVel):

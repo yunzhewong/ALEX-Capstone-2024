@@ -156,28 +156,6 @@ class CVPPlot():
         plt.show()
 
     def download(self, name):
-        # times = np.array(self.times)
-        # currents = np.array(self.currents)
-        # velocities = np.array(self.velocities)
-        # positions = np.array(self.positions)
-
-        # assert len(times) == len(currents) == len(velocities) == len(positions), "Array lengths must be equal"
-
-        # data = np.column_stack(
-        #     (
-        #         times,
-        #         currents,
-        #         velocities,
-        #         positions,
-        #     )
-        # )
-
-    #     header = "Time, Motor Current, Motor Velocities, Motor Positions"
-
-    #     # Save data to CSV file
-    #     with open(name, 'w') as f:
-    #         np.savetxt(f, data, delimiter=",", header=header, comments="")
-
         data = {
             'Time': self.times,
             'Current': self.currents,
@@ -185,9 +163,6 @@ class CVPPlot():
             'Position': self.positions
         }
 
-        # Create a DataFrame
         df = pd.DataFrame(data)
-
-        # Save to a CSV file
         df.to_csv('name', index=False)
         

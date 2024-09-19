@@ -4,7 +4,7 @@
         {
             "ip": "10.10.10.30",
             "name": "right-knee",
-            "positionP": 1,
+            "positionP": 10,
             "velocityP": 1,           
             "velocityI": 0.02,           
             "safetyConfiguration": {
