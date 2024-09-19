@@ -292,7 +292,7 @@ if __name__ == "__main__":
 
     setup_teardown_motor_combination(RightKneeExoMotor(), func, DURATION)
     state.log.download(SAVE_NAME)
-    setup_teardown_motor_combination(RightKneeExoMotor(), reset_position, 6)
+    setup_teardown_motor_combination(RightKneeExoMotor(), reset_position, 2)
 
     state.log.plot()
 

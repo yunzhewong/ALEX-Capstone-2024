@@ -8,8 +8,6 @@ from scipy.integrate import cumulative_trapezoid
 from scipy.misc import derivative
 from rebuild import trajectoryGenerator as tg
 
-
-
 def create_trajectory(dt):
     viaPoints = []
     
@@ -117,7 +115,6 @@ Ki_pos = 0.1
 Kp_vel = 10
 Ki_vel = 0
 
-
 trajectory_positions, trajectory_velocities = create_trajectory(SAMPLE_PERIOD)
 right_knee_velocities = trajectory_velocities[5,:]
 right_knee_positions = trajectory_positions[5,:]
@@ -129,26 +126,22 @@ for i in range(len(right_knee_positions)):
 for i in range(len(right_knee_velocities)):
     right_knee_velocities[i] = math.radians(right_knee_velocities[i])
 
-
-
 file_n = f'Cascade_traj_kpp={Kp_pos}_kip={Ki_pos}_kpv={Kp_vel}_kiv={Ki_vel}'
 file_p = file_n + '.csv'
 df = pd.read_csv(file_p, on_bad_lines='skip')
 # df = df[df['Time'] <= 61] 
-df = df.sort_values(by='Time')
-t = df['Time'].to_numpy()
-c = df[' Motor Current'].to_numpy()
-v = df[' Motor Velocities'].to_numpy()
-p = df[' Motor Positions'].to_numpy()
+# df = df.sort_values(by='Time')
+# t = df['Time'].to_numpy()
+# c = df[' Motor Current'].to_numpy()
+# v = df[' Motor Velocities'].to_numpy()
+# p = df[' Motor Positions'].to_numpy()
 
 
-# data = np.loadtxt(file_p, delimiter=',', skiprows=1)
-# t = data[:, 0]
-# c = data[:, 1]
-# v = data[:, 2]
-# p = data[:, 3]
-
-
+data = np.loadtxt(file_p, delimiter=',', skiprows=1)
+t = data[:, 0]
+c = data[:, 1]
+v = data[:, 2]
+p = data[:, 3]
 
 fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
 ax1.plot(time_array_vel, right_knee_velocities, label='reference')
@@ -157,23 +150,3 @@ ax2.plot(time_array_pos, right_knee_positions, label='reference')
 ax2.plot(t, p)
 plt.legend()
 plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

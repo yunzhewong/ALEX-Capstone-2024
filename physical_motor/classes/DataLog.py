@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from aiosv2.CVP import CVP
+import pandas as pd
+import os
 
 class DataLog:
     def __init__(self, desired_trajectory_bottom=None, desired_trajectory_top=None, desired_velocity_bottom=None, desired_velocity_top=None):
@@ -154,24 +156,38 @@ class CVPPlot():
         plt.show()
 
     def download(self, name):
-        times = np.array(self.times)
-        currents = np.array(self.currents)
-        velocities = np.array(self.velocities)
-        positions = np.array(self.positions)
+        # times = np.array(self.times)
+        # currents = np.array(self.currents)
+        # velocities = np.array(self.velocities)
+        # positions = np.array(self.positions)
 
-        assert len(times) == len(currents) == len(velocities) == len(positions), "Array lengths must be equal"
+        # assert len(times) == len(currents) == len(velocities) == len(positions), "Array lengths must be equal"
 
-        data = np.column_stack(
-            (
-                times,
-                currents,
-                velocities,
-                positions,
-            )
-        )
+        # data = np.column_stack(
+        #     (
+        #         times,
+        #         currents,
+        #         velocities,
+        #         positions,
+        #     )
+        # )
 
-        header = "Time, Motor Current, Motor Velocities, Motor Positions"
+    #     header = "Time, Motor Current, Motor Velocities, Motor Positions"
 
-        # Save data to CSV file
-        with open(name, 'w') as f:
-            np.savetxt(f, data, delimiter=",", header=header, comments="", fmt='%.10f')
+    #     # Save data to CSV file
+    #     with open(name, 'w') as f:
+    #         np.savetxt(f, data, delimiter=",", header=header, comments="")
+
+        data = {
+            'Time': self.times,
+            'Current': self.currents,
+            'Velocity': self.velocities,
+            'Position': self.positions
+        }
+
+        # Create a DataFrame
+        df = pd.DataFrame(data)
+
+        # Save to a CSV file
+        df.to_csv('name', index=False)
+        
