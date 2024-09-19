@@ -10,13 +10,13 @@ def create_trajectory(dt):
     
     # Time, L-Abd, R-Abd, L-Ext, R-Ext, L-Knee, R-Knee
     # WIDEN HIPS
-    viaPoints.append(np.array([0.0, -0.0, 0.0, 0.0, -0.0, -0.0, 0.0]))
-    viaPoints.append(np.array([1.0, -6.0, 6.0, 0.0, -0.0, -0.0, 0.0]))
+    viaPoints.append(np.array([0.0, 2.0, -2.0, 0.0, -0.0, -0.0, 0.0]))
+    viaPoints.append(np.array([1.0, -0.0, 0.0, 0.0, -0.0, -0.0, 0.0]))
     
     # SIT TO STAND
-    viaPoints.append(np.array([5.0, -6.0, 6.0, 45.0, -45.0, -90.0, 90.0]))
-    viaPoints.append(np.array([6.0, -6.0, 6.0, 45.0, -45.0, -90.0, 90.0]))
-    viaPoints.append(np.array([10.0, -6.0, 6.0, 0.0, -0.0, -0.0, 0.0]))
+    viaPoints.append(np.array([5.0, -0.0, 0.0, 45.0, -45.0, -90.0, 90.0]))
+    viaPoints.append(np.array([6.0, -0.0, 0.0, 45.0, -45.0, -90.0, 90.0]))
+    viaPoints.append(np.array([10.0, -0.0, 0.0, 0.0, -0.0, -0.0, 0.0]))
 
     init_time = 10 + 2
 
@@ -51,8 +51,8 @@ def create_trajectory(dt):
             viaPoints.append(
                 np.array(
                     [   get_gait_time(init_time, i * 0.05),
-                        -6 + Abd_L[i],
-                        6 + Abd_R[i],
+                        Abd_L[i],
+                        Abd_R[i],
                         Ext_L[i],
                         Ext_R[i],
                         Knee_L[i],
@@ -70,37 +70,37 @@ def create_trajectory(dt):
     SIDE_STEP_CYCLES = 2
     for _ in range(SIDE_STEP_CYCLES):
         viaPoints.append(
-            np.array([get_side_step_cycle_time(init_time, 0.05), -6.0, 6.0, 10.0, -10.0, -10.0, 10.0])
+            np.array([get_side_step_cycle_time(init_time, 0.05), -0.0, 0.0, 10.0, -10.0, -10.0, 10.0])
         )
         viaPoints.append(
-            np.array([get_side_step_cycle_time(init_time, 0.15), -6, 6, 10.0, -30.0, -10.0, 65.0])
+            np.array([get_side_step_cycle_time(init_time, 0.15), -0.0, 0.0, 10.0, -30.0, -10.0, 65.0])
         )
         viaPoints.append(
-            np.array([get_side_step_cycle_time(init_time, 0.30), -0, 30, 10.0, -30.0, -10.0, 65.0])
+            np.array([get_side_step_cycle_time(init_time, 0.30), 6, 24, 10.0, -30.0, -10.0, 65.0])
         )
         viaPoints.append(
-            np.array([get_side_step_cycle_time(init_time, 0.50), -0, 30, 10.0, -10, -10.0, 10.0])
+            np.array([get_side_step_cycle_time(init_time, 0.50), 6, 24, 10.0, -10, -10.0, 10.0])
         )
         viaPoints.append(
-            np.array([get_side_step_cycle_time(init_time, 0.65), -30, 0, 10.0, -10, -10.0, 10.0])
+            np.array([get_side_step_cycle_time(init_time, 0.65), -24, -6, 10.0, -10, -10.0, 10.0])
         )
         viaPoints.append(
-            np.array([get_side_step_cycle_time(init_time, 0.80), -30, 0, 30.0, -10.0, -65.0, 10.0])
+            np.array([get_side_step_cycle_time(init_time, 0.80), -24, -6, 30.0, -10.0, -65.0, 10.0])
         )
         viaPoints.append(
-            np.array([get_side_step_cycle_time(init_time, 0.90), -6, 6, 30.0, -10.0, -65.0, 10.0])
+            np.array([get_side_step_cycle_time(init_time, 0.90), -0, 0, 30.0, -10.0, -65.0, 10.0])
         )
         viaPoints.append(
-            np.array([get_side_step_cycle_time(init_time, 1), -6, 6, 10.0, -10.0, -10.0, 10.0])
+            np.array([get_side_step_cycle_time(init_time, 1), -0, 0, 10.0, -10.0, -10.0, 10.0])
         )
         init_time = init_time + SIDE_STEP_CYCLE_TIME
 
     # RESET HIPS
     viaPoints.append(
-        np.array([init_time + 1, -6.0, 6.0, 0.0, 0.0, -0.0, 0.0])
+        np.array([init_time + 1, -0.0, 0.0, 0.0, 0.0, -0.0, 0.0])
     )
     viaPoints.append(
-        np.array([init_time + 2, -0.0, 0.0, 0.0, -0.0, -0.0, 0.0])
+        np.array([init_time + 2, 2.0, -2.0, 0.0, -0.0, -0.0, 0.0])
     )
     init_time = init_time + 2
 
