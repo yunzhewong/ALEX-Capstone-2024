@@ -4,22 +4,16 @@ import threading
 import numpy as np
 
 Server_IP_list = []
-
+IP = "10.10.10.17"
 
 
 def main():
-
-    Server_IP_list = aios.broadcast_func()
-    
-    if Server_IP_list:
-
-        for i in range(len(Server_IP_list)):
-            aios.getRoot(Server_IP_list[i])
-
-        for i in range(len(Server_IP_list)):
-            aios.getError(Server_IP_list[i], 1)
-            aios.clearError(Server_IP_list[i], 1)
-        print('\n')
+    aios.enable(IP, 1)
+    aios.getState(IP, 1)
+    aios.encoderIsReady(IP, 1)
+    aios.getError(IP, 1)
+    aios.clearError(IP, 1)
+    aios.reboot(IP)
 
 
 

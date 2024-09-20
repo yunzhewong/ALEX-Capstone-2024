@@ -384,10 +384,10 @@ def encoderIsReady(server_ip, motor_number):
     except socket.timeout: # fail after 1 second of no activity
         print("Didn't receive data! [Timeout]")
 
-    if json_obj.get('status') == 'OK':
-        return json_obj.get('property')
-    else:
-        print("Recv Data Error !")
+    # if json_obj.get('status') == 'OK':
+    #     return json_obj.get('property')
+    # else:
+    #     print("Recv Data Error !")
 
 # AIOS set control mode
 # Parameters: including server ip，motor number

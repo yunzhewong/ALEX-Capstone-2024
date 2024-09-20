@@ -33,6 +33,7 @@ def setup_teardown_motor_combination(
 
         combination.enable()
         print("Motors Enabled")
+        time.sleep(1)
 
         combination.requestReadyCheck()
 

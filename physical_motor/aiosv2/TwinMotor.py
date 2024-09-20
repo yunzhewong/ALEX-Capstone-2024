@@ -1,3 +1,4 @@
+import time
 from typing import Callable
 from aiosv2.Calibration import CalibrationState
 from aiosv2 import AiosSocket

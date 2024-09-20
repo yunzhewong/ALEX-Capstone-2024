@@ -94,8 +94,16 @@ class DataStream:
                     self.errorParser.check_for_error(json_obj)
                 elif datatype == DataType.ENCODER:
                     ready = json_obj.get("property", None)
-                    if ready is None or not ready:
+                    if ready is None:
                         return
+                    
+                    if not ready:
+                        for motor in self.motors:
+                            if motor.getIP() == ip:
+                                print("Encoder Not Ready - Trying Again")
+                                motor.raw_motor.requestEncoderCheck()
+                        return
+
 
                     for motor in self.motors:
                         if motor.getIP() == ip:
@@ -124,7 +132,7 @@ class DataStream:
                 return json_obj, ip, DataType.MOTION_CONFIG
             return None
         except Exception as err:
-            self.stop = True
-            self.error = err
-            print("errored", err)
+            # self.stop = True
+            # self.error = err
+            # print("errored", err)
             return None

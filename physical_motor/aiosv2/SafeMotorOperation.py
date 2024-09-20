@@ -1,5 +1,6 @@
 from enum import Enum
 import threading
+import time
 from aiosv2.AiosSocket import AiosSocket
 from aiosv2.constants import ControlMode, Converter
 from aiosv2.ConnectedMotor import ConnectedMotor
@@ -208,6 +209,7 @@ class SafeMotor:
         velocityP = self.configuration["velocityP"]
         velocityI = self.configuration["velocityI"]
         self.raw_motor.setPIDConfig(positionP, velocityP, velocityI, limit, margin)
+        time.sleep(1)
         self.raw_motor.requestEncoderCheck()
         self.raw_motor.requestCVP()
 

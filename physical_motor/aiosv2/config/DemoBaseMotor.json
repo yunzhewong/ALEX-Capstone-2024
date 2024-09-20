@@ -1,0 +1,47 @@
+{
+    "control_box_ip": "10.10.10.12",
+    "motors": [
+        {
+            "ip": "10.10.10.17",
+            "name": "motor",
+            "positionP": 15,
+            "velocityP": 0.0002,           
+            "velocityI": 0.001, 
+            "safetyConfiguration": {
+                "current": {
+                    "$comment": "we only want a hard limit, make soft limit further away",
+                    "soft": {
+                        "low": -100,
+                        "high": 100
+                    },
+                    "hard": {
+                        "low": -15,
+                        "high": 15
+                    }
+                },
+                "velocity": {
+                    "$comment": "10.99 = 3.5 * pi, 12.56 = 4 * pi",
+                    "soft": {
+                        "low": -0.5,
+                        "high": 0.5
+                    },
+                    "hard": {
+                        "low": -0.8,
+                        "high": 0.8
+                    }
+                },
+                "position": {
+                    "$comment": "1.57 = pi / 2, 2.09 = 2 * pi / 3",
+                    "soft": {
+                        "low": -1.57,
+                        "high": 1.57
+                    },
+                    "hard": {
+                        "low": -2.09,
+                        "high": 2.09
+                    }
+                }
+            }
+        }
+    ]
+}

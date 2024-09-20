@@ -1,3 +1,5 @@
+import time
+from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 from aiosv2.CVP import CVP
@@ -166,3 +168,95 @@ class CVPPlot():
         df = pd.DataFrame(data)
         df.to_csv('name', index=False)
         
+class RealTimePlot():
+    def __init__(self, duration):
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
+
+        self.current_plot = MeasurementPlot(ax1, [0, duration], "Current (A)")
+        self.velocity_plot = MeasurementPlot(ax2, [0, duration], "Velocity (rad/s)")
+        self.position_plot = MeasurementPlot(ax3, [0, duration], "Position (rad/s)")
+
+        plt.ion()
+        plt.tight_layout()
+        plt.show()
+
+        self.figure = fig
+        self.times = []
+
+        fig.suptitle("Motor Values")
+
+
+    def addReading(self, runningTime: float, cvp: CVP, ref_current: float | None =None, ref_velocity: float | None =None, ref_position: float | None=None):
+        self.times.append(runningTime)
+        try:
+            self.current_plot.addReading(self.times, cvp.current, ref_current)
+            self.velocity_plot.addReading(self.times, cvp.velocity, ref_velocity)
+            self.position_plot.addReading(self.times, cvp.position, ref_position)
+
+            self.figure.canvas.draw()
+            self.figure.canvas.flush_events()
+        except Exception as e:
+            print(e)
+            raise Exception("Canvas Errored")
+
+
+    def wait_for_interrupt(self):
+        print("Real Time Plot waiting for Interrupt")
+        try:
+            while True:
+                time.sleep(0.1)
+        except:
+            plt.close()
+
+class MeasurementPlot():
+    def __init__(self, axes, xlim: List[float], label: str):
+        self.axes = axes
+        self.measurements = []
+        self.references = []
+
+        self.measurementLine, = self.axes.plot([], [], color="blue", label="Measurements")
+        self.referenceLine, = self.axes.plot([], [], color="red", label="Reference")
+
+        self.axes.set_xlim(xlim[0], xlim[1])
+        self.axes.set_ylabel(label)
+
+        self.axes.legend()
+
+    
+    def addReading(self, times, measurement, reference=None):
+        self.measurements.append(measurement)
+        self.references.append(reference)
+
+        self.measurementLine.set_xdata(times)
+        self.measurementLine.set_ydata(self.measurements)
+
+        self.referenceLine.set_xdata(times)
+        self.referenceLine.set_ydata(self.references)
+
+        minimum = 0
+        maximum = 0
+
+        for reading in self.measurements:
+            if reading < minimum:
+                minimum = reading
+
+            if reading > maximum:
+                maximum = reading
+
+        for reading in self.references:
+            if reading is None: 
+                continue
+
+            if reading < minimum:
+                minimum = reading
+
+            if reading > maximum:
+                maximum = reading
+
+        range = maximum - minimum
+        if range == 0:
+            self.axes.set_ylim(-2, 2)
+
+        padding = 0.1 * range
+        self.axes.set_ylim(minimum - padding, maximum + padding)
+
