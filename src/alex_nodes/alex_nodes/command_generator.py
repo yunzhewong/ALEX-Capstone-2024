@@ -38,8 +38,7 @@ class CommandGenerator(Node):
         )
 
         self.readings = JointReadings()
-        self.types = []
-        self.values = []
+        self.controllers = [CascadeController() for _ in range(6)]
         self.init_time = -1
 
         self.trajectory = command_list.Exo24Trajectory()
@@ -51,10 +50,21 @@ class CommandGenerator(Node):
         runningTime = self.readings.get_time() - self.init_time
         positions, velocities = self.trajectory.get_state(runningTime)
 
+        output_velocities = []
+        for i in range(6):
+            measured_pos, _ = self.readings.get_reading(i)
+            dt = self.readings.get_iteration_time()
+
+            velocity_command = self.controllers[i].calculate_velocity(
+                measured_pos, positions[i], velocities[i], dt
+            )
+            output_velocities.append(velocity_command)
+        print(output_velocities)
+
         msg = Command()
         msg.ips = self.ips
         msg.types = [CommandType.Velocity.value for _ in range(6)]
-        msg.values = [velocities[i] for i in range(6)]
+        msg.values = output_velocities
         self.publisher.publish(msg)
 
     def read_time(self, msg: JointState):
@@ -65,6 +75,7 @@ class CommandGenerator(Node):
 
 class JointReadings:
     def __init__(self):
+        self.last_time = 0
         self.time = 0
         self.velocities = []
         self.positions = []
@@ -72,13 +83,48 @@ class JointReadings:
     def get_time(self):
         return self.time
 
+    def get_iteration_time(self):
+        return self.time - self.last_time
+
     def get_reading(self, index: int):
         return self.positions[index], self.velocities[index]
 
     def set_readings(self, msg: JointState):
+        self.last_time = self.time
         self.time = ros.decode_time(msg)
         self.positions = msg.position
         self.velocities = msg.velocity
+
+
+CONTROLLER_P_GAIN = 10
+CONTROLLER_I_GAIN = 0.1
+
+
+class PIController:
+    def __init__(self, Kp: float, Ki: float):
+        self.Kp = Kp
+        self.Ki = Ki
+        self.integral_error = 0
+
+    def compute_control(self, error: float, dt: float):
+        self.integral_error += error * dt
+        return self.Kp * error + self.Ki * self.integral_error
+
+
+class CascadeController:
+    def __init__(self):
+        self.outer_controller = PIController(CONTROLLER_P_GAIN, CONTROLLER_I_GAIN)
+
+    def calculate_velocity(
+        self,
+        position: float,
+        reference_position: float,
+        reference_velocity: float,
+        dt: float,
+    ):
+        position_error = reference_position - position
+        position_correction = self.outer_controller.compute_control(position_error, dt)
+        return reference_velocity + position_correction
 
 
 class DataLog:
