@@ -4,12 +4,13 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-from PID import PIDController
-from commands import CommandType, CommandObject
-from configreader import MotorConfiguration
-from constants import EPSILON
+from utils.PID import PIDController
+from utils.commands import CommandType, CommandObject
+from utils.configreader import MotorConfiguration
+from utils.constants import EPSILON
 
-class MotorController():
+
+class MotorController:
     def __init__(self, config: MotorConfiguration):
         self.config = config
         self.positionPID = PIDController(config.position_p, 0, 0)
@@ -25,15 +26,15 @@ class MotorController():
             matchingCommand = commandObject.command == self.commandObject.command
             matchingValue = commandObject.value == self.commandObject.value
             if matchingCommand and matchingValue:
-                return  
+                return
 
         self.commandObject = commandObject
-        if (commandObject.command == CommandType.Current):
+        if commandObject.command == CommandType.Current:
             return
-        if (commandObject.command == CommandType.Position):
+        if commandObject.command == CommandType.Position:
             self.positionPID.setReference(commandObject.value)
             return
-        if (commandObject.command == CommandType.Velocity):
+        if commandObject.command == CommandType.Velocity:
             self.velocityPID.setReference(commandObject.value)
             return
         raise Exception("Invalid Command")
@@ -46,15 +47,15 @@ class MotorController():
     def calculateMotorTorque(self):
         if not self.commandObject:
             return 0
-        
-        if (self.commandObject.command == CommandType.Current):
+
+        if self.commandObject.command == CommandType.Current:
             return self.config.motor_constant * self.commandObject.value
-        if (self.commandObject.command == CommandType.Position):
+        if self.commandObject.command == CommandType.Position:
             return self.positionPID.getControlValue()
-        if (self.commandObject.command == CommandType.Velocity):
+        if self.commandObject.command == CommandType.Velocity:
             return self.velocityPID.getControlValue()
         raise Exception("No Command")
-    
+
     def calculateCurrent(self, torque):
         return torque / self.config.motor_constant
 
@@ -63,5 +64,5 @@ class MotorController():
             return 0
 
         if self.velocity > 0:
-            return self.config.friction_adjustment 
+            return self.config.friction_adjustment
         return -self.config.friction_adjustment

@@ -7,17 +7,18 @@ from sensor_msgs.msg import JointState
 from alex_interfaces.msg import Command
 
 import sys
+
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-from commands import CommandObject
-from constants import SEND_PERIOD
-from qos import BestEffortQoS
-from MotorController import MotorController
-from configreader import read_config
+from utils.commands import CommandObject
+from utils.constants import MOTOR_NETWORKING_PERIOD
+from utils.qos import BestEffortQoS
+from utils.MotorController import MotorController
+from utils.configreader import read_config
 
 
-class Float64MultiArrayPublisher():
+class Float64MultiArrayPublisher:
     def __init__(self, ros_publisher):
         self.publisher = ros_publisher
 
@@ -26,6 +27,7 @@ class Float64MultiArrayPublisher():
         msg.data = values
         msg.layout.data_offset = 0
         self.publisher.publish(msg)
+
 
 class MotorControllerNode(Node):
     def __init__(self):
@@ -40,26 +42,31 @@ class MotorControllerNode(Node):
         counts, configs = read_config()
         for i in range(counts):
             self.controllers.append(MotorController(configs[i]))
-        self.torque_publisher = Float64MultiArrayPublisher(self.create_publisher(
+        self.torque_publisher = Float64MultiArrayPublisher(
+            self.create_publisher(
                 Float64MultiArray, "/motor_controller/commands", BestEffortQoS
-            ))
+            )
+        )
         self.get_logger().info("Torque Publisher Initialised")
 
-        self.current_publisher = Float64MultiArrayPublisher(self.create_publisher(Float64MultiArray, f"/currents", BestEffortQoS))
-        self.timer = self.create_timer(SEND_PERIOD, self.sendCommands)
+        self.current_publisher = Float64MultiArrayPublisher(
+            self.create_publisher(Float64MultiArray, f"/currents", BestEffortQoS)
+        )
+        self.timer = self.create_timer(MOTOR_NETWORKING_PERIOD, self.sendCommands)
         self.get_logger().info("Current Publisher Initialised")
 
-        self.command_receiver = self.create_subscription(Command, '/commands', self.receive_command, BestEffortQoS)
+        self.command_receiver = self.create_subscription(
+            Command, "/commands", self.receive_command, BestEffortQoS
+        )
         self.get_logger().info("Command Receiver Initialised")
         self.index = 0
-
 
     def sendCommands(self):
         currents = []
         torques = []
         for controller in self.controllers:
             torque = controller.calculateMotorTorque()
-            
+
             currents.append(controller.calculateCurrent(torque))
 
             torque += controller.calculateFrictionAdjustment()
@@ -82,6 +89,7 @@ class MotorControllerNode(Node):
             if controller.getIP() != ip:
                 raise Exception("Invalid ip")
             controller.updateCommand(CommandObject(command, value))
+
 
 def main(args=None):
     rclpy.init(args=args)

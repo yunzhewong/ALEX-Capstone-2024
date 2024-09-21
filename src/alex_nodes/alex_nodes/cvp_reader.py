@@ -5,11 +5,12 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 
 import sys
+
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-from qos import BestEffortQoS
-from configreader import read_config
+from utils.qos import BestEffortQoS
+from utils.configreader import read_config
 
 
 class CVPReader(Node):
@@ -18,8 +19,12 @@ class CVPReader(Node):
 
         _, self.motor_configs = read_config()
         self.names = [config.name for config in self.motor_configs]
-        self.joints_sub = self.create_subscription(JointState, "/joint_states", self.read_joints, BestEffortQoS)
-        self.current_sub = self.create_subscription(Float64MultiArray, "/currents", self.read_currents, BestEffortQoS)
+        self.joints_sub = self.create_subscription(
+            JointState, "/joint_states", self.read_joints, BestEffortQoS
+        )
+        self.current_sub = self.create_subscription(
+            Float64MultiArray, "/currents", self.read_currents, BestEffortQoS
+        )
 
         self.time = 0
         self.currents = []
@@ -41,10 +46,12 @@ class CVPReader(Node):
 
         if len(self.currents) == 0 or len(self.currents) != len(self.positions):
             return
-        
+
         self.f.write(f"{self.time}")
         for i in range(len(self.positions)):
-            self.f.write(f", {self.currents[i]}, {self.velocities[i]}, {self.positions[i]}")
+            self.f.write(
+                f", {self.currents[i]}, {self.velocities[i]}, {self.positions[i]}"
+            )
         self.f.write("\n")
 
     def read_currents(self, msg: Float64MultiArray):
@@ -52,6 +59,7 @@ class CVPReader(Node):
 
     def close(self):
         self.f.close()
+
 
 def main(args=None):
     rclpy.init(args=args)
