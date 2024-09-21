@@ -13,6 +13,7 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
+from utils.Controllers import CascadeController
 from utils.constants import MOTOR_NETWORKING_PERIOD
 from utils.commands import CommandType
 from utils.qos import BestEffortQoS
@@ -94,37 +95,6 @@ class JointReadings:
         self.time = ros.decode_time(msg)
         self.positions = msg.position
         self.velocities = msg.velocity
-
-
-CONTROLLER_P_GAIN = 10
-CONTROLLER_I_GAIN = 0.1
-
-
-class PIController:
-    def __init__(self, Kp: float, Ki: float):
-        self.Kp = Kp
-        self.Ki = Ki
-        self.integral_error = 0
-
-    def compute_control(self, error: float, dt: float):
-        self.integral_error += error * dt
-        return self.Kp * error + self.Ki * self.integral_error
-
-
-class CascadeController:
-    def __init__(self):
-        self.outer_controller = PIController(CONTROLLER_P_GAIN, CONTROLLER_I_GAIN)
-
-    def calculate_velocity(
-        self,
-        position: float,
-        reference_position: float,
-        reference_velocity: float,
-        dt: float,
-    ):
-        position_error = reference_position - position
-        position_correction = self.outer_controller.compute_control(position_error, dt)
-        return reference_velocity + position_correction
 
 
 class DataLog:

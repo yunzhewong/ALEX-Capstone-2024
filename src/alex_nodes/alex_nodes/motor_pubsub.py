@@ -16,6 +16,7 @@ from utils.constants import MOTOR_NETWORKING_PERIOD
 from utils.qos import BestEffortQoS
 from utils.MotorController import MotorController
 from utils.configreader import read_config
+import utils.ros as ros
 
 
 class Float64MultiArrayPublisher:
@@ -47,6 +48,9 @@ class MotorControllerNode(Node):
                 Float64MultiArray, "/motor_controller/commands", BestEffortQoS
             )
         )
+
+        self.time = 0
+        self.last_command_time = 0
         self.get_logger().info("Torque Publisher Initialised")
 
         self.current_publisher = Float64MultiArrayPublisher(
@@ -59,36 +63,32 @@ class MotorControllerNode(Node):
             Command, "/commands", self.receive_command, BestEffortQoS
         )
         self.get_logger().info("Command Receiver Initialised")
-        self.index = 0
 
     def sendCommands(self):
         currents = []
         torques = []
+        dt = self.time - self.last_command_time
         for controller in self.controllers:
-            torque = controller.calculateMotorTorque()
-
-            currents.append(controller.calculateCurrent(torque))
-
-            torque += controller.calculateFrictionAdjustment()
+            current, torque = controller.calculateOutputTorque(dt)
+            currents.append(float(current))
             torques.append(float(torque))
+
+        print(currents, torques)
+
         self.current_publisher.publish(currents)
         self.torque_publisher.publish(torques)
+        self.last_command_time = self.time
 
     def read_encoder(self, msg: JointState):
         for i, controller in enumerate(self.controllers):
-            new_position = msg.position[i]
-            new_velocity = msg.velocity[i]
-            controller.updateState(self.index, new_position, new_velocity)
-        self.index += 1
+            controller.setMeasurements(msg.position[i], msg.velocity[i])
+        self.time = ros.decode_time(msg)
 
     def receive_command(self, msg: Command):
         for i, controller in enumerate(self.controllers):
-            ip = msg.ips[i]
             value = msg.values[i]
             command = msg.types[i]
-            if controller.getIP() != ip:
-                raise Exception("Invalid ip")
-            controller.updateCommand(CommandObject(command, value))
+            controller.setCommand(CommandObject(command, value))
 
 
 def main(args=None):

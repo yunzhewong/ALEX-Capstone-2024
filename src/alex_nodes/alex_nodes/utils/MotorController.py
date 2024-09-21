@@ -4,7 +4,15 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-from utils.PID import PIDController
+from utils.Controllers import PIController
+from utils.constants import (
+    DAMPING_INTERCEPT,
+    DAMPING_SLOPE,
+    KINETIC_FRICTION,
+    MOTOR_TORQUE_CONSTANT,
+    STATIC_FRICTION,
+    VELOCITY_ERROR_MULTIPLIER,
+)
 from utils.commands import CommandType, CommandObject
 from utils.configreader import MotorConfiguration
 from utils.constants import EPSILON
@@ -13,56 +21,78 @@ from utils.constants import EPSILON
 class MotorController:
     def __init__(self, config: MotorConfiguration):
         self.config = config
-        self.positionPID = PIDController(config.position_p, 0, 0)
-        self.velocityPID = PIDController(config.vel_p, config.vel_i, 0)
-        self.commandObject = None
-        self.velocity = 0
+        self.positionController = PIController(config.position_p, 0)
+        self.velocityController = PIController(
+            config.vel_p * VELOCITY_ERROR_MULTIPLIER,
+            config.vel_i * VELOCITY_ERROR_MULTIPLIER,
+        )
+        self.commandObject: CommandObject | None = None
+        self.measuredPosition = 0
+        self.measuredVelocity = 0
+        self.motor = Motor()
 
-    def getIP(self):
-        return self.config.ip
+    def setMeasurements(self, position, velocity):
+        self.measuredPosition = position
+        self.measuredVelocity = velocity
 
-    def updateCommand(self, commandObject: CommandObject):
-        if self.commandObject:
-            matchingCommand = commandObject.command == self.commandObject.command
-            matchingValue = commandObject.value == self.commandObject.value
-            if matchingCommand and matchingValue:
-                return
-
+    def setCommand(self, commandObject: CommandObject):
         self.commandObject = commandObject
-        if commandObject.command == CommandType.Current:
-            return
-        if commandObject.command == CommandType.Position:
-            self.positionPID.setReference(commandObject.value)
-            return
-        if commandObject.command == CommandType.Velocity:
-            self.velocityPID.setReference(commandObject.value)
-            return
-        raise Exception("Invalid Command")
 
-    def updateState(self, time, position, velocity):
-        self.positionPID.update(time, position)
-        self.velocityPID.update(time, velocity)
-        self.velocity = velocity
-
-    def calculateMotorTorque(self):
+    def calculateOutputTorque(self, dt: float):
         if not self.commandObject:
-            return 0
+            return 0, 0
+        print("hello")
+
+        reference = self.commandObject.value
 
         if self.commandObject.command == CommandType.Current:
-            return self.config.motor_constant * self.commandObject.value
+            return self.motor.calculateOutput(reference, self.measuredVelocity)
         if self.commandObject.command == CommandType.Position:
-            return self.positionPID.getControlValue()
+            position_error = reference - self.measuredPosition
+            velocity_control = self.positionController.compute_control(
+                position_error, dt
+            )
+
+            velocity_error = velocity_control - self.measuredVelocity
+            current_control = self.velocityController.compute_control(
+                velocity_error, dt
+            )
+            return self.motor.calculateOutput(current_control, self.measuredVelocity)
         if self.commandObject.command == CommandType.Velocity:
-            return self.velocityPID.getControlValue()
+            error = reference - self.measuredVelocity
+            current_control = self.velocityController.compute_control(error, dt)
+            return self.motor.calculateOutput(current_control, self.measuredVelocity)
         raise Exception("No Command")
 
-    def calculateCurrent(self, torque):
-        return torque / self.config.motor_constant
 
-    def calculateFrictionAdjustment(self):
-        if abs(self.velocity) < EPSILON:
-            return 0
+class Motor:
+    def __init__(self):
+        pass
 
-        if self.velocity > 0:
-            return self.config.friction_adjustment
-        return -self.config.friction_adjustment
+    def calculateOutput(
+        self, inputCurrent: float, velocity: float
+    ) -> tuple[float, float]:
+        motorTorque = inputCurrent * MOTOR_TORQUE_CONSTANT
+        dampingTorque = velocity * self.calculateDampingCoefficient(inputCurrent)
+        inputTorque = motorTorque - dampingTorque
+        return inputCurrent, self.calculateNetTorque(inputTorque, velocity)
+
+    def calculateDampingCoefficient(self, inputCurrent: float):
+        return DAMPING_SLOPE * abs(inputCurrent) + DAMPING_INTERCEPT
+
+    def calculateNetTorque(self, inputTorque: float, velocity: float) -> float:
+        if abs(velocity) < EPSILON:  # no motion
+            if abs(inputTorque) < abs(STATIC_FRICTION):  # insufficient torque
+                return 0
+
+            # reduce torque by static friction
+            return inputTorque - sign(inputTorque) * STATIC_FRICTION
+
+        # reduce torque by kinetic friction
+        return inputTorque - sign(inputTorque) * KINETIC_FRICTION
+
+
+def sign(val):
+    if val >= 0:
+        return 1
+    return -1
