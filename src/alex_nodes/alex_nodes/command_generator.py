@@ -1,7 +1,4 @@
-from enum import Enum
-import math
 import os
-from typing import List
 import rclpy
 from rclpy.node import Node
 from alex_interfaces.msg import Command
@@ -20,6 +17,8 @@ from utils.qos import BestEffortQoS
 from utils.configreader import read_config
 import utils.command_list as command_list
 import utils.ros as ros
+
+MAXIMUM_VELOCITY = 0.5
 
 
 class CommandGenerator(Node):
@@ -59,6 +58,10 @@ class CommandGenerator(Node):
             velocity_command = self.controllers[i].calculate_velocity(
                 measured_pos, positions[i], velocities[i], dt
             )
+            if velocity_command > MAXIMUM_VELOCITY:
+                velocity_command = MAXIMUM_VELOCITY
+            if velocity_command < -MAXIMUM_VELOCITY:
+                velocity_command = -MAXIMUM_VELOCITY
             output_velocities.append(velocity_command)
         print(output_velocities)
 

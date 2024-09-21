@@ -89,6 +89,8 @@ class Motor:
             return inputTorque - sign(inputTorque) * STATIC_FRICTION
 
         # reduce torque by kinetic friction
+        if abs(inputTorque) < abs(KINETIC_FRICTION):
+            return 0
         return inputTorque - sign(inputTorque) * KINETIC_FRICTION
 
 
