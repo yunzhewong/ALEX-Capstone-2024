@@ -6,9 +6,17 @@
   <xacro:include filename="materials.xacro" />
 
   <xacro:property name="steeldensity" value="7850" />
+  <xacro:property name="m_knee" value="5.77" />
+  <xacro:property name="l_calf" value="0.425" />
+  <xacro:property name="lgy_knee" value="0.2633" />
+  <xacro:property name="l_ext" value="0.44" />
+  <xacro:property name="m_ext" value="9.5870" />
+  <xacro:property name="lgy_ext" value="0.1945" />
+  <xacro:property name="lgx_leg" value="0.2095" />
+  <xacro:property name="static_friction" value="10.4160" />
 
   <xacro:macro name="motor_dynamics">
-      <dynamics damping="0" friction="10.4160" />
+      <dynamics damping="0" friction="${static_friction}" />
   </xacro:macro>
 
   <link name="world"></link>
@@ -22,10 +30,11 @@
     <origin xyz="0 0 1.5" rpy="0 0 0" />
   </joint>
 
-  <xacro:macro name="point_mass" params="mass">
+  <xacro:macro name="point_mass" params="mass xyz">
     <inertial>
-      <mass value="1.0"/> 
+      <mass value="${mass}"/> 
       <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01" />
+      <origin xyz="${xyz}" />
     </inertial>
   </xacro:macro>
 
@@ -53,16 +62,35 @@
   <xacro:macro name="leg" params="prefix multiplier">
     <link name="${prefix}_abduction_link">
       <xacro:motor_cylinder rpy="${pi / 2} 0 0"/>
+      <visual>
+        <geometry>
+          <box size="${lgx_leg} 0.05 0.05" />
+        </geometry>
+        <origin xyz="${multiplier * lgx_leg / 2} 0 0" />
+      </visual>
+      <visual>
+        <geometry>
+          <box size="0.2 0.05 0.05" />
+        </geometry>
+        <origin xyz="${multiplier * lgx_leg} -0.1 0" rpy="0 0 ${pi / 2}"/>
+      </visual>
     </link>
 
     <link name="${prefix}_hip_link">
       <xacro:motor_cylinder rpy="0 ${pi / 2} 0"/>
+      <visual>
+        <geometry>
+          <box size="0.05 0.05 ${l_ext}" />
+        </geometry>
+        <origin xyz="0 0 ${-1 * l_ext / 2}" />
+      </visual>
+      <xacro:point_mass mass="${m_ext}" xyz="0 0 ${-1 * lgy_ext}"/>
     </link>
 
     <joint name="${prefix}_hip" type="revolute">
       <parent link="${prefix}_abduction_link" />
       <child link="${prefix}_hip_link" />
-      <origin xyz="${multiplier * 0.2} -0.2 0" rpy="0 0 0" />
+      <origin xyz="${multiplier * lgx_leg} -0.2 0" rpy="0 0 0" />
       <limit lower="${-pi}" upper="${pi}" effort="100" velocity="100" />
       <axis xyz="${multiplier * -1} 0 0" />
       <xacro:motor_dynamics />
@@ -70,26 +98,22 @@
 
     <link name="${prefix}_knee_link">
       <xacro:motor_cylinder rpy="0 ${pi / 2} 0"/>
+       <visual>
+        <geometry>
+          <box size="0.05 0.05 ${l_calf}" />
+        </geometry>
+        <origin xyz="0 0 ${-1 * l_calf / 2}"/>
+      </visual>
+      <xacro:point_mass mass="${m_knee}" xyz="0 0 ${-1 * lgy_knee}" />
     </link>
 
     <joint name="${prefix}_knee" type="revolute">
       <parent link="${prefix}_hip_link" />
       <child link="${prefix}_knee_link" />
-      <origin xyz="0 0 -0.5" rpy="0 0 0" />
+      <origin xyz="0 0 ${-1 * l_ext}" rpy="0 0 0" />
       <limit lower="${-pi}" upper="${pi}" effort="100" velocity="100" />
       <axis xyz="${multiplier * -1} 0 0" />
       <xacro:motor_dynamics />
-    </joint>
-
-    <link name="${prefix}_calf_link">
-      <xacro:common.box width="0.05" depth="0.05" height="0.3" />
-      <xacro:point_mass mass="0.5" />
-    </link>
-
-    <joint name="${prefix}_calf" type="fixed">
-      <parent link="${prefix}_knee_link" />
-      <child link="${prefix}_calf_link" />
-      <origin xyz="0 0 -0.3" rpy="0 0 0" />
     </joint>
   </xacro:macro>
 

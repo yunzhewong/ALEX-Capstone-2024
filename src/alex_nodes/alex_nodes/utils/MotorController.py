@@ -81,17 +81,12 @@ class Motor:
         return DAMPING_SLOPE * abs(inputCurrent) + DAMPING_INTERCEPT
 
     def calculateNetTorque(self, inputTorque: float, velocity: float) -> float:
+        # static friction is implemented via ROS URDF dynamics tag, where the friction is set as static friction
+        # to recalibrate back to original dynamics, just give a boost to the torque when the link is moving
+
         if abs(velocity) < EPSILON:  # no motion
-            if abs(inputTorque) < abs(STATIC_FRICTION):  # insufficient torque
-                return 0
-
-            # reduce torque by static friction
-            return inputTorque - sign(inputTorque) * STATIC_FRICTION
-
-        # reduce torque by kinetic friction
-        if abs(inputTorque) < abs(KINETIC_FRICTION):
-            return 0
-        return inputTorque - sign(inputTorque) * KINETIC_FRICTION
+            return inputTorque
+        return inputTorque - sign(inputTorque) * (STATIC_FRICTION - KINETIC_FRICTION)
 
 
 def sign(val):

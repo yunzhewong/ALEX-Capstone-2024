@@ -18,7 +18,7 @@ from utils.configreader import read_config
 import utils.command_list as command_list
 import utils.ros as ros
 
-MAXIMUM_VELOCITY = 0.5
+MAXIMUM_VELOCITY = 1.0
 
 
 class CommandGenerator(Node):
