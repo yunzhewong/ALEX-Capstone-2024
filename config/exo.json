@@ -4,56 +4,44 @@
     {
       "name": "left_abduction",
       "ip": "UNKNOWN",
-      "motor_constant": 15,
       "position_p": 10,
       "vel_p": 2,
-      "vel_i": 0,
-      "friction_adjustment": 0.00
+      "vel_i": 0
     },
     {
       "name": "right_abduction",
       "ip": "UNKNOWN",
-      "motor_constant": 15,
       "position_p": 10,
       "vel_p": 2,
-      "vel_i": 0,
-      "friction_adjustment": 0.00
+      "vel_i": 0
     },
     {
       "name": "left_hip",
       "ip": "UNKNOWN",
-      "motor_constant": 15,
       "position_p": 10,
       "vel_p": 2,
-      "vel_i": 0,
-      "friction_adjustment": 0.00
+      "vel_i": 0
     },
     {
       "name": "right_hip",
       "ip": "UNKNOWN",
-      "motor_constant": 15,
       "position_p": 10,
       "vel_p": 2,
-      "vel_i": 0,
-      "friction_adjustment": 0.00
+      "vel_i": 0
     },
     {
       "name": "left_knee",
       "ip": "UNKNOWN",
-      "motor_constant": 15,
       "position_p": 10,
       "vel_p": 2,
-      "vel_i": 0,
-      "friction_adjustment": 0.00
+      "vel_i": 0
     },
     {
       "name": "right_knee",
       "ip": "UNKNOWN",
-      "motor_constant": 15,
-      "position_p": 60,
+      "position_p": 10,
       "vel_p": 2,
-      "vel_i": 0,
-      "friction_adjustment": 0.00
+      "vel_i": 0
     }
   ]
 }

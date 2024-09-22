@@ -73,8 +73,6 @@ class MotorControllerNode(Node):
             currents.append(float(current))
             torques.append(float(torque))
 
-        print(currents, torques)
-
         self.current_publisher.publish(currents)
         self.torque_publisher.publish(torques)
         self.last_command_time = self.time

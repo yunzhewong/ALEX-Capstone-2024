@@ -26,4 +26,5 @@ class CascadeController:
     ):
         position_error = reference_position - position
         position_correction = self.outer_controller.compute_control(position_error, dt)
+        print(position, position_correction)
         return reference_velocity + position_correction

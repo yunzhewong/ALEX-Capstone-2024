@@ -16,9 +16,9 @@ from utils.commands import CommandType
 from utils.qos import BestEffortQoS
 from utils.configreader import read_config
 import utils.command_list as command_list
-import utils.ros as ros
+from utils.JointReadings import JointReadings
 
-MAXIMUM_VELOCITY = 1.0
+MAXIMUM_VELOCITY = 0.5
 
 
 class CommandGenerator(Node):
@@ -38,6 +38,7 @@ class CommandGenerator(Node):
         )
 
         self.readings = JointReadings()
+        self.last_command_time = 0
         self.controllers = [CascadeController() for _ in range(6)]
         self.init_time = -1
 
@@ -53,7 +54,7 @@ class CommandGenerator(Node):
         output_velocities = []
         for i in range(6):
             measured_pos, _ = self.readings.get_reading(i)
-            dt = self.readings.get_iteration_time()
+            dt = self.readings.get_time() - self.last_command_time
 
             velocity_command = self.controllers[i].calculate_velocity(
                 measured_pos, positions[i], velocities[i], dt
@@ -70,34 +71,12 @@ class CommandGenerator(Node):
         msg.types = [CommandType.Velocity.value for _ in range(6)]
         msg.values = output_velocities
         self.publisher.publish(msg)
+        self.last_command_time = self.readings.get_time()
 
     def read_time(self, msg: JointState):
         self.readings.set_readings(msg)
         if self.init_time == -1:
             self.init_time = self.readings.get_time()
-
-
-class JointReadings:
-    def __init__(self):
-        self.last_time = 0
-        self.time = 0
-        self.velocities = []
-        self.positions = []
-
-    def get_time(self):
-        return self.time
-
-    def get_iteration_time(self):
-        return self.time - self.last_time
-
-    def get_reading(self, index: int):
-        return self.positions[index], self.velocities[index]
-
-    def set_readings(self, msg: JointState):
-        self.last_time = self.time
-        self.time = ros.decode_time(msg)
-        self.positions = msg.position
-        self.velocities = msg.velocity
 
 
 class DataLog:

@@ -41,7 +41,6 @@ class MotorController:
     def calculateOutputTorque(self, dt: float):
         if not self.commandObject:
             return 0, 0
-        print("hello")
 
         reference = self.commandObject.value
 
