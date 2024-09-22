@@ -54,7 +54,7 @@ class CommandGenerator(Node):
         output_velocities = []
         for i in range(6):
             measured_pos, _ = self.readings.get_reading(i)
-            dt = self.readings.get_time() - self.last_command_time
+            dt = runningTime - self.last_command_time
 
             velocity_command = self.controllers[i].calculate_velocity(
                 measured_pos, positions[i], velocities[i], dt
@@ -64,14 +64,13 @@ class CommandGenerator(Node):
             if velocity_command < -MAXIMUM_VELOCITY:
                 velocity_command = -MAXIMUM_VELOCITY
             output_velocities.append(velocity_command)
-        print(output_velocities)
 
         msg = Command()
         msg.ips = self.ips
         msg.types = [CommandType.Velocity.value for _ in range(6)]
         msg.values = output_velocities
         self.publisher.publish(msg)
-        self.last_command_time = self.readings.get_time()
+        self.last_command_time = runningTime
 
     def read_time(self, msg: JointState):
         self.readings.set_readings(msg)
