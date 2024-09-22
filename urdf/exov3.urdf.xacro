@@ -24,6 +24,10 @@
     <xacro:common.box width="0.3" depth="0.05" height="0.5" density="${steeldensity}" />
   </link>
 
+  <gazebo reference="base">
+    <material>Gazebo/Black</material>
+  </gazebo>
+
   <joint name="fix" type="fixed">
     <parent link="world" />
     <child link="base" />
@@ -64,28 +68,36 @@
       <xacro:motor_cylinder rpy="${pi / 2} 0 0"/>
       <visual>
         <geometry>
-          <box size="${lgx_leg} 0.05 0.05" />
+          <box size="${lgx_leg} 0.04 0.04" />
         </geometry>
         <origin xyz="${multiplier * lgx_leg / 2} 0 0" />
       </visual>
       <visual>
         <geometry>
-          <box size="0.2 0.05 0.05" />
+          <box size="0.2 0.04 0.04" />
         </geometry>
         <origin xyz="${multiplier * lgx_leg} -0.1 0" rpy="0 0 ${pi / 2}"/>
       </visual>
     </link>
 
+    <gazebo reference="${prefix}_abduction_link">
+      <material>Gazebo/Red</material>
+    </gazebo>
+
     <link name="${prefix}_hip_link">
       <xacro:motor_cylinder rpy="0 ${pi / 2} 0"/>
       <visual>
         <geometry>
-          <box size="0.05 0.05 ${l_ext}" />
+          <box size="0.04 0.04 ${l_ext}" />
         </geometry>
         <origin xyz="0 0 ${-1 * l_ext / 2}" />
       </visual>
       <xacro:point_mass mass="${m_ext}" xyz="0 0 ${-1 * lgy_ext}"/>
     </link>
+
+    <gazebo reference="${prefix}_hip_link">
+      <material>Gazebo/Black</material>
+    </gazebo>
 
     <joint name="${prefix}_hip" type="revolute">
       <parent link="${prefix}_abduction_link" />
@@ -100,12 +112,16 @@
       <xacro:motor_cylinder rpy="0 ${pi / 2} 0"/>
        <visual>
         <geometry>
-          <box size="0.05 0.05 ${l_calf}" />
+          <box size="0.04 0.04 ${l_calf}" />
         </geometry>
         <origin xyz="0 0 ${-1 * l_calf / 2}"/>
       </visual>
       <xacro:point_mass mass="${m_knee}" xyz="0 0 ${-1 * lgy_knee}" />
     </link>
+
+    <gazebo reference="${prefix}_knee_link">
+      <material>Gazebo/Red</material>
+    </gazebo>
 
     <joint name="${prefix}_knee" type="revolute">
       <parent link="${prefix}_hip_link" />
