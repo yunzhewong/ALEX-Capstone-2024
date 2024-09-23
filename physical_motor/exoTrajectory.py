@@ -1,3 +1,4 @@
+from aiosv2.CSVWriter import CSVWriter
 from aiosv2.Exoskeleton import Exoskeleton
 from aiosv2.Controllers import CascadeController
 from aiosv2.ControlLoop import setup_teardown_motor_combination
@@ -11,6 +12,9 @@ DURATION = 86
 class State():
     def __init__(self):
         self.log = CVPPlot()
+        self.kneelog: CSVWriter | None = None
+        self.extlog: CSVWriter | None = None
+        self.abdlog: CSVWriter | None = None
         self.last_time = 0
         self.initialised = False
 
@@ -27,6 +31,12 @@ if __name__ == "__main__":
     state = State()
 
     def func(exoskeleton: Exoskeleton, runningTime: float):
+        if not state.initialised:
+            state.kneelog = CSVWriter("knee2.csv", [exoskeleton.rightKnee])
+            state.extlog = CSVWriter("extens2.csv", [exoskeleton.rightExtensor])
+            state.abdlog = CSVWriter("abduct2.csv", [exoskeleton.rightAbductor])
+            state.initialised = True
+
         reference_position, reference_velocity = trajectory.get_state(runningTime)
 
         dt = runningTime - state.last_time
@@ -42,6 +52,9 @@ if __name__ == "__main__":
         
         cvp = exoskeleton.rightKnee.getCVP()
         state.log.addCVP(runningTime, cvp)
+        state.kneelog.addCVP(runningTime, [exoskeleton.rightKnee])
+        state.extlog.addCVP(runningTime, [exoskeleton.rightExtensor])
+        state.abdlog.addCVP(runningTime, [exoskeleton.rightAbductor])
 
     setup_teardown_motor_combination(Exoskeleton(), func, DURATION)
 
