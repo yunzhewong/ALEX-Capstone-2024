@@ -1,5 +1,3 @@
-from enum import Enum
-import math
 import os
 import rclpy
 from rclpy.node import Node
@@ -12,11 +10,15 @@ import sys
 package_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(package_dir)
 
-from constants import SEND_PERIOD
-from commands import CommandType
-from qos import BestEffortQoS
-from configreader import read_config
-import command_list
+from utils.Controllers import CascadeController
+from utils.constants import MOTOR_NETWORKING_PERIOD
+from utils.commands import CommandType
+from utils.qos import BestEffortQoS
+from utils.configreader import read_config
+import utils.command_list as command_list
+from utils.JointReadings import JointReadings
+
+MAXIMUM_VELOCITY = 0.5
 
 
 class CommandGenerator(Node):
@@ -27,49 +29,53 @@ class CommandGenerator(Node):
         self.ips = [config.ip for config in self.motor_configs]
 
         self.publisher = self.create_publisher(Command, "/commands", BestEffortQoS)
-        self.publish_timer = self.create_timer(SEND_PERIOD, self.send_command)
+        self.publish_timer = self.create_timer(
+            MOTOR_NETWORKING_PERIOD, self.send_command
+        )
 
         self.subscriber = self.create_subscription(
             JointState, "/joint_states", self.read_time, BestEffortQoS
         )
-        self.time = -1
-        self.types = []
-        self.values = []
-        self.positions = []
-        self.velocities = []
-        self.initialised = False
+
+        self.readings = JointReadings()
+        self.last_command_time = 0
+        self.controllers = [CascadeController() for _ in range(6)]
         self.init_time = -1
 
-        self.dt = 0.02
-        positions, velocities = command_list.exo_demo_trajectory(self.dt)
-        self.trajectories = positions
+        self.trajectory = command_list.Exo24Trajectory()
 
     def send_command(self):
-        if not self.initialised:
+        if self.init_time == -1:
             return
-        self.commands(self.time - self.init_time)
+
+        runningTime = self.readings.get_time() - self.init_time
+        positions, velocities = self.trajectory.get_state(runningTime)
+
+        output_velocities = []
+        for i in range(6):
+            measured_pos, _ = self.readings.get_reading(i)
+            dt = runningTime - self.last_command_time
+
+            velocity_command = self.controllers[i].calculate_velocity(
+                measured_pos, positions[i], velocities[i], dt
+            )
+            if velocity_command > MAXIMUM_VELOCITY:
+                velocity_command = MAXIMUM_VELOCITY
+            if velocity_command < -MAXIMUM_VELOCITY:
+                velocity_command = -MAXIMUM_VELOCITY
+            output_velocities.append(velocity_command)
 
         msg = Command()
         msg.ips = self.ips
-        msg.types = self.types
-        msg.values = self.values
+        msg.types = [CommandType.Velocity.value for _ in range(6)]
+        msg.values = output_velocities
         self.publisher.publish(msg)
+        self.last_command_time = runningTime
 
     def read_time(self, msg: JointState):
-        timestamp = msg.header.stamp
-        self.time = timestamp.sec + timestamp.nanosec / 1e9
-        self.positions = msg.position
-        self.velocities = msg.velocity
-        if not self.initialised:
-            self.init_time = self.time
-            self.initialised = True
-
-    def commands(self, t):
-        if len(self.positions) < self.motor_count:
-            raise Exception("Too few motors")
-        print(t)
-
-        command_list.follow_demo_trajectory(self, t)
+        self.readings.set_readings(msg)
+        if self.init_time == -1:
+            self.init_time = self.readings.get_time()
 
 
 class DataLog:
