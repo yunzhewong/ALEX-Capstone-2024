@@ -38,9 +38,6 @@ class Exoskeleton(MotorCombination):
 
         self.dataStream = DataStream(socket, self.motorList, motorConverter)
 
-    # Other methods remain the same ...
-
-
     def enable(self):
         for motor in self.motorList:
             motor.enable()
