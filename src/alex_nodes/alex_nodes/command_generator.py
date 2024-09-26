@@ -69,6 +69,7 @@ class CommandGenerator(Node):
         msg.ips = self.ips
         msg.types = [CommandType.Velocity.value for _ in range(6)]
         msg.values = output_velocities
+
         self.publisher.publish(msg)
         self.last_command_time = runningTime
 

@@ -10,7 +10,7 @@ def writeCVP(file, data, index):
     file.write(f"{time}, {c}, {v}, {p}\n")
 
 
-with open("correctintegral.csv", mode="r") as file:
+with open("flipped.csv", mode="r") as file:
     csv_reader = csv.reader(file)
     header = next(csv_reader)  # Read the first line as header (if present)
 
