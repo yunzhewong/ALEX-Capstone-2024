@@ -1,16 +1,15 @@
 names = ["batch1", "batch2", "batch3", "batch4", "batch5", "batch6", "batch0309", "batch2808", "exo1", "exo2"];
 
-figure
+fig = figure;
 hold on
 for i = 1:numel(names)
     batchName = names(i);
     [c, v] = steady_state_current_velocity(batchName);
-    plot(c, v, "DisplayName", batchName)
+    plot(c, v)
 end
-title("Steady State Velocity vs Steady State Current for Various Batches")
+% title("Steady State Velocity vs Steady State Current for Various Batches")
 ylabel("Steady State Velocity (rads^{-1})")
 xlabel("Steady State Current (A)")
-legend("Location", "southeast")
 
 
 dcm = datacursormode(gcf);

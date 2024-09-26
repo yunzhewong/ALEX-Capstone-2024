@@ -1,4 +1,4 @@
-function [J_t, b_2, b_1] = extract_current_velocity_relationship(directory, start_index, end_index)
+function [J_t, b_2, b_1, moving_currents, b_predictions] = extract_current_velocity_relationship(directory, start_index, end_index)
     [names, count] = get_files(directory);
     
     steady_state_currents = zeros(1, count);
