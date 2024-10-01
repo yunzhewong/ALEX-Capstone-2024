@@ -203,13 +203,13 @@ class SafeMotor:
         self.safetyConfiguration.check_within_limits(self.calibrateCVP(cvp))
 
 
-    def requestReadyCheck(self):
+    def requestReadyCheck(self, sleep=0):
         limit, margin = self.safetyConfiguration.get_velocity_limit_settings()
         positionP = self.configuration["positionP"]
         velocityP = self.configuration["velocityP"]
         velocityI = self.configuration["velocityI"]
         self.raw_motor.setPIDConfig(positionP, velocityP, velocityI, limit, margin)
-        time.sleep(1)
+        time.sleep(sleep)
         self.raw_motor.requestEncoderCheck()
         self.raw_motor.requestCVP()
 

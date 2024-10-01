@@ -254,8 +254,9 @@ class MeasurementPlot():
                 maximum = reading
 
         range = maximum - minimum
-        if range == 0:
+        if abs(range) < 0.1:
             self.axes.set_ylim(-2, 2)
+            return
 
         padding = 0.1 * range
         self.axes.set_ylim(minimum - padding, maximum + padding)

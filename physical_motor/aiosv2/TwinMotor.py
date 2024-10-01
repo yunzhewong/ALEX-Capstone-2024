@@ -35,8 +35,8 @@ class TwinMotor(MotorCombination):
         self.dataStream.enable()
 
     def requestReadyCheck(self):
-        self.bottomMotor.requestReadyCheck()
-        self.topMotor.requestReadyCheck()
+        self.bottomMotor.requestReadyCheck(1)
+        self.topMotor.requestReadyCheck(1)
 
     def isReady(self):
         return self.topMotor.isReady() and self.bottomMotor.isReady()

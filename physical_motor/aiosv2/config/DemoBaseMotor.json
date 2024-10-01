@@ -22,12 +22,12 @@
                 "velocity": {
                     "$comment": "10.99 = 3.5 * pi, 12.56 = 4 * pi",
                     "soft": {
-                        "low": -0.5,
-                        "high": 0.5
-                    },
-                    "hard": {
                         "low": -0.8,
                         "high": 0.8
+                    },
+                    "hard": {
+                        "low": -1,
+                        "high": 1
                     }
                 },
                 "position": {

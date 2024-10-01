@@ -33,7 +33,7 @@ class DemoBaseMotor(MotorCombination):
         self.dataStream.enable()
 
     def requestReadyCheck(self):
-        self.motor.requestReadyCheck()
+        self.motor.requestReadyCheck(1)
 
     def isReady(self):
         return self.motor.isReady()
