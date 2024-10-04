@@ -16,7 +16,7 @@ figure
 hold on
 plot(velocity_times, velocity_velocities)
 plot(current_times, current_velocities)
-plot(out.velocity.Time, out.velocity.Data)
+% plot(out.velocity.Time, out.velocity.Data)
 title("Velocity Comparison")
 xlabel("Time (s)")
 ylabel("Velocity (rad/s)")

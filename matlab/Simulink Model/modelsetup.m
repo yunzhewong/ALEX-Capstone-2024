@@ -17,6 +17,9 @@ F_kinetic = 8.1003;
 F_static = 10.4160;
 EPSILON = 0.005;
 
+K_p = 2;
+K_i = 0;
+
 % first order model
 estimated_b = b_1 + 2.5 * b_2;
 
