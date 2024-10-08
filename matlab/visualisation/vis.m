@@ -25,28 +25,34 @@ adjust_times = times - diff;
 fig = figure;
 fig.Position = [50, 50, 900, 750];
 
-tiledlayout(3, 1, "TileSpacing","compact", "Padding","compact");
+
+
+t = tiledlayout(3, 1, "TileSpacing","compact", "Padding","compact");
+title(t, "Measured Trajectory")
 
 nexttile
 hold on
-plot(adjust_times, currents, "Color", "#4DBEEE")
+% plot(adjust_times, currents, "Color", "#4DBEEE")
 plot(times_2, currents_2, "Color", "#7E2F8E")
 xlim([0 40])
 ylabel("Current (A)")
+legend("Measured")
 
 nexttile
 hold on
 plot(ref_times, ref_velocities, "LineWidth", 2, "LineStyle", '- -', "Color", "r")
-plot(adjust_times, velocities, "Color", "#4DBEEE")
+% plot(adjust_times, velocities, "Color", "#4DBEEE")
 plot(times_2, velocities_2, "Color", "#7E2F8E")
 xlim([0 35])
 ylabel("Velocity (rads^{-1})")
+legend("Reference", "Measured")
 
 nexttile
 hold on
 plot(ref_times, ref_pos, "LineWidth", 2, "LineStyle", '- -', "Color", "r")
-plot(adjust_times, positions, "Color", "#4DBEEE")
+% plot(adjust_times, positions, "Color", "#4DBEEE")
 plot(times_2, positions_2, "Color", "#7E2F8E")
+legend("Reference", "Measured")
 
 xlim([0 40])
 ylabel("Position (rad)")
