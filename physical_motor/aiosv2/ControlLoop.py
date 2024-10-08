@@ -20,6 +20,9 @@ class MotorCombination:
     def disable(self):
         pass
 
+    def flush(self):
+        pass
+
 
 # Experimentally, a sampling frequency of 300Hz yields consistent results
 SAMPLING_FREQUENCY = 300
@@ -73,6 +76,7 @@ def setup_teardown_motor_combination(
 
                 runningTime = currentTime - startTime
                 actions(combination, runningTime)
+                combination.flush()
 
                 time.sleep(SAMPLING_PERIOD)
             print(f"Average Loop Time: {averageLoopTime:.4f}s")

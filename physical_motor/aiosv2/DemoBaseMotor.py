@@ -51,6 +51,8 @@ class DemoBaseMotor(MotorCombination):
         self.motor.disable() 
         self.dataStream.disable()
 
+    def flush(self):
+        self.motor.flush()
 
 def calibrate_demo_base_motor():
     calibrationConfiguration = readConfigurationJSON(["config", "DemoBaseMotorCalibrationSetup.json"])

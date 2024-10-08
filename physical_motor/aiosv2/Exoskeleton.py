@@ -75,6 +75,10 @@ class Exoskeleton(MotorCombination):
             motor.disable()  
         self.dataStream.disable()
 
+    def flush(self):
+        for motor in self.motorList:
+            motor.flush()
+
 def setup_teardown_exoskeleton(actions: Callable[[Exoskeleton, float], None], totalRunningTime: float, no_robot=False):
     setup_teardown_motor_combination(Exoskeleton(), actions, totalRunningTime)
 

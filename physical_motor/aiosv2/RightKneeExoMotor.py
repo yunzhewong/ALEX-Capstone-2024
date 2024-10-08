@@ -51,6 +51,9 @@ class RightKneeExoMotor(MotorCombination):
         self.motor.disable()
         self.dataStream.disable()
 
+    def flush(self):
+        self.motor.flush()
+
 
 def setup_teardown_rightknee_exomotor(actions: Callable[[RightKneeExoMotor, float], None], totalRunningTime: float):
     setup_teardown_motor_combination(RightKneeExoMotor(), actions, totalRunningTime)

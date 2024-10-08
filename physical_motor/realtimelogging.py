@@ -16,7 +16,7 @@ class DemoType(Enum):
      PositiveVelocity = 3
      NegativeVelocity = 4
 
-demoType = DemoType.PositiveVelocity
+demoType = DemoType.NegativeVelocity
 
 CURRENT = 0.85
 VELOCITY = 0.2

@@ -56,6 +56,10 @@ class TwinMotor(MotorCombination):
         self.bottomMotor.disable()  # Disable the bottom motor
         self.dataStream.disable()
 
+    def flush(self):
+        self.bottomMotor.flush()
+        self.topMotor.flush()
+
 
 def calibrate_twin_motor():
     calibrationConfiguration = readConfigurationJSON(["config", "TwinMotorCalibrationSetup.json"])

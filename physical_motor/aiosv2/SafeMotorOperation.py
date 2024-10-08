@@ -155,6 +155,7 @@ class SafeMotor:
 
         control_type = ControlMode.Current
         self.control_mode: ControlMode = control_type
+        self.control_value = 0
         self.raw_motor.setControlMode(control_type)
         self.raw_motor.setInputMode(
             control_type
@@ -229,43 +230,35 @@ class SafeMotor:
         return self.encoderIsReady() and self.cvpIsReady()
 
     def setPosition(self, position: float):
-        with self.config_lock:
-            if not self.config_ready:
-                return
-        self.check_operatable()
-        self.modeChangeIfNecessary(ControlMode.Position)
-
-        cvp = self.getCVP()
-        calibratedPosition = position - self.calibrationAdjustment
-        override_value = self.safetyConfiguration.override_if_unsafe(
-            cvp, ControlMode.Position, calibratedPosition
-        )
-        self.raw_motor.setPosition(override_value)
+        self.control_mode = ControlMode.Position
+        self.control_value = position
 
     def setVelocity(self, velocity: float):
-        with self.config_lock:
-            if not self.config_ready:
-                return
-        self.check_operatable()
-        self.modeChangeIfNecessary(ControlMode.Velocity)
-
-        cvp = self.getCVP()
-        override_value = self.safetyConfiguration.override_if_unsafe(
-            cvp, ControlMode.Velocity, velocity
-        )
-        self.raw_motor.setVelocity(override_value)
+        self.control_mode = ControlMode.Velocity
+        self.control_value = velocity
 
     def setCurrent(self, current: float):
+        self.control_mode = ControlMode.Current
+        self.control_value = current
+
+    def flush(self):
         with self.config_lock:
             if not self.config_ready:
                 return
         self.check_operatable()
-        self.modeChangeIfNecessary(ControlMode.Current)
+        self.modeChangeIfNecessary(self.control_mode)
         cvp = self.getCVP()
         override_value = self.safetyConfiguration.override_if_unsafe(
-            cvp, ControlMode.Current, current
+            cvp, self.control_mode, self.control_value
         )
-        self.raw_motor.setCurrent(override_value)
+        if self.control_mode == ControlMode.Current:
+            self.raw_motor.setCurrent(override_value)
+        elif self.control_mode == ControlMode.Velocity:
+            self.raw_motor.setVelocity(override_value)
+        elif self.control_mode == ControlMode.Position:
+            self.raw_motor.setPosition(override_value)
+        else:
+            self.raw_motor.setCurrent(0)
 
     def modeChangeIfNecessary(self, desired_control_mode: ControlMode):
         if self.control_mode.value == desired_control_mode.value:
