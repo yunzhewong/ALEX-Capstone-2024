@@ -39,10 +39,14 @@ if __name__ == "__main__":
         leftKneeController.set_reference(exoskeleton.leftKnee, reference_position[4], reference_velocity[4], dt)
         rightKneeController.set_reference(exoskeleton.rightKnee, reference_position[5], reference_velocity[5], dt)
 
+        cvp = exoskeleton.rightKnee.getCVP()
+        state.log.addCVP(runningTime, cvp)
+
         state.last_time = runningTime
         
 
     setup_teardown_motor_combination(Exoskeleton(), func, DURATION)
+    state.log.plot()
 
 
 

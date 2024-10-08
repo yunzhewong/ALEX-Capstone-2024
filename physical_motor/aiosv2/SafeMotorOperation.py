@@ -230,8 +230,9 @@ class SafeMotor:
         return self.encoderIsReady() and self.cvpIsReady()
 
     def setPosition(self, position: float):
+        calibratedPosition = position - self.calibrationAdjustment
         self.control_mode = ControlMode.Position
-        self.control_value = position
+        self.control_value = calibratedPosition
 
     def setVelocity(self, velocity: float):
         self.control_mode = ControlMode.Velocity

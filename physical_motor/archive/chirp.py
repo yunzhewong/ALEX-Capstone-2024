@@ -1,6 +1,6 @@
 
 import numpy as np
-import aiosv2
+from ..aiosv2.SafeMotorOperation import SafeMotor
 from dataGathering import gather_data
 
 
@@ -16,7 +16,7 @@ def get_frequency(t):
     return CHIRP_RATE * t + INITIAL_FREQUENCY
 
 if __name__ == "__main__":
-    def command_func(connection: aiosv2.SafeMotor, runningTime: float):
+    def command_func(connection: SafeMotor, runningTime: float):
         frequency = get_frequency(runningTime)
         angular_frequency = 2 * np.pi * frequency
         current = WAVE_MAGNITUDE * np.sin(angular_frequency * runningTime)
