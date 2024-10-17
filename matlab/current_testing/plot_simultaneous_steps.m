@@ -18,6 +18,9 @@ end
 dcm = datacursormode(gcf);
 set(dcm, 'UpdateFcn', @myUpdateFcn);
 
+title("Batch Results")
+ylabel("Measured Velocity (rads^{-1})")
+xlabel("Time (s)")
 
 
 % Custom update function to display plot name

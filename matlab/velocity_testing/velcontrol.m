@@ -1,4 +1,4 @@
-step = "./noi/vel2.csv";
+step = "./noi/vel1.5.csv";
 
 data = readmatrix(step);
 
@@ -7,7 +7,7 @@ velocities = data(:, 3);
 
 figure
 plot(times, velocities)
-yline(2, "LineWidth", 3, "LineStyle", ":")
+yline(1.5, "LineWidth", 3, "LineStyle", ":")
 ylim([0 2.2])
 xlim([0 10])
 
